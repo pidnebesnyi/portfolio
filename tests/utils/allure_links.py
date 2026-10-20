@@ -21,6 +21,7 @@ import pytest
 LAYERS = {
     "api": "API",
     "db": "Database",
+    "events": "Events (RabbitMQ)",
     "integration": "Provider integration",
     "logs": "Logs",
     "ui": "UI",

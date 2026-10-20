@@ -9,6 +9,8 @@ pytest==9.1.1
 pytest-xdist==3.8.0
 pytest-rerunfailures==16.7
 allure-pytest==2.16.2
+# Event consumer for tests/events (same version as the app's publisher).
+pika==1.4.4
 # UI layer. playwright must equal the tag of the tests image (playwright/python:v1.49.1-noble).
 # pytest-playwright 0.7.2 is the first release that accepts pytest 9 and still works with 1.49.
 playwright==1.49.1
