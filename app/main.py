@@ -22,7 +22,7 @@ app = FastAPI(
     lifespan=lifespan,
     title="Payments Lab API",
     version="0.1.0",
-    description="Demo service under test for the test automation lab. Amounts are integers in minor units.",
+    description="Demo service under test. Amounts are integers in minor units.",
 )
 install_error_handlers(app)
 app.add_middleware(request_log.RequestLogMiddleware)
