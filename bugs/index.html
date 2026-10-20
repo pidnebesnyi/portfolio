@@ -25,6 +25,8 @@ td:first-child{white-space:nowrap}
 th{font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 code{font:.82rem ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
 ul{margin:0;padding-left:1.1rem}
+.evidence{margin:1rem 0 0}
+.evidence a{display:inline-block;padding:.5rem 0;font-weight:600}
 @media(max-width:640px){
 thead{display:none}
 tr{display:block;background:var(--card);border:1px solid var(--line);border-radius:8px;
@@ -43,6 +45,9 @@ integration suites. A bug counts as caught when at least one test marked for it 
 With no bug switched on, the same suites must be green:
 <span class="ok">green</span>
 (103 tests, 0 failed).</p>
+<p class="evidence"><a href="report/">Open the failing tests in Allure</a><br>
+<span class="muted">Every caught failure has its evidence attached: steps, the last request and
+response, and the SQL where the test reads the database.</span></p>
 <table>
 <thead><tr><th>Bug</th><th>What was broken</th>
 <th>Failing tests with the bug on</th><th>Result</th></tr></thead>
@@ -53,7 +58,7 @@ With no bug switched on, the same suites must be green:
 <tr><td data-label='Bug'><b>BUG-4</b></td><td data-label='What was broken'>A provider timeout leaves the payment authorized instead of failed.</td><td data-label='Failing tests with the bug on'><ul><li><code>integration.test_provider::test_provider_failure_ends_in_failed_with_a_reason[timeout]</code></li></ul></td><td data-label='Result'><span class='ok'>caught</span></td></tr>
 </tbody>
 </table>
-<p class="muted">Updated 2026-10-20 11:34 UTC. <a href="../">Back to the lab</a></p>
+<p class="muted">Updated 2026-10-20 13:20 UTC. <a href="../">Back to the lab</a></p>
 </main>
 </body>
 </html>
