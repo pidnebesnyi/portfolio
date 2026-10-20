@@ -1,0 +1,24 @@
+[
+  {
+    "name": "Infrastructure problems",
+    "description": "The environment misbehaved (app, database, provider or browser unreachable); the result says nothing about the product.",
+    "matchedStatuses": ["failed", "broken"],
+    "messageRegex": "(?s).*(ConnectError|ConnectTimeout|ConnectionRefused|Connection refused|OperationalError|ReadTimeout|RemoteProtocolError|net::ERR_|Target (page|closed)|Browser has been closed).*"
+  },
+  {
+    "name": "Product defects",
+    "description": "An assertion failed: the product behaved differently from the specification.",
+    "matchedStatuses": ["failed"],
+    "messageRegex": "(?s)^(?!.*(ConnectError|ConnectTimeout|ConnectionRefused|Connection refused|OperationalError|ReadTimeout|RemoteProtocolError|net::ERR_|Target (page|closed)|Browser has been closed)).*"
+  },
+  {
+    "name": "Test defects",
+    "description": "The test itself broke (unexpected exception, bad locator, fixture error), not an assertion about the product.",
+    "matchedStatuses": ["broken"],
+    "messageRegex": "(?s)^(?!.*(ConnectError|ConnectTimeout|ConnectionRefused|Connection refused|OperationalError|ReadTimeout|RemoteProtocolError|net::ERR_|Target (page|closed)|Browser has been closed)).*"
+  },
+  {
+    "name": "Skipped and quarantined",
+    "matchedStatuses": ["skipped"]
+  }
+]
