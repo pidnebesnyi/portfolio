@@ -16,12 +16,28 @@
 Everything on this page is produced by the pipeline, not written by hand.</p>
 
 
+<h2>About me</h2>
+<div class="profile">
+  <p class="name">Senior SDET · Python · Playwright · Test Infrastructure</p>
+  <p>SDET with 5+ years in quality assurance and 3.5 years building test automation in Python.
+  I design end-to-end frameworks across UI, API and database layers, run them in Docker and CI,
+  and make every failure diagnosable from the report. Background in payments, IoT cloud platforms
+  and smart TV devices; working remotely as a B2B contractor from Montenegro.</p>
+  <ul class="links">
+    <li><a href="https://www.linkedin.com/in/pidnebesnyi">LinkedIn</a></li>
+    <li><a href="https://github.com/pidnebesnyi">GitHub</a></li>
+    <li><a href="mailto:koshevarov.roma@gmail.com">koshevarov.roma@gmail.com</a></li>
+    <li><a href="cv.pdf">CV (PDF)</a></li>
+  </ul>
+</div>
+
+
 <h2>Latest nightly run</h2>
 <ul class="stats">
-  <li><span class="value">145</span><span class="label">tests</span></li>
+  <li><span class="value">149</span><span class="label">tests</span></li>
   <li><span class="value ok">100.0 %</span><span class="label">passed</span></li>
-  <li><span class="value">14 s</span><span class="label">duration</span><span class="note">3 shards in parallel</span></li>
-  <li><span class="value">2026-10-20</span><span class="label">last run</span><span class="note"><a href="https://github.com/pidnebesnyi/portfolio/actions/runs/39417478942">11:49 UTC, workflow run</a></span></li>
+  <li><span class="value">18 s</span><span class="label">duration</span><span class="note">3 shards in parallel</span></li>
+  <li><span class="value">2026-10-20</span><span class="label">last run</span><span class="note"><a href="https://github.com/pidnebesnyi/portfolio/actions/runs/39429856140">13:24 UTC, workflow run</a></span></li>
 </ul>
 
 <h2>Look at the evidence</h2>
@@ -38,24 +54,38 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <tbody>
 <tr><td data-label="Claim">Design a test strategy, not only write tests</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docs/test-strategy.md">docs/test-strategy.md</a>: ranked risks, the level each one is tested at, and what is deliberately not automated.</td></tr>
-<tr><td data-label="Claim">API tests with typed clients and per-test data</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/api"><code>tests/api</code></a>, <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/clients"><code>tests/clients</code></a>: state machine table, idempotency, parallel refunds.</td></tr>
-<tr><td data-label="Claim">Contract testing</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/contract"><code>tests/contract</code></a>: Schemathesis generates cases from the OpenAPI schema.</td></tr>
-<tr><td data-label="Claim">SQL verification of data integrity</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/db"><code>tests/db</code></a>: JOIN and GROUP BY checks; the SQL is attached to the report.</td></tr>
-<tr><td data-label="Claim">Browser tests with page objects</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/pages"><code>tests/pages</code></a>, <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/ui"><code>tests/ui</code></a>: Playwright, 2FA login, role and test-id locators.</td></tr>
+<tr><td data-label="Claim">End-to-end frameworks with Pytest, Playwright and page objects</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/ui"><code>tests/ui</code></a>, <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/pages"><code>tests/pages</code></a>: page objects with role and test-id locators; test data comes from the API.</td></tr>
+<tr><td data-label="Claim">Web UI and API test layers</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/api"><code>tests/api</code></a> with typed clients in <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/clients"><code>tests/clients</code></a> and Pydantic response models; <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/ui"><code>tests/ui</code></a> for the browser.</td></tr>
+<tr><td data-label="Claim">Wired into CI/CD</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/.github/workflows"><code>.github/workflows</code></a>: every pull request is gated; <a href="https://github.com/pidnebesnyi/portfolio/actions">run history</a>.</td></tr>
+<tr><td data-label="Claim">Failures diagnosable from the report</td>
+<td data-label="Proof"><a href="bugs/report/">Allure report of the seeded-bug runs</a>: real failures with steps, request and response attached; the <a href="report/">nightly report</a> keeps the trend.</td></tr>
+<tr><td data-label="Claim">Fixture-based test data management</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/factories"><code>tests/factories</code></a>, <a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/conftest.py"><code>tests/conftest.py</code></a>: a fresh merchant per test, created through the API and cleaned up after.</td></tr>
+<tr><td data-label="Claim">SQL backend verification</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/db"><code>tests/db</code></a>: JOIN, GROUP BY / HAVING, CTE and window checks on data the tests created; the SQL is attached to the report.</td></tr>
+<tr><td data-label="Claim">REST APIs against Swagger / OpenAPI</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/contract"><code>tests/contract</code></a>: Schemathesis generates requests for all 13 operations from the OpenAPI schema.</td></tr>
+<tr><td data-label="Claim">Payments domain</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/api"><code>tests/api</code></a>: payment state machine, idempotency keys, partial and parallel refunds.</td></tr>
+<tr><td data-label="Claim">2FA flows with PyOTP</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/ui/test_login.py"><code>tests/ui/test_login.py</code></a>: admin login with a time-based one-time code.</td></tr>
+<tr><td data-label="Claim">Flaky-test triage and retry policy</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docs/test-strategy.md#flakiness-policy">Flakiness policy</a>: no global retries, <code>flaky</code> needs a reason, <code>quarantine</code> is excluded from every gate.</td></tr>
 <tr><td data-label="Claim">Testing around an external provider</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/integration"><code>tests/integration</code></a>: decline, 5xx and timeout against a provider mock.</td></tr>
 <tr><td data-label="Claim">Tests that catch real defects</td>
 <td data-label="Proof"><a href="bugs/">Seeded bugs</a>: each bug is switched on in turn; a marked test must fail.</td></tr>
-<tr><td data-label="Claim">Parallel runs and CI quality gates</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/pr.yml"><code>pr.yml</code></a> gates every pull request; <a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/nightly.yml"><code>nightly.yml</code></a> runs three shards.</td></tr>
-<tr><td data-label="Claim">Reporting people can read</td>
-<td data-label="Proof"><a href="report/">Allure report</a> with request, response, SQL and trace attached to failures.</td></tr>
-<tr><td data-label="Claim">Load testing with a pass/fail rule</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/load"><code>load/</code></a> and the <a href="load/">published report</a>: the run fails on p95 over 500 ms or errors over 1 %.</td></tr>
+<tr><td data-label="Claim">Load testing</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/load"><code>load</code></a> and the <a href="load/">published Locust report</a>: the run fails on p95 over 500 ms or errors over 1 %.</td></tr>
+<tr><td data-label="Claim">Docker</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docker-compose.yml"><code>docker-compose.yml</code></a>: app, database, provider mock and tests with health checks; multi-stage <a href="https://github.com/pidnebesnyi/portfolio/blob/main/app/Dockerfile"><code>app/Dockerfile</code></a>.</td></tr>
+<tr><td data-label="Claim">GitHub Actions and parallel runs</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/nightly.yml"><code>.github/workflows/nightly.yml</code></a>: the full suite in three shards, merged into one Allure report with history.</td></tr>
+<tr><td data-label="Claim">Type hints, ruff, pre-commit</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.pre-commit-config.yaml"><code>.pre-commit-config.yaml</code></a> and the lint job in <a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/pr.yml"><code>.github/workflows/pr.yml</code></a>: ruff, strict mypy and a secret scan on every pull request.</td></tr>
 <tr><td data-label="Claim">No secrets in a public repository</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/scripts/make_env.sh"><code>scripts/make_env.sh</code></a>: credentials are generated per run and masked; gitleaks scans every pull request.</td></tr>
 </tbody>
