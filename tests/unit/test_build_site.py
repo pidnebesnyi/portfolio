@@ -107,6 +107,24 @@ def test_unset_owner_placeholders_are_reported_but_comments_are_ignored(tmp_path
     assert "owner note" not in (out / "index.html").read_text(encoding="utf-8")
 
 
+def test_profile_block_is_left_out_until_the_owner_fills_it() -> None:
+    template = (
+        "<h1>x</h1>\n<!-- profile:start note -->\n<p>{{PROFILE_HEADLINE}}</p>{{BUILD_CV_LINK}}\n"
+        "<!-- profile:end -->\n<p>{{BUILD_TESTS}}</p>"
+    )
+
+    page, hidden = build_site.drop_unfilled_profile(template)
+    filled, nothing_hidden = build_site.drop_unfilled_profile(
+        template.replace("{{PROFILE_HEADLINE}}", "QA engineer")
+    )
+
+    assert hidden == ["PROFILE_HEADLINE"]
+    assert "PROFILE_HEADLINE" not in page
+    assert "{{BUILD_TESTS}}" in page
+    assert nothing_hidden == []
+    assert "QA engineer" in filled
+
+
 def test_unknown_build_placeholder_is_an_error() -> None:
     with pytest.raises(ValueError, match="BUILD_TYPO"):
         build_site.render("{{BUILD_TYPO}}", {"BUILD_TESTS": "1"})
@@ -130,6 +148,7 @@ def test_real_template_only_uses_known_placeholders() -> None:
     page = build_site.render(template, values)  # raises on a BUILD name the script does not know
 
     assert "{{BUILD_" not in page
+    assert build_site.drop_unfilled_profile(template)[1]  # the real page hides an unfilled profile
     assert set(build_site.open_placeholders(page)) == {
         "PROFILE_HEADLINE",
         "PROFILE_SUMMARY",
