@@ -24,6 +24,7 @@ from tests.requirements import REQUIREMENTS
 # Top-level folder under tests/ -> the layer shown as the parent suite.
 LAYERS = {
     "api": "API",
+    "bdd": "BDD (Gherkin)",
     "contract": "Contract (OpenAPI)",
     "db": "Database",
     "events": "Events (RabbitMQ)",
