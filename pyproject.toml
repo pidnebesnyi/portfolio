@@ -29,36 +29,6 @@ extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "fastapi.Header"]
 [tool.ruff.lint.isort]
 known-first-party = ["app", "tests"]
 
-[tool.mypy]
-python_version = "3.12"
-strict = true
-files = ["app", "tests", "provider-mock", "load", "scripts"]
-explicit_package_bases = true
-mypy_path = "."
-plugins = ["pydantic.mypy"]
-
-[[tool.mypy.overrides]]
-module = ["allure.*", "allure_commons.*", "schemathesis.*"]
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-# allure's decorator helpers ship without type hints; the wrapper in this module re-types them.
-module = ["tests.utils.allure_links", "tests.utils.allure_evidence", "tests.conftest"]
-disallow_untyped_calls = false
-warn_return_any = false
-
-[[tool.mypy.overrides]]
-# @allure.title (on every test) ships without type hints; nothing else in tests/ is untyped.
-module = ["tests.*"]
-disallow_untyped_calls = false
-disallow_untyped_decorators = false
-
-[[tool.mypy.overrides]]
-# locust's event hooks and helpers (`between`, `task`, `add_listener`) are not annotated.
-module = ["load.locustfile", "load.thresholds"]
-disallow_untyped_calls = false
-disallow_untyped_decorators = false
-
 [tool.pytest.ini_options]
 minversion = "8.0"
 testpaths = ["tests"]

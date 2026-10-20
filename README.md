@@ -66,7 +66,7 @@ About 157 tests in total, 17 of them tagged `smoke`.
 
 | Workflow | Trigger | What | Publishes |
 |---|---|---|---|
-| `pr.yml` | every pull request | lint (gitleaks, ruff, mypy); `api` job (unit, API, integration and DB tests on compose); `ui-smoke` job (browser smoke tests). Each job has a 10-minute timeout | Allure results and UI traces as workflow artifacts |
+| `pr.yml` | every pull request | lint (gitleaks, ruff); `api` job (unit, API, integration and DB tests on compose); `ui-smoke` job (browser smoke tests). Each job has a 10-minute timeout | Allure results and UI traces as workflow artifacts |
 | `nightly.yml` | 02:30 UTC daily, manual | full suite in one job (pytest-xdist); Allure report with history | `/report/` and the landing-page numbers at the site root |
 | `load.yml` | Mondays 04:00 UTC, manual | Locust, 20 users for 3 minutes; fails on p95 > 500 ms or errors > 1 % | `/load/` |
 

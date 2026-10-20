@@ -68,7 +68,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 def pytest_runtest_makereport(item: pytest.Item) -> Generator[None, object, None]:
     """Attach evidence to failed tests. Browser files only exist once the fixtures that record
     them have been torn down, so the attaching happens in the teardown report."""
-    report = (yield).get_result()  # type: ignore[attr-defined]
+    report = (yield).get_result()
     if report.when in ("setup", "call") and report.failed:
         item.stash[FAILED] = True
     elif report.when == "teardown" and item.stash.get(FAILED, False):

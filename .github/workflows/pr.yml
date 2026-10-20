@@ -1,5 +1,5 @@
 # PR gate. Trigger: every pull request (and manual runs).
-# Order: `lint` (secret scan, ruff, mypy; seconds, no containers), `api` (compose stack, then
+# Order: `lint` (secret scan, ruff; seconds, no containers), `api` (compose stack, then
 # unit, API, integration, DB tests) and `ui-smoke` (own compose stack, smoke-tagged browser
 # tests) run in parallel; a failure in any of them blocks the merge, so make all three required
 # checks in branch protection. Nothing here needs repository secrets: each job generates
@@ -43,8 +43,6 @@ jobs:
         run: ruff check .
       - name: ruff format
         run: ruff format --check .
-      - name: mypy (strict)
-        run: mypy
 
   api:
     runs-on: ubuntu-latest

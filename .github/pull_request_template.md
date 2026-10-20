@@ -8,7 +8,7 @@
 
 ## How tested
 
-- [ ] ruff and mypy clean
+- [ ] ruff clean
 - [ ] API tests pass
 - [ ] UI smoke pass (if UI touched)
 

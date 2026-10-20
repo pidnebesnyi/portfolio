@@ -85,7 +85,7 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <tr><td data-label="Claim">GitHub Actions and parallel runs</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/nightly.yml"><code>.github/workflows/nightly.yml</code></a>: the full suite in parallel with pytest-xdist, published as one Allure report with history.</td></tr>
 <tr><td data-label="Claim">Type hints, ruff, pre-commit</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.pre-commit-config.yaml"><code>.pre-commit-config.yaml</code></a> and the lint job in <a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/pr.yml"><code>.github/workflows/pr.yml</code></a>: ruff, strict mypy and a secret scan on every pull request.</td></tr>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.pre-commit-config.yaml"><code>.pre-commit-config.yaml</code></a> and the lint job in <a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/pr.yml"><code>.github/workflows/pr.yml</code></a>: ruff, ruff format and a secret scan on every pull request.</td></tr>
 <tr><td data-label="Claim">No secrets in a public repository</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/scripts/make_env.sh"><code>scripts/make_env.sh</code></a>: credentials are generated per run and masked; gitleaks scans every pull request.</td></tr>
 </tbody>
