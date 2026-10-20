@@ -20,6 +20,7 @@ import pytest
 # Top-level folder under tests/ -> the layer shown as the parent suite.
 LAYERS = {
     "api": "API",
+    "contract": "Contract (OpenAPI)",
     "db": "Database",
     "events": "Events (RabbitMQ)",
     "integration": "Provider integration",

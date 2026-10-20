@@ -28,7 +28,7 @@ built from an API, a database, a UI, a message broker and an external dependency
 | 2 Provider failure modes | Integration (`tests/integration`) against a provider mock (WireMock) with stubs per card token | Decline, 5xx and timeout cannot be triggered on demand on a real provider. WireMock also records what it received, and the tests read that journal through its admin API, so they assert exactly one charge was attempted |
 | 3, 4 Access | API: basic access checks (no token, expired token, wrong signature, another merchant's id) | Cheapest level that sees the response code. Not a security assessment, see the last section |
 | 4 Login with 2FA | API for the rules, UI for the form (8 tests, 2 smoke) | The rules are decided by the service; the browser only needs to show the form works |
-| 5 Contract | API: every response is parsed into a Pydantic model by the typed clients (`tests/clients`) | A response that no longer matches its model fails the first test that sees it |
+| 5 Contract | API: every response is parsed into a Pydantic model by the typed clients (`tests/clients`) and checked against the service's own OpenAPI document; the document is pinned in `tests/contract/openapi.json` | A response that no longer matches its model or its documentation fails the first test that sees it. Pinning catches the case where code and documentation change together: integrators break although every response matches, so the change must appear in the pull request diff |
 | 2 Observability | Log lines of a request found by its request id (`tests/logs`), including a scan for secrets | The id ties a failure to its evidence; a log is also where passwords and tokens leak |
 | 2 Event publishing | Consumer on a private RabbitMQ queue (`tests/events`) | Other systems act on these messages; they must be published once, after the commit, with the right data, and never for a rejected request |
 | 6 Data consistency | SQL invariants after the API tests created data | Catches states the API never admits to, such as refunds above the amount or one idempotency key mapped to two payments |
@@ -39,8 +39,9 @@ built from an API, a database, a UI, a message broker and an external dependency
 
 | Level | Tests | Runs |
 |-------|------:|------|
-| Unit (site builder, Allure labels) | 19 | every run |
+| Unit (site builder, Allure labels, OpenAPI checker) | 32 | every run |
 | API, `tests/api` | 90 | every PR |
+| OpenAPI contract, `tests/contract` | 1 | every PR |
 | Integration with the WireMock provider stub | 8 | every PR |
 | Database invariants | 6 | every PR |
 | Log checks, `tests/logs` | 11 | every PR |
@@ -48,11 +49,11 @@ built from an API, a database, a UI, a message broker and an external dependency
 | UI (Playwright) | 32, of which 6 smoke | smoke on every PR, all nightly |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
-171 tests in the suite (numbers from the latest local run, the live number is on the landing page).
-The shape is a pyramid on purpose: about 53 % of the tests are API checks, about a fifth need a browser.
+185 tests in the suite (numbers from the latest local run, the live number is on the landing page).
+The shape is a pyramid on purpose: about half of the tests are API checks, about a sixth need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
-The 19 unit tests cover the plain code around the suite: the landing-page builder and the Allure
-suite labels.
+The 32 unit tests cover the plain code around the suite: the landing-page builder, the Allure
+suite labels and the OpenAPI checker, which is made to fail on purpose for each kind of violation.
 22 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
 
 ## Browser techniques
