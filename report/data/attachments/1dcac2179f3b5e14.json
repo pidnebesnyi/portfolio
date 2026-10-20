@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 12,
+  "headers": {
+    "date": "Tue, 20 Oct 2026 19:24:36 GMT",
+    "server": "uvicorn",
+    "content-length": "116",
+    "content-type": "application/json",
+    "x-request-id": "f6d887b7b2db4d2185a2b5ae5133c96d"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot void a payment in status refunded",
+    "from": "refunded",
+    "action": "void"
+  }
+}
