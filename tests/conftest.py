@@ -27,7 +27,7 @@ from tests.utils.allure_evidence import (
     clear_browser_artifacts,
     write_run_metadata,
 )
-from tests.utils.allure_links import annotate, seeded_run
+from tests.utils.allure_links import annotate, label_suites, seeded_run
 from tests.utils.db import Database
 from tests.utils.tokens import totp_code
 
@@ -122,6 +122,7 @@ def db(settings: Settings) -> Database:
 def _allure_metadata(request: pytest.FixtureRequest, settings: Settings) -> None:
     evidence.reset()
     annotate(request.node, settings.repo_url)
+    label_suites(request.node.nodeid, settings.seeded_bugs)
     seeded_run(settings.seeded_bugs)
 
 
