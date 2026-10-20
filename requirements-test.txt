@@ -13,6 +13,8 @@ pytest-rerunfailures==16.7
 jsonschema==4.25.1
 rfc3339-validator==0.1.4
 allure-pytest==2.16.2
+# Gherkin scenarios in tests/bdd run as ordinary pytest tests on the same fixtures.
+pytest-bdd==9.0.0
 # Event consumer for tests/events (same version as the app's publisher).
 pika==1.4.4
 # UI layer. playwright must equal the tag of the tests image (playwright/python:v1.49.1-noble).

@@ -39,23 +39,32 @@ built from an API, a database, a UI, a message broker and an external dependency
 
 | Level | Tests | Runs |
 |-------|------:|------|
-| Unit (site builder, Allure labels, OpenAPI checker, requirement trace) | 35 | every run |
+| Unit (site builder, Allure labels, OpenAPI checker, requirement trace) | 36 | every run |
 | API, `tests/api` | 90 | every PR |
 | OpenAPI contract, `tests/contract` | 1 | every PR |
 | Integration with the WireMock provider stub | 8 | every PR |
 | Database invariants | 6 | every PR |
 | Log checks, `tests/logs` | 11 | every PR |
+| Gherkin scenarios, `tests/bdd` | 9 (5 are rows of one outline), of which 1 in the browser | API scenarios every PR, browser scenario nightly |
 | Domain events, `tests/events` | 5 | every PR |
 | UI (Playwright) | 32, of which 6 smoke | smoke on every PR, all nightly |
 | Postman collection (Newman), `postman/` | 20 requests, 59 assertions | every PR |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
-188 tests in the suite (numbers from the latest local run, the live number is on the landing page).
+198 tests in the suite (numbers from the latest local run, the live number is on the landing page).
 The shape is a pyramid on purpose: about half of the tests are API checks, about a sixth need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
-The 35 unit tests cover the plain code around the suite: the landing-page builder, the Allure
+The 36 unit tests cover the plain code around the suite: the landing-page builder, the Allure
 suite labels, the requirement trace and the OpenAPI checker, which is made to fail on purpose for each kind of violation.
 22 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
+
+The Gherkin scenarios in `tests/bdd` are a reading layer, not new coverage. They restate five
+behaviours already checked in `tests/api`, `tests/integration` and `tests/ui` (partial refunds that
+never exceed the payment, a repeated request returning the same payment, a declined card ending as
+failed, one merchant not seeing another's payment, a refund through the browser) in business words,
+for readers who do not write Python. The steps call the same factories, clients and page objects, so
+there is no second framework to maintain. Each scenario is bound to a test function that carries
+its Allure title, tier and requirement, which keeps the collection checks below in force.
 
 ## Traceability
 
@@ -75,10 +84,10 @@ The chain is checked, not trusted:
 | [PAY-CREATE](https://github.com/pidnebesnyi/portfolio/issues/32) | A merchant creates a payment; invalid input is rejected | 7 | [`api/test_payments.py`](../tests/api/test_payments.py), [`ui/test_create_payment.py`](../tests/ui/test_create_payment.py) |
 | [PAY-LIST](https://github.com/pidnebesnyi/portfolio/issues/33) | A merchant lists own payments with filters and pagination | 3, 6, 7 | [`api/test_payments.py`](../tests/api/test_payments.py), [`ui/test_filters.py`](../tests/ui/test_filters.py), [`db/test_totals_and_cleanup.py`](../tests/db/test_totals_and_cleanup.py) |
 | [PAY-STATE](https://github.com/pidnebesnyi/portfolio/issues/34) | A payment follows its state machine; forbidden transitions change nothing | 2 | [`api/test_state_machine.py`](../tests/api/test_state_machine.py) |
-| [PAY-PROVIDER](https://github.com/pidnebesnyi/portfolio/issues/35) | Provider decline, error and timeout end in a defined state | 1, 2 | [`integration/test_provider.py`](../tests/integration/test_provider.py) |
-| [PAY-IDEMP](https://github.com/pidnebesnyi/portfolio/issues/36) | Payment creation is idempotent per merchant and key | 1, 6 | [`api/test_idempotency.py`](../tests/api/test_idempotency.py), [`db/test_idempotency_keys.py`](../tests/db/test_idempotency_keys.py) |
-| [PAY-REFUND](https://github.com/pidnebesnyi/portfolio/issues/37) | Partial refunds never exceed the payment amount | 1, 6, 7 | [`api/test_refunds.py`](../tests/api/test_refunds.py), [`db/test_refund_consistency.py`](../tests/db/test_refund_consistency.py), [`ui/test_refund.py`](../tests/ui/test_refund.py) |
-| [PAY-ACCESS](https://github.com/pidnebesnyi/portfolio/issues/38) | A merchant reaches only own payments; roles and tokens are enforced | 3 | [`api/test_access.py`](../tests/api/test_access.py) |
+| [PAY-PROVIDER](https://github.com/pidnebesnyi/portfolio/issues/35) | Provider decline, error and timeout end in a defined state | 1, 2 | [`integration/test_provider.py`](../tests/integration/test_provider.py), [`bdd/test_provider.py`](../tests/bdd/test_provider.py) |
+| [PAY-IDEMP](https://github.com/pidnebesnyi/portfolio/issues/36) | Payment creation is idempotent per merchant and key | 1, 6 | [`api/test_idempotency.py`](../tests/api/test_idempotency.py), [`db/test_idempotency_keys.py`](../tests/db/test_idempotency_keys.py), [`bdd/test_idempotency.py`](../tests/bdd/test_idempotency.py) |
+| [PAY-REFUND](https://github.com/pidnebesnyi/portfolio/issues/37) | Partial refunds never exceed the payment amount | 1, 6, 7 | [`api/test_refunds.py`](../tests/api/test_refunds.py), [`db/test_refund_consistency.py`](../tests/db/test_refund_consistency.py), [`ui/test_refund.py`](../tests/ui/test_refund.py), [`bdd/test_refunds.py`](../tests/bdd/test_refunds.py), [`bdd/test_ui_refund.py`](../tests/bdd/test_ui_refund.py) |
+| [PAY-ACCESS](https://github.com/pidnebesnyi/portfolio/issues/38) | A merchant reaches only own payments; roles and tokens are enforced | 3 | [`api/test_access.py`](../tests/api/test_access.py), [`bdd/test_access.py`](../tests/bdd/test_access.py) |
 | [PAY-REFRESH](https://github.com/pidnebesnyi/portfolio/issues/39) | The payment page refreshes its status and copes with backend failures | 7 | [`ui/test_status_refresh.py`](../tests/ui/test_status_refresh.py) |
 | [AUTH-LOGIN](https://github.com/pidnebesnyi/portfolio/issues/40) | Login with a password, and a second factor for admins | 4, 7 | [`api/test_health_and_auth.py`](../tests/api/test_health_and_auth.py), [`ui/test_login.py`](../tests/ui/test_login.py) |
 | [MERCH-CREATE](https://github.com/pidnebesnyi/portfolio/issues/41) | An admin creates and lists merchants | 4 | [`api/test_merchants.py`](../tests/api/test_merchants.py) |

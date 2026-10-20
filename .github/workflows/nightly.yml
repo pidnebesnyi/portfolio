@@ -1,5 +1,5 @@
 # Nightly regression + published Allure report. Triggers: 02:30 UTC every day and manual runs.
-# Order: `tests` runs the whole suite (api, db, ui) on one compose stack,
+# Order: `tests` runs the whole suite (api, db, ui, bdd) on one compose stack,
 # in parallel with pytest-xdist; then `report` restores the trend history from the gh-pages
 # branch, adds it to the run's allure-results, builds the Allure report and publishes
 # gh-pages:/report/. It then runs scripts/build_site.py, which writes the report's numbers into

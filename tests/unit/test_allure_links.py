@@ -15,6 +15,7 @@ pytestmark = [pytest.mark.regression, area("Reporting")]
     ("path", "parent", "suite"),
     [
         ("tests/api/test_refunds.py", "API", "Refunds"),
+        ("tests/bdd/test_ui_refund.py", "BDD (Gherkin)", "Ui refund"),
         ("tests/api/test_health_and_auth.py", "API", "Health and auth"),
         ("tests/db/test_totals_and_cleanup.py", "Database", "Totals and cleanup"),
         ("tests/contract/test_pinned_contract.py", "Contract (OpenAPI)", "Pinned contract"),

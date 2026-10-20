@@ -3,7 +3,7 @@
 A QA automation portfolio: one pytest framework that covers many kinds of testing, a CI pipeline
 and published reports. REST API checks against the service's own OpenAPI contract, SQL verification, Playwright UI tests (page objects,
 network interception, computed styles), RabbitMQ events, structured log checks, WireMock service
-stubs, a Postman collection run by Newman, and a Locust load test, all running in Docker and GitHub Actions.
+stubs, Gherkin scenarios readable without code (pytest-bdd), a Postman collection run by Newman, and a Locust load test, all running in Docker and GitHub Actions.
 
 The system under test is a small demo service (FastAPI + Postgres; payments is the example domain:
 merchants, payments, refunds). The domain is only the subject: the product is the framework, the
@@ -83,16 +83,17 @@ needs zero secrets.
 | `tests/ui` | Playwright through page objects; data comes from the API; includes network interception (`page.route`) and computed-style checks | 32 (6 smoke) | PR (`ui-smoke` job, smoke only); nightly |
 | `tests/logs` | The app's JSON request log: request ids, domain events, no secrets | 11 (2 smoke) | PR (`api` job); nightly |
 | `tests/events` | Domain events consumed from RabbitMQ: captured, refunded, failed, nothing for rejected requests | 5 (1 smoke) | PR (`api` job); nightly |
-| `tests/unit` | Landing-page builder, Allure suite labels, the OpenAPI checker, the requirement trace | 35 | PR (`api` job); nightly |
+| `tests/bdd` | Business scenarios in Gherkin (`features/*.feature`) that run on the same clients, factories and page objects; one is a browser scenario | 9 | PR (`api` job, all but the browser scenario); nightly |
+| `tests/unit` | Landing-page builder, Allure suite labels, the OpenAPI checker, the requirement trace | 36 | PR (`api` job); nightly |
 
-About 188 tests in total, 22 of them tagged `smoke`. Outside pytest: the Postman collection in
+About 198 tests in total, 22 of them tagged `smoke`. Outside pytest: the Postman collection in
 `postman/` (20 requests, 59 assertions; PR `api` job) and the Locust profile in `load/`.
 
 ## Pipeline
 
 | Workflow | Trigger | What | Publishes |
 |---|---|---|---|
-| `pr.yml` | every pull request | lint (ruff); `api` job (unit, API, contract, integration, DB, log and event tests on compose, then the Postman collection through Newman); `ui-smoke` job (browser smoke tests). Each job has a 10-minute timeout | Allure results and UI traces as workflow artifacts |
+| `pr.yml` | every pull request | lint (ruff); `api` job (unit, API, contract, integration, DB, log, event and Gherkin API scenarios on compose, then the Postman collection through Newman); `ui-smoke` job (browser smoke tests). Each job has a 10-minute timeout | Allure results and UI traces as workflow artifacts |
 | `nightly.yml` | 02:30 UTC daily, manual | full suite in one job (pytest-xdist); Allure report with history | `/report/` and the landing-page numbers at the site root |
 | `load.yml` | Mondays 04:00 UTC, manual | Locust, 20 users for 3 minutes; fails on p95 > 500 ms or errors > 1 % | `/load/` |
 
@@ -147,6 +148,12 @@ docker compose run --rm tests pytest -q tests/ui --video=off --tracing=off   # c
 - The API smoke also exists as a Postman collection (`postman/`), for manual QA and developers to
   click through. Newman runs it in the PR, so the collection cannot silently go stale; the admin's
   one-time code is computed in a pre-request script, and credentials come in as `--env-var`.
+- A few business scenarios are written in Gherkin (`tests/bdd/features`) so that someone without
+  Python can read what the product promises: refunds that add up, safe retries, a declined card, one
+  merchant never seeing another's payment, and a refund through the browser. They add no new
+  coverage: each sentence is a step that calls the same payment factory, API client and page objects
+  as the other layers, and each scenario is bound to a normal test function with its title, tier
+  and requirement. In Allure the steps appear as written, under the suite "BDD (Gherkin)".
 - Every test outside `tests/unit` traces to a requirement: a GitHub issue labelled
   [`requirement`](https://github.com/pidnebesnyi/portfolio/issues?q=label%3Arequirement) with
   acceptance criteria and the risk it covers. The Allure report links each test to its issue; the
