@@ -71,7 +71,7 @@ About 145 tests in total, 17 of them tagged `smoke`.
 |---|---|---|---|
 | `pr.yml` | every pull request | lint (gitleaks, ruff, mypy); `api` job (unit, API, integration, DB and contract tests on compose); `ui-smoke` job (browser smoke tests). Each job has a 10-minute timeout | Allure results and UI traces as workflow artifacts |
 | `nightly.yml` | 02:30 UTC daily, manual | full suite in 3 pytest-split shards; one merged Allure report with history | `/report/` and the landing-page numbers at the site root |
-| `seeded-bugs.yml` | Mondays 05:00 UTC, manual | each of BUG-1..4 switched on in turn; a marked test must fail for each. Latest run: 4 seeded, 4 caught | `/bugs/` |
+| `seeded-bugs.yml` | Mondays 05:00 UTC, manual | each of BUG-1..4 switched on in turn; a marked test must fail for each. Latest run: 4 seeded, 4 caught; the four failing runs are also published as one Allure report | `/bugs/`, `/bugs/report/` |
 | `load.yml` | Mondays 04:00 UTC, manual | Locust, 20 users for 3 minutes; fails on p95 > 500 ms or errors > 1 % | `/load/` |
 
 ## Seeded bugs
@@ -80,7 +80,10 @@ The `SEEDED_BUGS` environment variable switches on known defects in the app: BUG
 payment on an idempotent replay, BUG-2 removes the over-refund guard, BUG-3 lets a merchant read
 another merchant's payment, and BUG-4 leaves a payment `authorized` after a provider timeout.
 The weekly job passes only if a marked test fails for each bug and the suite is green with no bug on.
-Results are at https://pidnebesnyi.github.io/portfolio/bugs/.
+Results are at https://pidnebesnyi.github.io/portfolio/bugs/. The failing tests, with their steps,
+last request/response and SQL, are in the Allure report at
+https://pidnebesnyi.github.io/portfolio/bugs/report/ (each result carries the bug that was on as its
+parent suite and a `seeded bugs` parameter).
 
 ## Framework decisions
 

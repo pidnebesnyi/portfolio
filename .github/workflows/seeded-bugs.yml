@@ -5,6 +5,12 @@
 # `report` then reads all XML files: a bug counts as caught when a test marked for it failed, the
 # baseline must be green. It fails the workflow if a bug escaped and publishes site/bugs/ to the
 # gh-pages branch under /bugs (keep_files: other workflows own /report/ and /load/).
+# Evidence: every run also uploads its Allure results. `report` merges the four BUG runs (not the
+# green baseline) into ONE Allure report and publishes it to /bugs/report/, so a visitor can open a
+# caught failure and see steps, last request/response and SQL. The tests label each result with the
+# bug that was on (SEEDED_BUGS reaches the tests container: Allure parent suite + parameter, see
+# seeded_run() in tests/utils/allure_links.py); the parameter keeps the runs from collapsing into
+# one, because Allure treats results with the same name and parameters as retries of one test.
 # Nothing here needs repository secrets: credentials are generated per run and masked.
 name: Seeded bugs
 
@@ -79,6 +85,14 @@ jobs:
           path: junit/
           if-no-files-found: error
           retention-days: 14
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.bug }}
+          path: allure-results/
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Tear down
         if: always()
         run: docker compose down --volumes
@@ -100,6 +114,14 @@ jobs:
           pattern: junit-*
           merge-multiple: true
           path: junit
+      - name: Download the bug runs' Allure results
+        # allure-results-BUG-* skips the baseline: it is green by definition (the page above
+        # reports it), and its passing tests would only bury the failures this report is for.
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-BUG-*
+          merge-multiple: true
+          path: allure-results
       - name: Build the seeded-bugs report
         id: report
         continue-on-error: true # publish the page first, fail the job afterwards
@@ -111,7 +133,35 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: site/bugs
           destination_dir: bugs
-          keep_files: true
+          keep_files: true # adds to bugs/, never removes bugs/report/ (published below)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build the Allure report of the runs with a bug on
+        id: allure
+        # Java 17 is preinstalled on ubuntu-latest, which is all the Allure CLI needs. The runs'
+        # environment.properties differ only in Seeded.Bugs and the last one downloaded would win,
+        # so list the bugs that really have results. Parameter values are quoted by allure-pytest.
+        if: hashFiles('allure-results/*-result.json') != ''
+        run: |
+          set -euo pipefail
+          bugs="$(jq -r --arg q "'" \
+            '.parameters[]? | select(.name == "seeded bugs") | .value | gsub($q; "")' \
+            allure-results/*-result.json | sort -u | paste -sd, -)"
+          sed -i "s/^Seeded.Bugs=.*/Seeded.Bugs=${bugs} (one run each)/" allure-results/environment.properties
+          npm install --global allure-commandline@2.32.0
+          allure generate allure-results --clean --output allure-report
+      - name: Publish to gh-pages (/bugs/report)
+        if: steps.allure.outcome == 'success'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-report
+          destination_dir: bugs/report
+          keep_files: true # the /bugs/ page and the other workflows' folders stay
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_message: "docs(bugs): allure report of the seeded-bug runs #${{ github.run_number }}"
       - name: Upload bugs.json
         if: always()
         uses: actions/upload-artifact@v4
