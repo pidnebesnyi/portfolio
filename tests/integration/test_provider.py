@@ -9,6 +9,7 @@ and what the provider actually received. Time budget: a hung provider costs the 
 import time
 from collections.abc import Callable
 
+import allure
 import pytest
 
 from tests.clients.payments_api import PaymentsApi
@@ -59,6 +60,7 @@ def authorize(
 
 
 @pytest.mark.smoke
+@allure.title("An approved charge authorizes the payment")
 def test_approved_charge_authorizes_the_payment(
     authorize: Callable[[str], tuple[Payment, float]],
     api: PaymentsApi,
@@ -76,6 +78,7 @@ def test_approved_charge_authorizes_the_payment(
 
 
 @pytest.mark.parametrize(("card_token", "reason"), FAILURES)
+@allure.title("A provider failure ends in failed with a reason: {param_id}")
 def test_provider_failure_ends_in_failed_with_a_reason(
     authorize: Callable[[str], tuple[Payment, float]],
     api: PaymentsApi,
@@ -97,6 +100,7 @@ def test_provider_failure_ends_in_failed_with_a_reason(
 
 
 @pytest.mark.regression
+@allure.title("A slow provider within the timeout still succeeds")
 def test_slow_provider_within_the_timeout_still_succeeds(
     authorize: Callable[[str], tuple[Payment, float]],
     db: Database,
@@ -114,6 +118,7 @@ def test_slow_provider_within_the_timeout_still_succeeds(
 
 @pytest.mark.regression
 @pytest.mark.parametrize("card_token", ["tok_decline", "tok_error", "tok_timeout"])
+@allure.title("Retrying a failed payment does not charge again: {card_token}")
 def test_retrying_a_failed_payment_does_not_charge_again(
     authorize: Callable[[str], tuple[Payment, float]],
     api: PaymentsApi,

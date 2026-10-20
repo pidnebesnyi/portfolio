@@ -61,9 +61,9 @@ needs zero secrets.
 | `tests/integration` | Payment flow against the provider mock: decline, error, timeout | 8 | PR (`api` job); nightly |
 | `tests/db` | SQL invariants (JOIN, GROUP BY / HAVING, window, CTE) on data created through the API | 7 | PR (`api` job); nightly |
 | `tests/ui` | Playwright through page objects; data comes from the API | 21 (4 smoke) | PR (`ui-smoke` job, smoke only); nightly |
-| `tests/unit` | Landing-page builder (`scripts/build_site.py`) | 13 | PR (`api` job); nightly |
+| `tests/unit` | Landing-page builder, seeded-bugs report script, Allure suite labels | 25 | PR (`api` job); nightly |
 
-About 145 tests in total, 17 of them tagged `smoke`.
+About 157 tests in total, 17 of them tagged `smoke`.
 
 ## Pipeline
 

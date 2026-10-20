@@ -48,6 +48,12 @@ disallow_untyped_calls = false
 warn_return_any = false
 
 [[tool.mypy.overrides]]
+# @allure.title (on every test) ships without type hints; nothing else in tests/ is untyped.
+module = ["tests.*"]
+disallow_untyped_calls = false
+disallow_untyped_decorators = false
+
+[[tool.mypy.overrides]]
 # locust's event hooks and helpers (`between`, `task`, `add_listener`) are not annotated.
 module = ["load.locustfile", "load.thresholds"]
 disallow_untyped_calls = false

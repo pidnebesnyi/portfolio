@@ -27,7 +27,7 @@ from tests.utils.allure_evidence import (
     clear_browser_artifacts,
     write_run_metadata,
 )
-from tests.utils.allure_links import annotate, seeded_run
+from tests.utils.allure_links import annotate, label_suites, seeded_run
 from tests.utils.db import Database
 from tests.utils.tokens import totp_code
 
@@ -36,7 +36,8 @@ FAILED = pytest.StashKey[bool]()
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
-    """Every test belongs to exactly one tier, so -m expressions in CI select what we think."""
+    """Every test belongs to exactly one tier, so -m expressions in CI select what we think,
+    and has an Allure title."""
     for item in items:
         tiers = TIER_MARKERS & {m.name for m in item.iter_markers()}
         if len(tiers) != 1:
@@ -44,6 +45,9 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
                 f"{item.nodeid} must carry exactly one of {sorted(TIER_MARKERS)}, "
                 f"found {sorted(tiers)}"
             )
+        # The report reads like prose, not function names (allure-pytest's own lookup of the title).
+        if not getattr(getattr(item, "obj", None), "__allure_display_name__", None):
+            raise pytest.UsageError(f"{item.nodeid} needs an Allure title: add @allure.title(...)")
         # Written into the JUnit XML, so scripts/seeded_bugs_report.py knows who guards which bug.
         for mark in item.iter_markers("seeded_bug"):
             item.user_properties.append(("seeded_bug", str(mark.args[0])))
@@ -118,6 +122,7 @@ def db(settings: Settings) -> Database:
 def _allure_metadata(request: pytest.FixtureRequest, settings: Settings) -> None:
     evidence.reset()
     annotate(request.node, settings.repo_url)
+    label_suites(request.node.nodeid, settings.seeded_bugs)
     seeded_run(settings.seeded_bugs)
 
 

@@ -1,5 +1,6 @@
 from uuid import UUID
 
+import allure
 import pytest
 from playwright.sync_api import Page, expect
 
@@ -13,6 +14,7 @@ pytestmark = [pytest.mark.ui, area("UI payments"), requirement("PAY-CREATE")]
 
 
 @pytest.mark.smoke
+@allure.title("A merchant creates a payment through the form")
 def test_merchant_creates_a_payment_through_the_form(merchant_page: Page, api: PaymentsApi) -> None:
     form = NewPaymentPage(merchant_page)
     form.open()
@@ -39,6 +41,7 @@ def test_merchant_creates_a_payment_through_the_form(merchant_page: Page, api: P
 
 @pytest.mark.regression
 @pytest.mark.parametrize("amount", ["abc", "0", "-5", "10.5"])
+@allure.title("Invalid amount '{amount}' is rejected and nothing is created")
 def test_invalid_amount_is_rejected_and_nothing_is_created(
     merchant_page: Page, api: PaymentsApi, amount: str
 ) -> None:

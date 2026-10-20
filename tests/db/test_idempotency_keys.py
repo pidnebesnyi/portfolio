@@ -4,6 +4,7 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
+import allure
 import pytest
 
 from tests.clients.payments_api import PaymentsApi
@@ -23,6 +24,7 @@ KEYS = 4
 REPLAYS_PER_KEY = 3
 
 
+@allure.title("No idempotency key maps to two payments")
 def test_no_idempotency_key_maps_to_two_payments(
     api: PaymentsApi, db: Database, merchant: MerchantAccount
 ) -> None:
@@ -74,6 +76,7 @@ def test_no_idempotency_key_maps_to_two_payments(
     ) == (KEYS)
 
 
+@allure.title("Concurrent requests with one key create a single payment")
 def test_concurrent_requests_with_one_key_create_a_single_payment(
     api: PaymentsApi, db: Database, merchant: MerchantAccount
 ) -> None:

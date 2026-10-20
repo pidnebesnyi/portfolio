@@ -1,6 +1,7 @@
 """Aggregates over a merchant's payments must equal what the API reports, and deleting a merchant
 must leave nothing of theirs behind."""
 
+import allure
 import pytest
 
 from tests.clients.merchants_api import MerchantsApi
@@ -26,6 +27,7 @@ MIX = {
 
 
 @requirement("PAY-LIST")
+@allure.title("Totals per status equal what the API lists")
 def test_totals_per_status_equal_what_the_api_lists(
     api: PaymentsApi, db: Database, merchant: MerchantAccount, payment_factory: PaymentFactory
 ) -> None:
@@ -63,6 +65,7 @@ def test_totals_per_status_equal_what_the_api_lists(
 
 
 @requirement("MERCH-DELETE")
+@allure.title("Deleting a merchant leaves no payments, refunds or keys")
 def test_deleting_a_merchant_leaves_no_payments_refunds_or_keys(
     merchant_factory: MerchantFactory, admin_api: MerchantsApi, db: Database
 ) -> None:

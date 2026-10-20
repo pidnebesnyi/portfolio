@@ -1,5 +1,6 @@
 import re
 
+import allure
 import pytest
 from playwright.sync_api import BrowserContext, Page, expect
 
@@ -16,6 +17,7 @@ pytestmark = [pytest.mark.ui, pytest.mark.sensitive, area("UI login"), requireme
 
 
 @pytest.mark.smoke
+@allure.title("A merchant logs in with email and password")
 def test_merchant_logs_in_with_email_and_password(page: Page, merchant: MerchantAccount) -> None:
     login = LoginPage(page)
     login.open()
@@ -29,6 +31,7 @@ def test_merchant_logs_in_with_email_and_password(page: Page, merchant: Merchant
 
 
 @pytest.mark.smoke
+@allure.title("An admin logs in with password and TOTP")
 def test_admin_logs_in_with_password_and_totp(
     page: Page, settings: Settings, merchant: MerchantAccount
 ) -> None:
@@ -48,6 +51,7 @@ def test_admin_logs_in_with_password_and_totp(
 
 
 @pytest.mark.regression
+@allure.title("A wrong password is rejected without revealing which part was wrong")
 def test_wrong_password_is_rejected_without_revealing_which_part_was_wrong(
     page: Page, merchant: MerchantAccount
 ) -> None:
@@ -62,6 +66,7 @@ def test_wrong_password_is_rejected_without_revealing_which_part_was_wrong(
 
 
 @pytest.mark.regression
+@allure.title("A wrong TOTP code keeps the admin on the verification step")
 def test_wrong_totp_code_keeps_the_admin_on_the_verification_step(
     page: Page, settings: Settings
 ) -> None:
@@ -79,6 +84,7 @@ def test_wrong_totp_code_keeps_the_admin_on_the_verification_step(
 
 
 @pytest.mark.regression
+@allure.title("The session cookie is HTTP-only and SameSite=Lax")
 def test_session_cookie_is_http_only_and_same_site_lax(
     page: Page, context: BrowserContext, merchant: MerchantAccount
 ) -> None:
@@ -96,6 +102,7 @@ def test_session_cookie_is_http_only_and_same_site_lax(
 
 
 @pytest.mark.regression
+@allure.title("Logging out ends the session")
 def test_logging_out_ends_the_session(merchant_page: Page) -> None:
     payments = PaymentsPage(merchant_page)
     payments.open()
@@ -109,6 +116,7 @@ def test_logging_out_ends_the_session(merchant_page: Page) -> None:
 
 @pytest.mark.regression
 @pytest.mark.parametrize("path", ["/ui/payments", "/ui/payments/new"])
+@allure.title("Anonymous visitors to {path} are redirected to login")
 def test_protected_pages_redirect_anonymous_visitors_to_login(page: Page, path: str) -> None:
     page.goto(path)
 

@@ -16,6 +16,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from typing import Any
 
+import allure
 import pytest
 import schemathesis
 from schemathesis import checks as sch_checks
@@ -73,6 +74,9 @@ def api_schema(settings: Settings) -> BaseSchema:
 schema = schemathesis.pytest.from_fixture("api_schema")
 
 
+# Outermost: schemathesis wraps the function and drops attributes, and the Allure title is read
+# from the wrapper. One pytest item covers every operation (each one is reported as a subtest).
+@allure.title("Every API operation conforms to its OpenAPI contract")
 @schema.parametrize()
 def test_operation_conforms_to_openapi(
     case: schemathesis.Case[Any], settings: Settings, contract_token: str

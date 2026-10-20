@@ -35,7 +35,7 @@ The strategy below is about how the risk in such a flow is covered, and where it
 
 | Level | Tests | Runs |
 |-------|------:|------|
-| Unit (the landing-page builder) | 13 | every run |
+| Unit (site builder, report script, Allure labels) | 25 | every run |
 | API, `tests/api` | 95 | every PR |
 | Contract, `tests/contract` | 1 test, 13 operations as subtests | every PR |
 | Integration with the provider mock | 8 | every PR |
@@ -43,10 +43,11 @@ The strategy below is about how the risk in such a flow is covered, and where it
 | UI (Playwright) | 21, of which 4 smoke | smoke on every PR, all nightly |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
-145 tests in the suite (numbers from the latest local run, the live number is on the landing page).
-The shape is a pyramid on purpose: about two thirds of the tests are API checks, under 15 % need a browser.
+157 tests in the suite (numbers from the latest local run, the live number is on the landing page).
+The shape is a pyramid on purpose: about 60 % of the tests are API checks, under 15 % need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
-The 13 unit tests cover the one piece of plain code in the repository (the landing-page builder).
+The 25 unit tests cover the plain code around the suite: the landing-page builder, the seeded-bugs
+report script and the Allure suite labels.
 17 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
 
 ## Data strategy

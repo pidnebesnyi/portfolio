@@ -1,5 +1,6 @@
 import secrets
 
+import allure
 import pytest
 
 from tests.clients.auth_api import AuthApi
@@ -14,6 +15,7 @@ pytestmark = area("Merchants (admin)")
 
 
 @pytest.mark.regression
+@allure.title("An admin creates a merchant who can log in")
 def test_admin_creates_merchant_who_can_log_in(
     merchant_factory: MerchantFactory, auth_api: AuthApi
 ) -> None:
@@ -23,6 +25,7 @@ def test_admin_creates_merchant_who_can_log_in(
 
 
 @pytest.mark.regression
+@allure.title("A created merchant is listed")
 def test_created_merchant_is_listed(merchant: MerchantAccount, admin_api: MerchantsApi) -> None:
     # The list is capped, so under heavy parallel load a very new merchant is still on top.
     listed = admin_api.list_all(limit=500)
@@ -31,6 +34,7 @@ def test_created_merchant_is_listed(merchant: MerchantAccount, admin_api: Mercha
 
 
 @pytest.mark.regression
+@allure.title("A duplicate merchant email is a conflict")
 def test_duplicate_merchant_email_is_a_conflict(
     merchant: MerchantAccount, admin_api: MerchantsApi
 ) -> None:
@@ -46,6 +50,7 @@ def test_duplicate_merchant_email_is_a_conflict(
         pytest.param("n", "x@lab.test", "short", id="short-password"),
     ],
 )
+@allure.title("Merchant creation rejects invalid input: {param_id}")
 def test_merchant_creation_validates_input(
     admin_api: MerchantsApi, name: str, email: str, password: str
 ) -> None:
@@ -54,6 +59,7 @@ def test_merchant_creation_validates_input(
 
 @pytest.mark.regression
 @pytest.mark.db
+@allure.title("Deleting a merchant cascades and revokes access")
 def test_deleting_merchant_cascades_and_revokes_access(
     merchant_factory: MerchantFactory, admin_api: MerchantsApi, auth_api: AuthApi, db: Database
 ) -> None:
