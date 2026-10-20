@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>payments-qa-lab</title>
-<meta name="description" content="QA automation portfolio: API, database and browser tests, CI, a load test and a test strategy around a small payments service.">
+<title>Test Automation Lab</title>
+<meta name="description" content="Test automation portfolio: API, database and browser tests, RabbitMQ events, log checks, WireMock stubs and a load test, with CI and live reports.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -15,10 +15,11 @@
   whole profile block out rather than publish template braces.
 -->
 <main>
-<p class="eyebrow">payments-qa-lab</p>
-<h1>QA automation for a payments flow, built in the open.</h1>
-<p class="lead">A small payments service and the test framework, CI pipeline and reports around it.
-Everything on this page is produced by the pipeline, not written by hand.</p>
+<p class="eyebrow">Test Automation Lab</p>
+<h1>One framework, many kinds of testing, built in the open.</h1>
+<p class="lead">REST API, SQL, browser, message queue, logs, service stubs and load, all in one pytest
+framework running in Docker and CI. The system under test is a small demo service; payments is just
+its example domain. Everything on this page is produced by the pipeline, not written by hand.</p>
 
 <!-- profile:start (the build drops this block while any owner value below is unset) -->
 <h2>About me</h2>
@@ -78,7 +79,7 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/logs"><code>tests/logs</code></a>: a request's JSON log lines found by its request id, events checked in order, and a scan proving no password, token or one-time code is logged.</td></tr>
 <tr><td data-label="Claim">RabbitMQ</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/events"><code>tests/events</code></a>: each test reads payment events from its own queue and checks the fields, the request id and that nothing is published for a rejected request.</td></tr>
-<tr><td data-label="Claim">Payments domain</td>
+<tr><td data-label="Claim">Payments domain (the demo service)</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/api"><code>tests/api</code></a>: payment state machine, idempotency keys, partial refunds.</td></tr>
 <tr><td data-label="Claim">2FA flows with PyOTP</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/ui/test_login.py"><code>tests/ui/test_login.py</code></a>: admin login with a time-based one-time code.</td></tr>

@@ -1,8 +1,10 @@
 # Test strategy
 
-The object under test is a small payments service: merchants create a payment, authorize it
-through a card provider, capture it, and refund it in parts. The service is deliberately minimal.
-The strategy below is about how the risk in such a flow is covered, and where it is not.
+The system under test is a small demo service whose example domain is payments: merchants create a
+payment, authorize it through an external provider, capture it, and refund it in parts. The service
+is deliberately minimal. The strategy below is about how its risk is covered, and where it is not;
+the same layers (API, SQL, browser, queue, logs, stubbed dependency, load) apply to any service
+built from an API, a database, a UI, a message broker and an external dependency.
 
 ## What can go wrong, in order of cost
 
