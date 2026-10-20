@@ -5,7 +5,7 @@ import pytest
 
 from tests.clients.payments_api import PaymentsApi
 from tests.factories.merchant_factory import MerchantAccount
-from tests.utils.allure_links import area, requirement
+from tests.utils.allure_links import area, requirement, seeded_bug
 from tests.utils.db import Database
 
 pytestmark = [area("Idempotency"), requirement("PAY-IDEMP")]
@@ -14,6 +14,7 @@ REPLAY_HEADER = "Idempotent-Replayed"
 
 
 @pytest.mark.smoke
+@seeded_bug("BUG-1")
 def test_same_key_and_body_returns_the_same_payment(api: PaymentsApi) -> None:
     key = str(uuid4())
 
@@ -81,6 +82,7 @@ def test_keys_are_scoped_per_merchant(api: PaymentsApi, other_merchant: Merchant
 
 @pytest.mark.regression
 @pytest.mark.db
+@seeded_bug("BUG-1")
 def test_replay_creates_no_second_row(
     api: PaymentsApi, merchant: MerchantAccount, db: Database
 ) -> None:
