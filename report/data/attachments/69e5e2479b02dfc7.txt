@@ -1,0 +1,8 @@
+SELECT 'payments' AS tbl, COUNT(*)::int AS n FROM payments WHERE merchant_id = %(m)s
+        UNION ALL
+        SELECT 'refunds', COUNT(*)::int FROM refunds r
+            JOIN payments p ON p.id = r.payment_id WHERE p.merchant_id = %(m)s
+        UNION ALL
+        SELECT 'idempotency_keys', COUNT(*)::int FROM idempotency_keys WHERE merchant_id = %(m)s
+        UNION ALL
+        SELECT 'users', COUNT(*)::int FROM users WHERE merchant_id = %(m)s
