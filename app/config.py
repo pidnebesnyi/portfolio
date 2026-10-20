@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     # provider cannot hold the payment row lock and the request thread for long.
     provider_timeout_s: float = 2.0
 
-    # Comma list or "all". Reserved for phase 3 (seeded bugs); unset means a correct app.
+    # Comma list of BUG-1..BUG-4, or "all" (see app/bugs.py); unset means a correct app.
     seeded_bugs: str = ""
 
 

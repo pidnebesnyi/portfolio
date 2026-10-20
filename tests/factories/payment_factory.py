@@ -10,6 +10,7 @@ from tests.utils.db import Database
 _STEPS_TO_REACH: dict[PaymentStatus, tuple[str, ...]] = {
     PaymentStatus.CREATED: (),
     PaymentStatus.AUTHORIZED: ("authorize",),
+    PaymentStatus.FAILED: ("authorize",),  # with a declining card, see create()
     PaymentStatus.VOIDED: ("authorize", "void"),
     PaymentStatus.CAPTURED: ("authorize", "capture"),
     PaymentStatus.PARTIALLY_REFUNDED: ("authorize", "capture", "partial_refund"),
@@ -33,6 +34,8 @@ class PaymentFactory:
         currency: str = "UAH",
         card_token: str = "tok_success",
     ) -> Payment:
+        if status is PaymentStatus.FAILED:
+            card_token = "tok_decline"  # the only way into `failed` is a provider that says no
         payment = self.api.create(amount=amount, currency=currency, card_token=card_token).expect(
             201
         )

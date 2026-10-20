@@ -34,6 +34,9 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
                 f"{item.nodeid} must carry exactly one of {sorted(TIER_MARKERS)}, "
                 f"found {sorted(tiers)}"
             )
+        # Written into the JUnit XML, so scripts/seeded_bugs_report.py knows who guards which bug.
+        for mark in item.iter_markers("seeded_bug"):
+            item.user_properties.append(("seeded_bug", str(mark.args[0])))
 
 
 # --- session layer -----------------------------------------------------------------------

@@ -9,6 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app.bugs import bug_enabled
 from app.db import IdempotencyKey, Payment, Refund, get_session
 from app.errors import ERROR_RESPONSES, ApiError
 from app.provider import ChargeOutcome, ProviderClient, get_provider
@@ -101,7 +102,23 @@ def create_payment(
         return session.get_one(Payment, existing.payment_id)
 
     if (replayed := replay()) is not None:
-        return replayed
+        if not bug_enabled("BUG-1"):
+            return replayed
+        # BUG-1: a replay is not recognised as one; it falls through and creates a second
+        # payment (answered as a fresh 201, without the key row, which already exists).
+        response.status_code = 201
+        del response.headers["Idempotent-Replayed"]
+        payment = Payment(
+            merchant_id=merchant_id,
+            amount=body.amount,
+            currency=body.currency.value,
+            description=body.description,
+            card_token=body.card_token,
+            status=PaymentStatus.CREATED.value,
+        )
+        session.add(payment)
+        session.commit()
+        return payment
 
     payment = Payment(
         merchant_id=merchant_id,
@@ -172,11 +189,11 @@ def get_payment(
     principal: Principal = Depends(require_merchant),
     session: Session = Depends(get_session),
 ) -> Payment:
-    payment = session.scalar(
-        select(Payment).where(
-            Payment.id == payment_id, Payment.merchant_id == _merchant_id(principal)
-        )
-    )
+    conditions = [Payment.id == payment_id, Payment.merchant_id == _merchant_id(principal)]
+    if bug_enabled("BUG-3"):
+        # BUG-3: the ownership filter is dropped, so any merchant can read any payment by id.
+        conditions = [Payment.id == payment_id]
+    payment = session.scalar(select(Payment).where(*conditions))
     if payment is None:
         raise ApiError(404, "payment_not_found", "Payment not found")
     return payment
@@ -194,13 +211,19 @@ def authorize_payment(
     _require_transition(payment, Action.AUTHORIZE)
     # The row lock is held during the provider call on purpose: a concurrent authorize of the
     # same payment waits, then sees the new status and gets a 409 instead of double-charging.
-    result = provider.charge(payment.amount, payment.currency, payment.card_token)
+    result = provider.charge(
+        payment.amount, payment.currency, payment.card_token, reference=str(payment.id)
+    )
     match result.outcome:
         case ChargeOutcome.APPROVED:
             payment.status = PaymentStatus.AUTHORIZED.value
         case ChargeOutcome.DECLINED:
             payment.status = PaymentStatus.FAILED.value
             payment.failure_reason = "declined"
+        case ChargeOutcome.TIMEOUT if bug_enabled("BUG-4"):
+            # BUG-4: a timed-out charge is treated as approved, so the payment stays `authorized`
+            # although the provider never confirmed it.
+            payment.status = PaymentStatus.AUTHORIZED.value
         case ChargeOutcome.TIMEOUT:
             payment.status = PaymentStatus.FAILED.value
             payment.failure_reason = "provider_timeout"
@@ -249,7 +272,8 @@ def refund_payment(
     payment = _get_for_update(session, payment_id, _merchant_id(principal))
     _require_transition(payment, Action.REFUND)
     refundable = payment.amount - payment.refunded_amount
-    if body.amount > refundable:
+    # BUG-2: the over-refund guard is skipped (the database CHECK constraint is the only barrier).
+    if body.amount > refundable and not bug_enabled("BUG-2"):
         raise ApiError(
             422,
             "refund_exceeds_amount",
