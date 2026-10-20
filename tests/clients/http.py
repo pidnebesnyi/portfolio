@@ -2,6 +2,9 @@
 
 Secrets never reach the report: the Authorization header and sensitive JSON fields are masked
 in the attachments (the real request is untouched).
+
+Given the service's OpenAPI document, the client also checks every response against it and fails
+the calling test on the first undocumented status, field or shape (tests/utils/openapi.py).
 """
 
 import json
@@ -11,6 +14,7 @@ import allure
 import httpx
 
 from tests.utils import evidence
+from tests.utils.openapi import OpenApiContract
 
 MASK = "***"
 SENSITIVE_JSON_KEYS = frozenset(
@@ -56,10 +60,29 @@ def _body(content: bytes, keys: frozenset[str] = SENSITIVE_JSON_KEYS) -> Any:
         return content.decode(errors="replace")
 
 
+def _check_contract(
+    contract: OpenApiContract, request: httpx.Request, response: httpx.Response
+) -> None:
+    violations = contract.check(
+        request.method,
+        request.url.path,
+        response.status_code,
+        response.headers.get("content-type"),
+        response.content,
+    )
+    if violations:
+        text = "\n".join(violations)
+        allure.attach(text, name="OpenAPI violations", attachment_type=allure.attachment_type.TEXT)
+        raise AssertionError(f"response does not match the service's OpenAPI document:\n{text}")
+
+
 class LoggedHttpClient:
-    def __init__(self, base_url: str, timeout_s: float) -> None:
+    def __init__(
+        self, base_url: str, timeout_s: float, contract: OpenApiContract | None = None
+    ) -> None:
         # trust_env=False: ignore HTTP(S)_PROXY, a CI proxy must not sit between test and app.
         self._client = httpx.Client(base_url=base_url, timeout=timeout_s, trust_env=False)
+        self._contract = contract
 
     def close(self) -> None:
         self._client.close()
@@ -105,4 +128,6 @@ class LoggedHttpClient:
                 attachment_type=allure.attachment_type.JSON,
             )
             evidence.record_http(request_text, response_text)
+            if self._contract is not None:
+                _check_contract(self._contract, request, response)
         return response

@@ -1,7 +1,7 @@
 # Test Automation Lab
 
 A QA automation portfolio: one pytest framework that covers many kinds of testing, a CI pipeline
-and published reports. REST API checks, SQL verification, Playwright UI tests (page objects,
+and published reports. REST API checks against the service's own OpenAPI contract, SQL verification, Playwright UI tests (page objects,
 network interception, computed styles), RabbitMQ events, structured log checks, WireMock service
 stubs and a Locust load test, all running in Docker and GitHub Actions.
 
@@ -71,20 +71,21 @@ needs zero secrets.
 | Folder | What | Count | Gate |
 |---|---|---:|---|
 | `tests/api` | REST behaviour: payments, refunds, idempotency, transitions, access | 90 | PR (`api` job); nightly |
+| `tests/contract` | The published OpenAPI document compared with the pinned one in `tests/contract/openapi.json` | 1 | PR (`api` job); nightly |
 | `tests/integration` | Payment flow against the WireMock provider stub: decline, error, timeout | 8 | PR (`api` job); nightly |
 | `tests/db` | SQL invariants (JOIN, GROUP BY / HAVING, window, CTE) on data created through the API | 6 | PR (`api` job); nightly |
 | `tests/ui` | Playwright through page objects; data comes from the API; includes network interception (`page.route`) and computed-style checks | 32 (6 smoke) | PR (`ui-smoke` job, smoke only); nightly |
 | `tests/logs` | The app's JSON request log: request ids, domain events, no secrets | 11 (2 smoke) | PR (`api` job); nightly |
 | `tests/events` | Domain events consumed from RabbitMQ: captured, refunded, failed, nothing for rejected requests | 5 (1 smoke) | PR (`api` job); nightly |
-| `tests/unit` | Landing-page builder, Allure suite labels | 19 | PR (`api` job); nightly |
+| `tests/unit` | Landing-page builder, Allure suite labels, the OpenAPI checker | 32 | PR (`api` job); nightly |
 
-About 171 tests in total, 22 of them tagged `smoke`.
+About 185 tests in total, 22 of them tagged `smoke`.
 
 ## Pipeline
 
 | Workflow | Trigger | What | Publishes |
 |---|---|---|---|
-| `pr.yml` | every pull request | lint (ruff); `api` job (unit, API, integration, DB, log and event tests on compose); `ui-smoke` job (browser smoke tests). Each job has a 10-minute timeout | Allure results and UI traces as workflow artifacts |
+| `pr.yml` | every pull request | lint (ruff); `api` job (unit, API, contract, integration, DB, log and event tests on compose); `ui-smoke` job (browser smoke tests). Each job has a 10-minute timeout | Allure results and UI traces as workflow artifacts |
 | `nightly.yml` | 02:30 UTC daily, manual | full suite in one job (pytest-xdist); Allure report with history | `/report/` and the landing-page numbers at the site root |
 | `load.yml` | Mondays 04:00 UTC, manual | Locust, 20 users for 3 minutes; fails on p95 > 500 ms or errors > 1 % | `/load/` |
 
@@ -128,6 +129,13 @@ docker compose run --rm tests pytest -q tests/ui --video=off --tracing=off   # c
 - Each test creates its own merchant through the API and deletes it at teardown, so tests run in
   parallel (`pytest-xdist`) without ordering rules.
 - API clients are typed, and responses are parsed into Pydantic models.
+- Every response the suite receives is also checked against the service's own OpenAPI document
+  (`tests/utils/openapi.py`, jsonschema): an undocumented status code, a missing or undocumented
+  field, or a wrong type fails the test that saw it. The Pydantic models say what the tests need;
+  this check says whether the API documentation tells the truth.
+- The document itself is pinned in `tests/contract/openapi.json`. Any API change fails
+  `tests/contract` until the pinned file is regenerated (`scripts/export_openapi.py`) and committed,
+  so the contract change is reviewed in the pull request diff.
 - Configuration is loaded with pydantic-settings.
 - Markers are enforced: every test has exactly one of `smoke` or `regression`, and
   `--strict-markers` fails on typos. Retries happen only through `@pytest.mark.flaky` with a reason.

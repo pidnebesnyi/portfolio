@@ -8,6 +8,10 @@ pyotp==2.10.0
 pytest==9.1.1
 pytest-xdist==3.8.0
 pytest-rerunfailures==16.7
+# Responses checked against the service's OpenAPI 3.1 document (tests/utils/openapi.py);
+# rfc3339-validator makes the date-time format actually checked instead of skipped.
+jsonschema==4.25.1
+rfc3339-validator==0.1.4
 allure-pytest==2.16.2
 # Event consumer for tests/events (same version as the app's publisher).
 pika==1.4.4

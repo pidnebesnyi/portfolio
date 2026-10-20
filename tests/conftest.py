@@ -1,6 +1,6 @@
 """Fixture layers (outermost first):
 
-  session   settings -> http client -> admin token -> admin API, db
+  session   settings -> OpenAPI document -> http client -> admin token -> admin API, db
   function  merchant_factory -> merchant (fresh, unique per test) -> payment_factory
 
 Failure evidence (last request/response/SQL, and for UI tests screenshot, trace, video) is
@@ -12,7 +12,9 @@ share data and every test can run alone, in any order.
 
 from collections.abc import Generator, Iterator
 from pathlib import Path
+from typing import Any
 
+import httpx
 import pytest
 
 from tests.clients.auth_api import AuthApi
@@ -31,6 +33,7 @@ from tests.utils.allure_evidence import (
 from tests.utils.allure_links import annotate, label_suites
 from tests.utils.app_log import AppLog
 from tests.utils.db import Database
+from tests.utils.openapi import OpenApiContract
 from tests.utils.tokens import totp_code
 
 TIER_MARKERS = {"smoke", "regression"}
@@ -86,8 +89,21 @@ def settings() -> Settings:
 
 
 @pytest.fixture(scope="session")
-def http(settings: Settings) -> Iterator[LoggedHttpClient]:
-    client = LoggedHttpClient(settings.base_url, settings.http_timeout_s)
+def openapi_spec(settings: Settings) -> dict[str, Any]:
+    """The OpenAPI document the running service publishes about itself."""
+    with httpx.Client(base_url=settings.base_url, trust_env=False) as client:
+        response = client.get("/openapi.json", timeout=settings.http_timeout_s)
+    response.raise_for_status()
+    spec: dict[str, Any] = response.json()
+    return spec
+
+
+@pytest.fixture(scope="session")
+def http(settings: Settings, openapi_spec: dict[str, Any]) -> Iterator[LoggedHttpClient]:
+    """Every response through this client is checked against the service's OpenAPI document."""
+    client = LoggedHttpClient(
+        settings.base_url, settings.http_timeout_s, contract=OpenApiContract(openapi_spec)
+    )
     yield client
     client.close()
 

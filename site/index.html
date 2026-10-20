@@ -63,6 +63,8 @@ its example domain. Everything on this page is produced by the pipeline, not wri
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/ui"><code>tests/ui</code></a>, <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/pages"><code>tests/pages</code></a>: page objects with role and test-id locators; test data comes from the API.</td></tr>
 <tr><td data-label="Claim">Web UI and API test layers</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/api"><code>tests/api</code></a> with typed clients in <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/clients"><code>tests/clients</code></a> and Pydantic response models; <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/ui"><code>tests/ui</code></a> for the browser.</td></tr>
+<tr><td data-label="Claim">API contract with OpenAPI (Swagger)</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/utils/openapi.py"><code>tests/utils/openapi.py</code></a>: every response checked against the service's own OpenAPI document; <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/contract"><code>tests/contract</code></a> fails on any API change not committed to the pinned document.</td></tr>
 <tr><td data-label="Claim">UI validated down to fonts and colours</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/ui/test_styles.py"><code>tests/ui/test_styles.py</code></a>: computed styles of key elements compared with the values the stylesheet defines.</td></tr>
 <tr><td data-label="Claim">Backend failures simulated in the browser</td>
