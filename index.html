@@ -37,8 +37,8 @@ its example domain. Everything on this page is produced by the pipeline, not wri
 <ul class="stats">
   <li><span class="value">171</span><span class="label">tests</span></li>
   <li><span class="value ok">100.0 %</span><span class="label">passed</span></li>
-  <li><span class="value">20 s</span><span class="label">duration</span></li>
-  <li><span class="value">2026-10-20</span><span class="label">last run</span><span class="note"><a href="https://github.com/pidnebesnyi/portfolio/actions/runs/39463331243">17:09 UTC, workflow run</a></span></li>
+  <li><span class="value">19 s</span><span class="label">duration</span></li>
+  <li><span class="value">2026-10-20</span><span class="label">last run</span><span class="note"><a href="https://github.com/pidnebesnyi/portfolio/actions/runs/39469934915">17:54 UTC, workflow run</a></span></li>
 </ul>
 
 <h2>Look at the evidence</h2>
@@ -85,7 +85,7 @@ its example domain. Everything on this page is produced by the pipeline, not wri
 <tr><td data-label="Claim">Load testing</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/load"><code>load</code></a> and the <a href="load/">published Locust report</a>: the run fails on p95 over 500 ms or errors over 1 %.</td></tr>
 <tr><td data-label="Claim">Docker</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docker-compose.yml"><code>docker-compose.yml</code></a>: app, database, WireMock provider stub and tests with health checks; multi-stage <a href="https://github.com/pidnebesnyi/portfolio/blob/main/app/Dockerfile"><code>app/Dockerfile</code></a>.</td></tr>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docker-compose.yml"><code>docker-compose.yml</code></a>: app, database, RabbitMQ and WireMock provider stub with health checks, plus the tests container; multi-stage <a href="https://github.com/pidnebesnyi/portfolio/blob/main/app/Dockerfile"><code>app/Dockerfile</code></a>.</td></tr>
 <tr><td data-label="Claim">GitHub Actions and parallel runs</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/nightly.yml"><code>.github/workflows/nightly.yml</code></a>: the full suite in parallel with pytest-xdist, published as one Allure report with history.</td></tr>
 <tr><td data-label="Claim">Type hints, ruff, pre-commit</td>
