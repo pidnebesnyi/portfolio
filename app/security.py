@@ -10,6 +10,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app import request_log
 from app.config import get_settings
 from app.db import Merchant, get_session
 from app.errors import ApiError
@@ -100,6 +101,7 @@ def require_merchant(
     # A token can outlive its merchant (test cleanup deletes merchants): unauthenticated.
     if session.scalar(select(Merchant.id).where(Merchant.id == principal.merchant_id)) is None:
         raise ApiError(401, "invalid_token", "Merchant no longer exists")
+    request_log.bind(merchant_id=principal.merchant_id)
     return principal
 
 
