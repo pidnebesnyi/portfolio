@@ -23,7 +23,7 @@ class ApiError(Exception):
         self.body: dict[str, Any] = {"code": code, "message": message, **extra}
 
 
-# Documented on every route so the OpenAPI document is truthful (the contract tests rely on it).
+# Documented on every route so the OpenAPI document is truthful (API consumers rely on it).
 ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     code: {"model": ErrorResponse, "description": text}
     for code, text in {

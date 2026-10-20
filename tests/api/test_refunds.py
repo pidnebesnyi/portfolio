@@ -4,14 +4,13 @@ import pytest
 from tests.clients.payments_api import PaymentsApi
 from tests.factories.payment_factory import PaymentFactory
 from tests.models.payments import PaymentStatus
-from tests.utils.allure_links import area, requirement, seeded_bug
+from tests.utils.allure_links import area, requirement
 from tests.utils.db import Database
 
 pytestmark = [area("Refunds"), requirement("PAY-REFUND")]
 
 
 @pytest.mark.smoke
-@seeded_bug("BUG-2")
 @allure.title("A refund over the payment amount is rejected")
 def test_refund_over_the_payment_amount_is_rejected(
     api: PaymentsApi, payment_factory: PaymentFactory
@@ -62,7 +61,6 @@ def test_full_refund_in_one_call_marks_payment_refunded(
 
 
 @pytest.mark.regression
-@seeded_bug("BUG-2")
 @allure.title("A refund exceeding the remainder is rejected")
 def test_refund_exceeding_the_remainder_is_rejected(
     api: PaymentsApi, payment_factory: PaymentFactory

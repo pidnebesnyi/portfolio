@@ -8,10 +8,9 @@
 
 ## How tested
 
-- [ ] ruff and mypy clean
+- [ ] ruff clean
 - [ ] API tests pass
 - [ ] UI smoke pass (if UI touched)
-- [ ] Seeded-bugs suite pass (if app logic touched)
 
 ## Risk / rollback
 

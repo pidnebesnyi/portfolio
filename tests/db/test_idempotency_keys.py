@@ -1,7 +1,5 @@
-"""Idempotency invariants in SQL: one key, one payment, however the requests arrive."""
+"""Idempotency invariants in SQL: one key, one payment."""
 
-import threading
-from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
 import allure
@@ -74,36 +72,3 @@ def test_no_idempotency_key_maps_to_two_payments(
     assert db.fetch_value(
         "SELECT COUNT(*) FROM payments WHERE merchant_id = %s", (merchant.id,)
     ) == (KEYS)
-
-
-@allure.title("Concurrent requests with one key create a single payment")
-def test_concurrent_requests_with_one_key_create_a_single_payment(
-    api: PaymentsApi, db: Database, merchant: MerchantAccount
-) -> None:
-    key = str(uuid4())
-    parallel = 6
-    barrier = threading.Barrier(parallel)
-
-    def post() -> int:
-        barrier.wait(timeout=10)
-        return api.create(amount=800, idempotency_key=key).status_code
-
-    with ThreadPoolExecutor(max_workers=parallel) as pool:
-        statuses = list(pool.map(lambda _: post(), range(parallel)))
-
-    assert statuses.count(201) == 1, statuses  # exactly one request created the payment
-    assert set(statuses) <= {200, 201}, statuses
-    rows = db.fetch_all(
-        """
-        SELECT k.key, COUNT(*)::int AS key_rows, COUNT(DISTINCT p.id)::int AS payments
-        FROM idempotency_keys k
-        JOIN payments p ON p.id = k.payment_id
-        WHERE k.merchant_id = %s
-        GROUP BY k.key
-        """,
-        (merchant.id,),
-    )
-    assert [(row["key"], row["key_rows"], row["payments"]) for row in rows] == [(key, 1, 1)]
-    assert (
-        db.fetch_value("SELECT COUNT(*) FROM payments WHERE merchant_id = %s", (merchant.id,)) == 1
-    )

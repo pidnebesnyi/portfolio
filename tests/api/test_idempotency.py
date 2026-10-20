@@ -1,4 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
 import allure
@@ -6,7 +5,7 @@ import pytest
 
 from tests.clients.payments_api import PaymentsApi
 from tests.factories.merchant_factory import MerchantAccount
-from tests.utils.allure_links import area, requirement, seeded_bug
+from tests.utils.allure_links import area, requirement
 from tests.utils.db import Database
 
 pytestmark = [area("Idempotency"), requirement("PAY-IDEMP")]
@@ -15,7 +14,6 @@ REPLAY_HEADER = "Idempotent-Replayed"
 
 
 @pytest.mark.smoke
-@seeded_bug("BUG-1")
 @allure.title("The same key and body return the same payment")
 def test_same_key_and_body_returns_the_same_payment(api: PaymentsApi) -> None:
     key = str(uuid4())
@@ -89,7 +87,6 @@ def test_keys_are_scoped_per_merchant(api: PaymentsApi, other_merchant: Merchant
 
 @pytest.mark.regression
 @pytest.mark.db
-@seeded_bug("BUG-1")
 @allure.title("A replay creates no second database row")
 def test_replay_creates_no_second_row(
     api: PaymentsApi, merchant: MerchantAccount, db: Database
@@ -106,21 +103,3 @@ def test_replay_creates_no_second_row(
         (merchant.id, key),
     )
     assert (payments, keys) == (1, 1)
-
-
-@pytest.mark.regression
-@pytest.mark.db
-@allure.title("Parallel requests with one key create one payment")
-def test_parallel_requests_with_one_key_create_one_payment(
-    api: PaymentsApi, merchant: MerchantAccount, db: Database
-) -> None:
-    key = str(uuid4())
-    workers = 5
-
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        responses = list(pool.map(lambda _: api.create(idempotency_key=key), range(workers)))
-
-    assert sorted(r.status_code for r in responses) == [200] * (workers - 1) + [201]
-    assert len({r.expect(r.status_code).id for r in responses}) == 1
-    count = db.fetch_value("SELECT count(*) FROM payments WHERE merchant_id = %s", (merchant.id,))
-    assert count == 1

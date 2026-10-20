@@ -3,8 +3,8 @@
 # (20 users, 5 new users a second, 3 minutes, headless). load/thresholds.py judges the run: p95
 # above 500 ms or more than 1 % failed requests makes the Locust container exit 1. That step is
 # allowed to fail so the report is always saved; the job turns red in its last step. `publish`
-# then puts the HTML report on gh-pages:/load/ (the other workflows own /report/ and /bugs/, so
-# keep_files stays on) even after a breach: a red report is the evidence. Not a merge gate.
+# then puts the HTML report on gh-pages:/load/ (the other workflows own /report/, so keep_files
+# stays on) even after a breach: a red report is the evidence. Not a merge gate.
 # Nothing here needs repository secrets: credentials are generated per run and masked.
 name: Load
 
@@ -97,7 +97,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }} # the built-in per-run token, not a stored secret
           publish_dir: site-load
           destination_dir: load
-          keep_files: true # other workflows publish /report/ and /bugs/; never wipe the branch
+          keep_files: true # other workflows publish /report/; never wipe the branch
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
           commit_message: "docs(load): report #${{ github.run_number }}"

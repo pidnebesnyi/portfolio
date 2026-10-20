@@ -41,7 +41,6 @@ def write_run_metadata(alluredir: str, settings: Settings) -> None:
         "Browser": "chromium",
         "OS": platform.platform(),
         "Base.URL": settings.base_url,
-        "Seeded.Bugs": settings.seeded_bugs or "none",
         "Commit": os.environ.get("GITHUB_SHA", "local")[:12],
         "Run": os.environ.get("GITHUB_RUN_ID", "local"),
     }

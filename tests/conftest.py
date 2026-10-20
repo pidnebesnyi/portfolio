@@ -27,11 +27,11 @@ from tests.utils.allure_evidence import (
     clear_browser_artifacts,
     write_run_metadata,
 )
-from tests.utils.allure_links import annotate, label_suites, seeded_run
+from tests.utils.allure_links import annotate, label_suites
 from tests.utils.db import Database
 from tests.utils.tokens import totp_code
 
-TIER_MARKERS = {"smoke", "regression", "quarantine"}
+TIER_MARKERS = {"smoke", "regression"}
 FAILED = pytest.StashKey[bool]()
 
 
@@ -48,9 +48,6 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
         # The report reads like prose, not function names (allure-pytest's own lookup of the title).
         if not getattr(getattr(item, "obj", None), "__allure_display_name__", None):
             raise pytest.UsageError(f"{item.nodeid} needs an Allure title: add @allure.title(...)")
-        # Written into the JUnit XML, so scripts/seeded_bugs_report.py knows who guards which bug.
-        for mark in item.iter_markers("seeded_bug"):
-            item.user_properties.append(("seeded_bug", str(mark.args[0])))
         # Retries are opt-in per test and must say why (pytest-rerunfailures reads `reruns`).
         for flaky in item.iter_markers("flaky"):
             if not flaky.kwargs.get("reason"):
@@ -71,7 +68,7 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 def pytest_runtest_makereport(item: pytest.Item) -> Generator[None, object, None]:
     """Attach evidence to failed tests. Browser files only exist once the fixtures that record
     them have been torn down, so the attaching happens in the teardown report."""
-    report = (yield).get_result()  # type: ignore[attr-defined]
+    report = (yield).get_result()
     if report.when in ("setup", "call") and report.failed:
         item.stash[FAILED] = True
     elif report.when == "teardown" and item.stash.get(FAILED, False):
@@ -122,8 +119,7 @@ def db(settings: Settings) -> Database:
 def _allure_metadata(request: pytest.FixtureRequest, settings: Settings) -> None:
     evidence.reset()
     annotate(request.node, settings.repo_url)
-    label_suites(request.node.nodeid, settings.seeded_bugs)
-    seeded_run(settings.seeded_bugs)
+    label_suites(request.node.nodeid)
 
 
 # --- function layer ----------------------------------------------------------------------

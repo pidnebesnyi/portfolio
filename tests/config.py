@@ -29,9 +29,5 @@ class Settings(BaseSettings):
     # answers in milliseconds; anything near this limit is a real hang.
     http_timeout_s: float = 15.0
 
-    # Which seeded bugs the app under test runs with (same variable the app reads; compose passes it
-    # to both). Only used to label the results: see seeded_run() in tests/utils/allure_links.py.
-    seeded_bugs: str = ""
-
     # Optional: base URL of the GitHub repo, used to turn requirement ids into Allure links.
     repo_url: str = ""

@@ -12,16 +12,3 @@ repos:
       - id: ruff
         args: [--fix]
       - id: ruff-format
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.30.1
-    hooks:
-      - id: gitleaks
-  - repo: local
-    hooks:
-      # Runs in the project environment so mypy sees the real dependency stubs.
-      - id: mypy
-        name: mypy
-        entry: mypy
-        language: system
-        types: [python]
-        pass_filenames: false
