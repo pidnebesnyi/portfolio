@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import UTC, timedelta
 
 import allure
 import pytest
@@ -64,7 +64,7 @@ def test_date_range_filter_includes_today_and_excludes_other_days(
 ) -> None:
     payment = payment_factory.create()
     # The server stores UTC; the filter inputs are UTC days too, so derive them from the payment.
-    day = payment.created_at.date()
+    day = payment.created_at.astimezone(UTC).date()
     payments = PaymentsPage(merchant_page)
     payments.open()
 
@@ -88,7 +88,7 @@ def test_status_and_date_filters_combine(
 ) -> None:
     refunded = payment_factory.create(PaymentStatus.REFUNDED)
     payment_factory.create(PaymentStatus.CAPTURED)
-    day = refunded.created_at.date().isoformat()
+    day = refunded.created_at.astimezone(UTC).date().isoformat()
     payments = PaymentsPage(merchant_page)
     payments.open()
 

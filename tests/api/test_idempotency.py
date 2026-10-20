@@ -92,8 +92,9 @@ def test_replay_creates_no_second_row(
     api: PaymentsApi, merchant: MerchantAccount, db: Database
 ) -> None:
     key = str(uuid4())
-    for _ in range(3):
-        api.create(idempotency_key=key)
+    api.create(idempotency_key=key).expect(201)
+    for _ in range(2):
+        api.create(idempotency_key=key).expect(200)
 
     payments = db.fetch_value(
         "SELECT count(*) FROM payments WHERE merchant_id = %s", (merchant.id,)
