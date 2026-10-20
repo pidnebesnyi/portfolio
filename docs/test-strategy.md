@@ -27,6 +27,8 @@ The strategy below is about how the risk in such a flow is covered, and where it
 | 3, 4 Access | API: basic access checks (no token, expired token, wrong signature, another merchant's id) | Cheapest level that sees the response code. Not a security assessment, see the last section |
 | 4 Login with 2FA | API for the rules, UI for the form (8 tests, 2 smoke) | The rules are decided by the service; the browser only needs to show the form works |
 | 5 Contract | API: every response is parsed into a Pydantic model by the typed clients (`tests/clients`) | A response that no longer matches its model fails the first test that sees it |
+| 2 Observability | Log lines of a request found by its request id (`tests/logs`), including a scan for secrets | The id ties a failure to its evidence; a log is also where passwords and tokens leak |
+| 2 Event publishing | Consumer on a private RabbitMQ queue (`tests/events`) | Other systems act on these messages; they must be published once, after the commit, with the right data, and never for a rejected request |
 | 6 Data consistency | SQL invariants after the API tests created data | Catches states the API never admits to, such as refunds above the amount or one idempotency key mapped to two payments |
 | 7 UI | Playwright with page objects, 32 tests; only 6 on every PR | Browser tests are slow and the most fragile, so they check what only a browser can: forms, filters, a refund through the page, how the page behaves when its own fetch call fails, computed fonts and colours. Data is created by the API, never by clicking |
 | 8 Performance | Locust, weekly, with a pass/fail rule (p95 500 ms, errors 1 %) | Proves the flow works with 20 concurrent merchants and catches a slowdown. It does not predict production capacity |
@@ -39,15 +41,17 @@ The strategy below is about how the risk in such a flow is covered, and where it
 | API, `tests/api` | 90 | every PR |
 | Integration with the provider mock | 8 | every PR |
 | Database invariants | 6 | every PR |
+| Log checks, `tests/logs` | 11 | every PR |
+| Domain events, `tests/events` | 5 | every PR |
 | UI (Playwright) | 32, of which 6 smoke | smoke on every PR, all nightly |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
-155 tests in the suite (numbers from the latest local run, the live number is on the landing page).
-The shape is a pyramid on purpose: about 58 % of the tests are API checks, about a fifth need a browser.
+171 tests in the suite (numbers from the latest local run, the live number is on the landing page).
+The shape is a pyramid on purpose: about 53 % of the tests are API checks, about a fifth need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
 The 19 unit tests cover the plain code around the suite: the landing-page builder and the Allure
 suite labels.
-19 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
+22 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
 
 ## Browser techniques
 
@@ -107,6 +111,56 @@ subject only because it has one small `fetch` call to exercise.
   browser assertions wait for the condition and return as soon as it holds.
 - Every test carries exactly one tier marker (`smoke` or `regression`), and collection
   fails otherwise, so `-m` expressions select what we think they select.
+
+## Log checks: structured logs as evidence
+
+**What.** The app writes one JSON line per request (request id, method, path, status, duration,
+merchant id when authenticated) and one line per domain event inside it (payment created, status
+changed, transition rejected, refund accepted or rejected). A caller may send `X-Request-ID`; a
+plain token is kept, anything else is replaced. The id is returned in the response header and sits
+on every line of that request. The app appends the lines to a file (`LOG_FILE`); compose shares it
+with the tests container as a read-only volume (`APP_LOG_FILE`). `tests/logs` finds a request's
+lines by the id from its response and checks them: the same id throughout, a refund's events in
+order, a rejected transition and a rejected refund logged as rejections, an unauthenticated call
+without a merchant, a hostile `X-Request-ID` not reaching the log. One test runs a login with
+password and second factor, a payment with a card token and a refund, then scans the whole log for
+every password, token, TOTP secret, one-time code and card token it used, for any JWT and for an
+`Authorization` value.
+
+**Why.** When a test fails in CI, the log lines of that request say what the service thought it
+did. The failing test attaches them to Allure next to the last request, response and SQL. Whether
+secrets stay out of the log is a risk no functional test sees.
+
+**Not covered.** Log shipping and retention, a search backend, log levels and the format of
+uvicorn's own access log (it is not written to the file). The secret scan proves the values this
+run used are absent; it cannot prove no secret is ever logged. The access line is written after
+the response, so tests poll with a deadline (`tests/utils/waiting.py`) rather than sleep.
+
+## Domain events on RabbitMQ
+
+**What.** After the database commit the app publishes a JSON message to the durable topic exchange
+`payments.events`; the routing key is the event type (`payment.created`, `authorized`, `captured`,
+`voided`, `failed`, `refunded`). The body has an event id, payment id, merchant id, amount,
+refund amount, refunded total, status, time and the request id, so an event can be matched with
+the HTTP response and the log. Each test in `tests/events` binds its own exclusive, auto-delete
+queue before acting (parallel workers never take each other's messages), waits for a message with
+a deadline that blocks on the connection (no sleeps), validates it with a Pydantic model and
+attaches the received messages to Allure. Absence ("a rejected request publishes nothing") is
+proven by performing the next real action and waiting for its event: the queue keeps publish
+order, so nothing earlier can be hiding.
+
+**Broker down.** The broker is not on the correctness path: the payment request succeeds, the
+failure is logged as `event.publish_failed` (exception class only, never the connection URL) and
+the event is lost. That is at-most-once delivery by choice; a production design would write the
+event to an outbox table in the same transaction. This was checked by hand with the broker
+stopped (201 in 10 ms, failure logged); it is not an automated test, because that needs a broker
+the test can stop without disturbing other workers.
+
+**Not covered.** Redelivery, dead-letter queues, ordering across publishers, consumer
+acknowledgements and retries, clustering, throughput, durability across a broker restart. The app does not use publisher
+confirms: with them a publish that races another test's queue being deleted is nacked although
+every other queue got the message, which produced false `publish_failed` lines (and duplicate
+messages once retried). Delivery is at-most-once anyway, so the simpler publish was kept.
 
 ## Running only the unit tests
 
