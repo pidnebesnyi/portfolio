@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>payments-qa-lab</title>
+<meta name="description" content="QA automation portfolio: API, contract, database and browser tests, CI, a load test and a test strategy around a small payments service.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<main>
+<p class="eyebrow">payments-qa-lab</p>
+<h1>QA automation for a payments flow, built in the open.</h1>
+<p class="lead">A small payments service and the test framework, CI pipeline and reports around it.
+Everything on this page is produced by the pipeline, not written by hand.</p>
+
+
+<h2>Latest nightly run</h2>
+<ul class="stats">
+  <li><span class="value">145</span><span class="label">tests</span></li>
+  <li><span class="value ok">100.0 %</span><span class="label">passed</span></li>
+  <li><span class="value">14 s</span><span class="label">duration</span><span class="note">3 shards in parallel</span></li>
+  <li><span class="value">2026-10-20</span><span class="label">last run</span><span class="note"><a href="https://github.com/pidnebesnyi/portfolio/actions/runs/39417478942">11:49 UTC, workflow run</a></span></li>
+</ul>
+
+<h2>Look at the evidence</h2>
+<ul class="cards">
+  <li><a href="report/"><b>Test report</b><span>Allure report of the nightly run: steps, requests, SQL, traces.</span></a></li>
+  <li><a href="bugs/"><b>Seeded bugs</b><span>Four defects injected on purpose, and the tests that catch them.</span></a></li>
+  <li><a href="load/"><b>Load test</b><span>Locust report with a pass/fail rule on p95 and error rate.</span></a></li>
+  <li><a href="https://github.com/pidnebesnyi/portfolio"><b>Source code</b><span>Repository: app, tests, workflows, docs.</span></a></li>
+</ul>
+
+<h2>Claims and the proof for each</h2>
+<table>
+<thead><tr><th>What I say I can do</th><th>Where to check</th></tr></thead>
+<tbody>
+<tr><td data-label="Claim">Design a test strategy, not only write tests</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docs/test-strategy.md">docs/test-strategy.md</a>: ranked risks, the level each one is tested at, and what is deliberately not automated.</td></tr>
+<tr><td data-label="Claim">API tests with typed clients and per-test data</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/api"><code>tests/api</code></a>, <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/clients"><code>tests/clients</code></a>: state machine table, idempotency, parallel refunds.</td></tr>
+<tr><td data-label="Claim">Contract testing</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/contract"><code>tests/contract</code></a>: Schemathesis generates cases from the OpenAPI schema.</td></tr>
+<tr><td data-label="Claim">SQL verification of data integrity</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/db"><code>tests/db</code></a>: JOIN and GROUP BY checks; the SQL is attached to the report.</td></tr>
+<tr><td data-label="Claim">Browser tests with page objects</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/pages"><code>tests/pages</code></a>, <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/ui"><code>tests/ui</code></a>: Playwright, 2FA login, role and test-id locators.</td></tr>
+<tr><td data-label="Claim">Testing around an external provider</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/integration"><code>tests/integration</code></a>: decline, 5xx and timeout against a provider mock.</td></tr>
+<tr><td data-label="Claim">Tests that catch real defects</td>
+<td data-label="Proof"><a href="bugs/">Seeded bugs</a>: each bug is switched on in turn; a marked test must fail.</td></tr>
+<tr><td data-label="Claim">Parallel runs and CI quality gates</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/pr.yml"><code>pr.yml</code></a> gates every pull request; <a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/nightly.yml"><code>nightly.yml</code></a> runs three shards.</td></tr>
+<tr><td data-label="Claim">Reporting people can read</td>
+<td data-label="Proof"><a href="report/">Allure report</a> with request, response, SQL and trace attached to failures.</td></tr>
+<tr><td data-label="Claim">Load testing with a pass/fail rule</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/load"><code>load/</code></a> and the <a href="load/">published report</a>: the run fails on p95 over 500 ms or errors over 1 %.</td></tr>
+<tr><td data-label="Claim">No secrets in a public repository</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/scripts/make_env.sh"><code>scripts/make_env.sh</code></a>: credentials are generated per run and masked; gitleaks scans every pull request.</td></tr>
+</tbody>
+</table>
+
+<footer class="muted">Numbers above are read from the Allure report of the latest nightly run by
+<a href="https://github.com/pidnebesnyi/portfolio/blob/main/scripts/build_site.py"><code>scripts/build_site.py</code></a>.</footer>
+</main>
+</body>
+</html>
