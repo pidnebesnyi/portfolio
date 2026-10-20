@@ -27,6 +27,21 @@ services:
     ports:
       - "127.0.0.1:5432:5432"
 
+  rabbitmq:
+    image: rabbitmq:3.13.7-management
+    environment:
+      RABBITMQ_DEFAULT_USER: lab
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD in .env}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672" # management UI
+
   provider-mock:
     build: ./provider-mock
     healthcheck:
@@ -46,10 +61,17 @@ services:
       DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/payments
       PROVIDER_URL: http://provider-mock:8081
       PROVIDER_TIMEOUT_S: "2"
+      # JSON request log: stdout (docker compose logs app) and this file, which the tests read.
+      LOG_FILE: /var/log/app/app.log
+      RABBITMQ_URL: amqp://lab:${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD in .env}@rabbitmq:5672/
+    volumes:
+      - app-logs:/var/log/app
     depends_on:
       db:
         condition: service_healthy
       provider-mock:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2)"]
@@ -68,6 +90,9 @@ services:
       BASE_URL: http://app:8000
       DB_DSN: postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/payments
       PROVIDER_URL: http://provider-mock:8081
+      # The app's log file (read-only mount of the app's volume) and the broker it publishes to.
+      APP_LOG_FILE: /work/app-logs/app.log
+      RABBITMQ_URL: amqp://lab:${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD in .env}@rabbitmq:5672/
       # Shown in the Allure Environment widget; empty outside CI.
       GITHUB_SHA: ${GITHUB_SHA:-}
       GITHUB_RUN_ID: ${GITHUB_RUN_ID:-}
@@ -83,6 +108,7 @@ services:
       - ./junit:/work/junit
       # Playwright traces, videos and screenshots of failed UI tests.
       - ./test-results:/work/test-results
+      - app-logs:/work/app-logs:ro
     # Default command comes from the image: pytest -n auto
 
   locust:
@@ -105,3 +131,6 @@ services:
     depends_on:
       app:
         condition: service_healthy
+
+volumes:
+  app-logs:

@@ -20,6 +20,9 @@ with a provider mock behind it; the product is the framework, the pipeline and t
 tests, locust --HTTP--> app --SQL--> db
                          |
                          +--HTTP--> provider-mock
+                         +--AMQP--> rabbitmq (payments.events)
+                         +--file--> app log (shared volume, read by tests)
+tests <--AMQP-- rabbitmq
 tests -------------SQL (direct checks)-----------> db
 ```
 
@@ -42,9 +45,11 @@ Load test (1 minute by default in compose; CI runs 3 minutes):
 mkdir -m 777 load-report && docker compose --profile load run --rm locust
 ```
 
+Credentials include a RabbitMQ password; an `.env` made before it existed needs `scripts/make_env.sh --force`.
+
 Without Docker: create a Postgres database, load `db/init/001_schema.sql`, set `DATABASE_URL` and
 `DB_DSN` in `.env` (see `.env.example`), run `uvicorn app.main:app`, then
-`pytest -n auto`. Browser tests also need `playwright install chromium`.
+`pytest -n auto`. The log and event tests need `LOG_FILE` (app) and `APP_LOG_FILE` (tests) pointing at one file and `RABBITMQ_URL` pointing at a broker (see `.env.example`); without them they skip. Browser tests also need `playwright install chromium`.
 
 Credentials are generated per run by `scripts/make_env.sh` and written to the git-ignored `.env`.
 Nothing secret is in the repository. CI generates and masks them the same way, and the repository
@@ -58,9 +63,11 @@ needs zero secrets.
 | `tests/integration` | Payment flow against the provider mock: decline, error, timeout | 8 | PR (`api` job); nightly |
 | `tests/db` | SQL invariants (JOIN, GROUP BY / HAVING, window, CTE) on data created through the API | 6 | PR (`api` job); nightly |
 | `tests/ui` | Playwright through page objects; data comes from the API; includes network interception (`page.route`) and computed-style checks | 32 (6 smoke) | PR (`ui-smoke` job, smoke only); nightly |
+| `tests/logs` | The app's JSON request log: request ids, domain events, no secrets | 11 (2 smoke) | PR (`api` job); nightly |
+| `tests/events` | Domain events consumed from RabbitMQ: captured, refunded, failed, nothing for rejected requests | 5 (1 smoke) | PR (`api` job); nightly |
 | `tests/unit` | Landing-page builder, Allure suite labels | 19 | PR (`api` job); nightly |
 
-About 155 tests in total, 19 of them tagged `smoke`.
+About 171 tests in total, 22 of them tagged `smoke`.
 
 ## Pipeline
 
@@ -72,6 +79,8 @@ About 155 tests in total, 19 of them tagged `smoke`.
 
 ## Framework decisions
 
+- The app logs one JSON line per request and per domain event with a request id, and publishes
+  events to RabbitMQ after the commit; both are checked as evidence (`tests/logs`, `tests/events`).
 - Each test creates its own merchant through the API and deletes it at teardown, so tests run in
   parallel (`pytest-xdist`) without ordering rules.
 - API clients are typed, and responses are parsed into Pydantic models.

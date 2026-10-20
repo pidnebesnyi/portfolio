@@ -73,6 +73,8 @@ def attach_failure_evidence(item: pytest.Item) -> None:
             name="last SQL result",
             attachment_type=allure.attachment_type.TEXT,
         )
+    for name, text in state.extras.items():
+        allure.attach(text, name=name, attachment_type=allure.attachment_type.TEXT)
     if not isinstance(item, pytest.Function):
         return
     output_dir = item.funcargs.get("output_path")  # only tests that use the `page` fixture

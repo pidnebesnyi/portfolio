@@ -14,7 +14,8 @@ COPY --from=builder /wheels /wheels
 COPY app/requirements.txt .
 RUN pip install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt \
     && rm -rf /wheels requirements.txt \
-    && useradd --system --uid 10001 --no-create-home appuser
+    && useradd --system --uid 10001 --no-create-home appuser \
+    && mkdir -p /var/log/app && chown appuser /var/log/app
 COPY app ./app
 USER appuser
 EXPOSE 8000

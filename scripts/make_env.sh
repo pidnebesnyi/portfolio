@@ -23,6 +23,7 @@ ADMIN_EMAIL=admin@lab.test
 ADMIN_PASSWORD=$(openssl rand -hex 16)
 ADMIN_TOTP_SECRET=${totp_secret}
 POSTGRES_PASSWORD=$(openssl rand -hex 16)
+RABBITMQ_PASSWORD=$(openssl rand -hex 16)
 EOF
 
 echo "wrote .env (git-ignored). See .env.example for the optional local-run variables."

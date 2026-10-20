@@ -9,6 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from app import events, request_log
 from app.db import IdempotencyKey, Payment, Refund, get_session
 from app.errors import ERROR_RESPONSES, ApiError
 from app.provider import ChargeOutcome, ProviderClient, get_provider
@@ -58,12 +59,44 @@ def _get_for_update(session: Session, payment_id: UUID, merchant_id: UUID) -> Pa
 def _require_transition(payment: Payment, action: Action) -> None:
     status = PaymentStatus(payment.status)
     if not can(action, status):
+        request_log.event(
+            "payment.transition_rejected",
+            payment_id=payment.id,
+            action=action.value,
+            from_status=status.value,
+        )
         raise ApiError(
             409,
             "invalid_transition",
             f"Cannot {action} a payment in status {status}",
             **{"from": status.value, "action": action.value},
         )
+
+
+# Event published for each action; a failed authorization is announced as payment.failed.
+_EVENT_TYPES = {
+    Action.AUTHORIZE: "payment.authorized",
+    Action.CAPTURE: "payment.captured",
+    Action.VOID: "payment.voided",
+    Action.REFUND: "payment.refunded",
+}
+
+
+def _announce_change(
+    payment: Payment, action: Action, before: PaymentStatus, *, refund_amount: int | None = None
+) -> None:
+    """After the commit: log the status change (if there was one) and publish the event."""
+    after = PaymentStatus(payment.status)
+    if after is not before:
+        request_log.event(
+            "payment.status_changed",
+            payment_id=payment.id,
+            action=action.value,
+            from_status=before.value,
+            to_status=after.value,
+        )
+    event_type = "payment.failed" if after is PaymentStatus.FAILED else _EVENT_TYPES[action]
+    events.publish(event_type, payment, refund_amount=refund_amount)
 
 
 @router.post(
@@ -130,6 +163,10 @@ def create_payment(
         if (replayed := replay()) is not None:
             return replayed
         raise
+    request_log.event(
+        "payment.created", payment_id=payment.id, amount=payment.amount, status=payment.status
+    )
+    events.publish("payment.created", payment)
     return payment
 
 
@@ -207,6 +244,7 @@ def authorize_payment(
             payment.status = PaymentStatus.FAILED.value
             payment.failure_reason = "provider_error"
     session.commit()
+    _announce_change(payment, Action.AUTHORIZE, PaymentStatus.CREATED)
     return payment
 
 
@@ -220,6 +258,7 @@ def capture_payment(
     _require_transition(payment, Action.CAPTURE)
     payment.status = PaymentStatus.CAPTURED.value
     session.commit()
+    _announce_change(payment, Action.CAPTURE, PaymentStatus.AUTHORIZED)
     return payment
 
 
@@ -233,6 +272,7 @@ def void_payment(
     _require_transition(payment, Action.VOID)
     payment.status = PaymentStatus.VOIDED.value
     session.commit()
+    _announce_change(payment, Action.VOID, PaymentStatus.AUTHORIZED)
     return payment
 
 
@@ -249,6 +289,13 @@ def refund_payment(
     _require_transition(payment, Action.REFUND)
     refundable = payment.amount - payment.refunded_amount
     if body.amount > refundable:
+        request_log.event(
+            "refund.rejected",
+            payment_id=payment.id,
+            amount=body.amount,
+            refundable=refundable,
+            reason="refund_exceeds_amount",
+        )
         raise ApiError(
             422,
             "refund_exceeds_amount",
@@ -256,6 +303,7 @@ def refund_payment(
             refundable=refundable,
         )
     refund = Refund(payment_id=payment.id, amount=body.amount)
+    status_before = PaymentStatus(payment.status)
     session.add(refund)
     payment.refunded_amount += body.amount
     payment.status = (
@@ -264,6 +312,14 @@ def refund_payment(
         else PaymentStatus.PARTIALLY_REFUNDED
     ).value
     session.commit()
+    request_log.event(
+        "refund.accepted",
+        payment_id=payment.id,
+        refund_id=refund.id,
+        amount=refund.amount,
+        refunded_amount=payment.refunded_amount,
+    )
+    _announce_change(payment, Action.REFUND, status_before, refund_amount=refund.amount)
     return RefundOut(
         id=refund.id,
         payment_id=payment.id,

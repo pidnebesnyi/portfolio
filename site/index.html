@@ -74,6 +74,10 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/factories"><code>tests/factories</code></a>, <a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/conftest.py"><code>tests/conftest.py</code></a>: a fresh merchant per test, created through the API and cleaned up after.</td></tr>
 <tr><td data-label="Claim">SQL backend verification</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/db"><code>tests/db</code></a>: JOIN, GROUP BY / HAVING, CTE and window checks on data the tests created; the SQL is attached to the report.</td></tr>
+<tr><td data-label="Claim">Logs as test evidence</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/logs"><code>tests/logs</code></a>: a request's JSON log lines found by its request id, events checked in order, and a scan proving no password, token or one-time code is logged.</td></tr>
+<tr><td data-label="Claim">RabbitMQ</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/events"><code>tests/events</code></a>: each test reads payment events from its own queue and checks the fields, the request id and that nothing is published for a rejected request.</td></tr>
 <tr><td data-label="Claim">Payments domain</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/api"><code>tests/api</code></a>: payment state machine, idempotency keys, partial refunds.</td></tr>
 <tr><td data-label="Claim">2FA flows with PyOTP</td>

@@ -31,3 +31,9 @@ class Settings(BaseSettings):
 
     # Optional: base URL of the GitHub repo, used to turn requirement ids into Allure links.
     repo_url: str = ""
+
+    # Where the app writes its JSON request log (the app's LOG_FILE) as seen from the tests; compose
+    # mounts the same volume. Empty = the tests/logs tests and the log checks in tests/events skip.
+    app_log_file: str = ""
+    # The broker the app publishes domain events to. Empty = tests/events skips.
+    rabbitmq_url: str = ""
