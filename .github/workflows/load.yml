@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Generate throwaway credentials
         run: |
           set -euo pipefail
@@ -51,7 +51,7 @@ jobs:
         run: docker compose logs --no-color app provider-mock
       - name: Upload the report and CSV statistics
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: load-report
           path: load-report/
@@ -80,7 +80,7 @@ jobs:
     steps:
       - name: Download the report
         continue-on-error: true # no artifact when the stack never came up
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: load-report
           path: load-report
