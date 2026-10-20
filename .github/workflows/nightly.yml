@@ -1,0 +1,134 @@
+# Nightly regression + published Allure report. Triggers: 02:30 UTC every day and manual runs.
+# Order: `tests` runs the whole suite (api, contract, db, ui; quarantine excluded) as 3 parallel
+# shards, each on its own compose stack and split by recorded durations (.test_durations); then
+# `report` merges the shards' allure-results, restores the trend history from the gh-pages
+# branch, builds the Allure report and publishes ONLY gh-pages:/report/ (other workflows own
+# /bugs/ and /load/, so the branch is never wiped). Nothing here needs repository secrets: every
+# shard generates throwaway credentials. Not a merge gate; a red night shows in the report.
+name: Nightly
+
+on:
+  schedule:
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+# Two report publishers must not race on gh-pages; a queued run waits instead of cancelling.
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: tests (shard ${{ matrix.shard }}/3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false # a red shard must not hide the other two shards' results
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate throwaway credentials
+        run: |
+          set -euo pipefail
+          scripts/make_env.sh
+          while IFS='=' read -r key value; do
+            [ "$key" = "ADMIN_EMAIL" ] || echo "::add-mask::$value"
+          done < .env
+      - name: Start the stack (db, app, provider-mock)
+        run: docker compose up --build --wait db app provider-mock
+      - name: Run shard ${{ matrix.shard }} of 3
+        # GITHUB_SHA / GITHUB_RUN_ID reach the container through docker-compose.yml. least_duration
+        # balances the shards even though one contract test alone takes ~9 s.
+        run: >
+          docker compose run --rm tests
+          pytest -m "not quarantine" -n auto --splits 3 --group ${{ matrix.shard }}
+          --splitting-algorithm least_duration
+      - name: App logs (on failure)
+        if: failure()
+        run: docker compose logs --no-color app provider-mock db
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-${{ matrix.shard }}
+          path: allure-results/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload Playwright traces, videos and screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results-${{ matrix.shard }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Tear down
+        if: always()
+        run: docker compose down --volumes
+
+  report:
+    needs: tests
+    if: ${{ !cancelled() }} # publish even when a shard failed: the report is the point
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # peaceiris pushes to the gh-pages branch; this is the only job that may
+    env:
+      REPORT_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/report/
+    steps:
+      - name: Download all shards' results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: allure-results-*
+          path: allure-results
+          merge-multiple: true
+      - name: Fetch Allure history from gh-pages
+        uses: actions/checkout@v4
+        continue-on-error: true # the very first run has no gh-pages branch yet
+        with:
+          ref: gh-pages
+          path: gh-pages
+      - name: Restore history and describe this build
+        run: |
+          set -euo pipefail
+          if [ -d gh-pages/report/history ]; then
+            cp -r gh-pages/report/history allure-results/history
+          fi
+          cat > allure-results/executor.json <<JSON
+          {
+            "name": "GitHub Actions",
+            "type": "github",
+            "buildOrder": ${{ github.run_number }},
+            "buildName": "Nightly #${{ github.run_number }}",
+            "buildUrl": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+            "reportUrl": "${REPORT_URL}"
+          }
+          JSON
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build the Allure report
+        # Java 17 is preinstalled on ubuntu-latest, which is all the Allure CLI needs.
+        run: |
+          npm install --global allure-commandline@2.32.0
+          allure generate allure-results --clean --output allure-report
+      - name: Upload the report as an artifact (also when publishing fails)
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report/
+          retention-days: 7
+      - name: Publish to gh-pages /report/
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }} # the built-in per-run token, not a stored secret
+          publish_dir: allure-report
+          destination_dir: report
+          keep_files: true # other workflows publish /bugs/ and /load/; never wipe the branch
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_message: "docs(report): nightly #${{ github.run_number }}"
