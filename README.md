@@ -54,13 +54,13 @@ needs zero secrets.
 
 | Folder | What | Count | Gate |
 |---|---|---:|---|
-| `tests/api` | REST behaviour: payments, refunds, idempotency, transitions, access | 95 | PR (`api` job); nightly |
+| `tests/api` | REST behaviour: payments, refunds, idempotency, transitions, access | 90 | PR (`api` job); nightly |
 | `tests/integration` | Payment flow against the provider mock: decline, error, timeout | 8 | PR (`api` job); nightly |
-| `tests/db` | SQL invariants (JOIN, GROUP BY / HAVING, window, CTE) on data created through the API | 7 | PR (`api` job); nightly |
+| `tests/db` | SQL invariants (JOIN, GROUP BY / HAVING, window, CTE) on data created through the API | 6 | PR (`api` job); nightly |
 | `tests/ui` | Playwright through page objects; data comes from the API | 21 (4 smoke) | PR (`ui-smoke` job, smoke only); nightly |
 | `tests/unit` | Landing-page builder, Allure suite labels | 19 | PR (`api` job); nightly |
 
-About 150 tests in total, 17 of them tagged `smoke`.
+About 144 tests in total, 17 of them tagged `smoke`.
 
 ## Pipeline
 
