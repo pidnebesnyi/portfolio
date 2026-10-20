@@ -6,19 +6,21 @@ from tests.clients.http import LoggedHttpClient
 from tests.clients.merchants_api import MerchantsApi
 from tests.config import Settings
 from tests.factories.merchant_factory import MerchantAccount
-from tests.utils.allure_links import area
+from tests.utils.allure_links import area, requirement
 from tests.utils.tokens import decode_unverified, totp_code
 
 pytestmark = area("Authentication")
 
 
 @pytest.mark.regression
+@requirement("OBS-HEALTH")
 @allure.title("Health reports ok when the database is up")
 def test_health_reports_ok_when_database_is_up(auth_api: AuthApi) -> None:
     assert auth_api.health().expect(200).status == "ok"
 
 
 @pytest.mark.regression
+@requirement("AUTH-LOGIN")
 @allure.title("Merchant login returns a token with the expected claims")
 def test_merchant_login_returns_token_with_expected_claims(
     auth_api: AuthApi, merchant: MerchantAccount
@@ -35,6 +37,7 @@ def test_merchant_login_returns_token_with_expected_claims(
 
 
 @pytest.mark.regression
+@requirement("AUTH-LOGIN")
 @allure.title("Login with a wrong password is rejected")
 def test_login_with_wrong_password_is_rejected(
     auth_api: AuthApi, merchant: MerchantAccount
@@ -45,6 +48,7 @@ def test_login_with_wrong_password_is_rejected(
 
 
 @pytest.mark.regression
+@requirement("AUTH-LOGIN")
 @allure.title("Login with an unknown email is rejected")
 def test_login_with_unknown_email_is_rejected(auth_api: AuthApi) -> None:
     auth_api.login("nobody@lab.test", "irrelevant-password").expect_error(
@@ -53,6 +57,7 @@ def test_login_with_unknown_email_is_rejected(auth_api: AuthApi) -> None:
 
 
 @pytest.mark.regression
+@requirement("AUTH-LOGIN")
 @allure.title("Admin login requires a second factor")
 def test_admin_login_requires_second_factor(auth_api: AuthApi, settings: Settings) -> None:
     step_one = auth_api.login(settings.admin_email, settings.admin_password).expect(200)
@@ -70,6 +75,7 @@ def test_admin_login_requires_second_factor(auth_api: AuthApi, settings: Setting
 
 
 @pytest.mark.regression
+@requirement("AUTH-LOGIN")
 @allure.title("A wrong second-factor code is rejected")
 def test_wrong_second_factor_code_is_rejected(auth_api: AuthApi, settings: Settings) -> None:
     step_one = auth_api.login(settings.admin_email, settings.admin_password).expect(200)
@@ -81,6 +87,7 @@ def test_wrong_second_factor_code_is_rejected(auth_api: AuthApi, settings: Setti
 
 
 @pytest.mark.regression
+@requirement("AUTH-LOGIN")
 @allure.title("A second-factor token cannot be used as an access token")
 def test_mfa_token_cannot_be_used_as_access_token(
     auth_api: AuthApi, http: LoggedHttpClient, settings: Settings

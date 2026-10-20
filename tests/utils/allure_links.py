@@ -3,8 +3,10 @@
     pytestmark = [area("Refunds"), requirement("PAY-REFUND")]
 
 The helpers return plain pytest marks (typed, strict-marker friendly, usable as decorator or in
-`pytestmark`); `annotate()` is called from an autouse fixture and does the Allure side.
-Links point at real pages only when REPO_URL is set; otherwise the ids remain as labels.
+`pytestmark`); `annotate()` is called from an autouse fixture and does the Allure side: the area is
+the feature, the requirement is the story (Behaviors tab: area > requirement > tests) and a link
+to the requirement's GitHub issue (tests/requirements.py). The issue link is added only when
+REPO_URL is set; otherwise the ids remain as labels.
 
 `label_suites()` gives the Suites tab two readable levels instead of allure-pytest's package and
 module names: the layer (the folder under tests/) and the module ("Refunds"). Dynamic
@@ -16,6 +18,8 @@ from pathlib import PurePosixPath
 
 import allure
 import pytest
+
+from tests.requirements import REQUIREMENTS
 
 # Top-level folder under tests/ -> the layer shown as the parent suite.
 LAYERS = {
@@ -46,11 +50,11 @@ def annotate(node: pytest.Item, repo_url: str) -> None:
         allure.dynamic.feature(mark.args[0])
     for mark in node.iter_markers("requirement"):
         req_id = str(mark.args[0])
+        req = REQUIREMENTS[req_id]  # an unknown id already failed collection
         allure.dynamic.label("requirement", req_id)
+        allure.dynamic.story(f"{req_id}: {req.title}")
         if repo:
-            allure.dynamic.link(
-                f"{repo}/blob/main/docs/test-strategy.md#{req_id.lower()}", name=req_id
-            )
+            allure.dynamic.issue(f"{repo}/issues/{req.issue}", name=f"{req_id} #{req.issue}")
 
 
 def label_suites(nodeid: str) -> None:

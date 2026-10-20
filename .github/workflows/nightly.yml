@@ -39,7 +39,10 @@ jobs:
       - name: Start the stack (db, app, provider-mock, rabbitmq)
         run: docker compose up --build --wait db app provider-mock rabbitmq
       - name: Run the suite
-        # GITHUB_SHA / GITHUB_RUN_ID reach the container through docker-compose.yml.
+        # GITHUB_SHA / GITHUB_RUN_ID / REPO_URL reach the container through docker-compose.yml;
+        # REPO_URL turns requirement ids into links to their GitHub issues in the report.
+        env:
+          REPO_URL: ${{ github.server_url }}/${{ github.repository }}
         run: docker compose run --rm tests pytest -n auto
       - name: App logs (on failure)
         if: failure()
