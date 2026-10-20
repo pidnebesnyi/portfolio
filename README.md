@@ -88,6 +88,39 @@ About 171 tests in total, 22 of them tagged `smoke`.
 | `nightly.yml` | 02:30 UTC daily, manual | full suite in one job (pytest-xdist); Allure report with history | `/report/` and the landing-page numbers at the site root |
 | `load.yml` | Mondays 04:00 UTC, manual | Locust, 20 users for 3 minutes; fails on p95 > 500 ms or errors > 1 % | `/load/` |
 
+## Suite timing
+
+Measured, not estimated. Full suite (171 tests) on the compose stack, Apple M2 with a 4-CPU Docker
+VM, 2026-10-20. The time is pytest's own total; each row is the median of three runs.
+
+| Run | Time | vs serial |
+|---|---:|---:|
+| serial | 20.0 s | |
+| `-n 2` | 14.2 s | −29 % |
+| `-n auto` (4 workers) | 13.0 s | −35 % |
+| `-n 8` (one run) | 16.2 s | −19 % |
+
+- More workers than CPUs is slower: every worker starts its own browser and they compete for the
+  same cores. `-n auto` matches the CPU count, so the nightly and PR `api` jobs use it.
+- Where the serial time goes (setup + call + teardown, from `--durations=0`): UI 10.4 s,
+  integration 5.7 s, API 4.2 s, DB 1.3 s, events, logs and unit 1.2 s together.
+- The three slowest tests are deliberate waits: two provider timeouts at 2.0 s each (the app's
+  timeout) and a slow provider at 1.1 s. That wait is the behaviour under test, so they stay;
+  xdist spreads them across workers.
+- Keeping trace and video for failed UI tests costs about 1.8 s per serial UI run (9.4 s against
+  7.6 s with both off), roughly 20 % of UI time. It stays on: a failure without evidence costs more.
+- In CI (GitHub-hosted runner, `-n auto`) the nightly full suite takes 21.6 s, the PR `api` job
+  (139 tests) 6.6 s and `ui-smoke` (6 tests) 4.9 s.
+
+Reproduce:
+
+```bash
+docker compose run --rm tests pytest -q                     # serial
+docker compose run --rm tests pytest -q -n auto             # parallel
+docker compose run --rm tests pytest -q --durations=15      # slowest tests
+docker compose run --rm tests pytest -q tests/ui --video=off --tracing=off   # cost of evidence
+```
+
 ## Framework decisions
 
 - The app logs one JSON line per request and per domain event with a request id, and publishes
