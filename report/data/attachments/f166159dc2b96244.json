@@ -1,0 +1,17 @@
+{
+  "method": "POST",
+  "url": "http://app:8000/auth/login",
+  "headers": {
+    "host": "app:8000",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "content-length": "78",
+    "content-type": "application/json"
+  },
+  "body": {
+    "email": "merchant-a-f3c0d53d41@lab.test",
+    "password": "***"
+  }
+}
