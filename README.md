@@ -44,7 +44,7 @@ mkdir -m 777 load-report && docker compose --profile load run --rm locust
 
 Without Docker: create a Postgres database, load `db/init/001_schema.sql`, set `DATABASE_URL` and
 `DB_DSN` in `.env` (see `.env.example`), run `uvicorn app.main:app`, then
-`pytest -m "not quarantine" -n auto`. Browser tests also need `playwright install chromium`.
+`pytest -n auto`. Browser tests also need `playwright install chromium`.
 
 Credentials are generated per run by `scripts/make_env.sh` and written to the git-ignored `.env`.
 Nothing secret is in the repository. CI generates and masks them the same way, and the repository
@@ -76,7 +76,7 @@ About 150 tests in total, 17 of them tagged `smoke`.
   parallel (`pytest-xdist`) without ordering rules.
 - API clients are typed, and responses are parsed into Pydantic models.
 - Configuration is loaded with pydantic-settings.
-- Markers are enforced: every test has exactly one of `smoke`, `regression` or `quarantine`, and
+- Markers are enforced: every test has exactly one of `smoke` or `regression`, and
   `--strict-markers` fails on typos. Retries happen only through `@pytest.mark.flaky` with a reason.
 - A failed test keeps evidence in Allure: last request and response, last SQL, and for UI tests a
   screenshot, trace and video. Credentials are masked.

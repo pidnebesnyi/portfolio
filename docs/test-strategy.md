@@ -70,12 +70,9 @@ suite labels.
 - No global retries. A retry hides the failure it was meant to fix.
 - A test is rerun only when it carries `@pytest.mark.flaky(reruns=N, reason="...")`. Collection
   fails when the reason is missing, so every retry is a written decision.
-- A test that is unstable and not yet fixed gets `quarantine` and a link to an issue. It is excluded
-  from every gate and still visible in the repository. Quarantine is a waiting room with a date,
-  not a place to keep tests. There is none at the moment.
 - Waits are tied to the thing waited for. A provider hang is capped at the timeout plus one second;
   browser assertions wait for the condition and return as soon as it holds.
-- Every test carries exactly one tier marker (`smoke`, `regression` or `quarantine`), and collection
+- Every test carries exactly one tier marker (`smoke` or `regression`), and collection
   fails otherwise, so `-m` expressions select what we think they select.
 
 ## Running only the unit tests

@@ -10,4 +10,4 @@ COPY tests ./tests
 # The unit tests import scripts/build_site.py and check the landing template against it.
 COPY scripts ./scripts
 COPY site ./site
-CMD ["pytest", "-m", "not quarantine", "-n", "auto"]
+CMD ["pytest", "-n", "auto"]

@@ -43,7 +43,6 @@ filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]
 markers = [
     "smoke: critical-path checks, run first on every PR (target < 1 min)",
     "regression: full functional coverage, run on every PR",
-    "quarantine: known-unstable test, excluded from every gate until fixed (needs an issue link)",
     "flaky(reruns=N): the only way a test is retried; each use needs a written reason",
     "area(name): product area, shown as the Allure feature",
     "requirement(id): requirement id the test covers (Allure label + link)",

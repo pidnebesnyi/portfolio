@@ -75,7 +75,7 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <tr><td data-label="Claim">2FA flows with PyOTP</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/ui/test_login.py"><code>tests/ui/test_login.py</code></a>: admin login with a time-based one-time code.</td></tr>
 <tr><td data-label="Claim">Flaky-test triage and retry policy</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docs/test-strategy.md#flakiness-policy">Flakiness policy</a>: no global retries, <code>flaky</code> needs a reason, <code>quarantine</code> is excluded from every gate.</td></tr>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docs/test-strategy.md#flakiness-policy">Flakiness policy</a>: no global retries, <code>flaky</code> needs a reason, and collection fails without one.</td></tr>
 <tr><td data-label="Claim">Testing around an external provider</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/integration"><code>tests/integration</code></a>: decline, 5xx and timeout against a provider mock.</td></tr>
 <tr><td data-label="Claim">Load testing</td>

@@ -31,7 +31,7 @@ from tests.utils.allure_links import annotate, label_suites
 from tests.utils.db import Database
 from tests.utils.tokens import totp_code
 
-TIER_MARKERS = {"smoke", "regression", "quarantine"}
+TIER_MARKERS = {"smoke", "regression"}
 FAILED = pytest.StashKey[bool]()
 
 

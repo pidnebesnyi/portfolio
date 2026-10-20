@@ -3,7 +3,7 @@
 # unit, API, integration, DB tests) and `ui-smoke` (own compose stack, smoke-tagged browser
 # tests) run in parallel; a failure in any of them blocks the merge, so make all three required
 # checks in branch protection. Nothing here needs repository secrets: each job generates
-# throwaway credentials for each run. Quarantined tests are excluded from the gate.
+# throwaway credentials for each run.
 name: PR
 
 on:
@@ -51,7 +51,7 @@ jobs:
       - name: Start the stack (db, app, provider-mock)
         run: docker compose up --build --wait db app provider-mock
       - name: Unit, API, integration and DB tests
-        run: docker compose run --rm tests pytest -m "not quarantine" -n auto tests/unit tests/api tests/integration tests/db
+        run: docker compose run --rm tests pytest -n auto tests/unit tests/api tests/integration tests/db
       - name: App logs (on failure)
         if: failure()
         run: docker compose logs --no-color app provider-mock db

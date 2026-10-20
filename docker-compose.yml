@@ -83,7 +83,7 @@ services:
       - ./junit:/work/junit
       # Playwright traces, videos and screenshots of failed UI tests.
       - ./test-results:/work/test-results
-    # Default command comes from the image: pytest -m "not quarantine" -n auto
+    # Default command comes from the image: pytest -n auto
 
   locust:
     # Same version as load/requirements.txt. Start with: docker compose --profile load run --rm locust
