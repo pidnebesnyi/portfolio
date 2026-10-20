@@ -72,10 +72,10 @@ def build_values(
         passed = int(stat.get("passed", 0))
         values["BUILD_TESTS"] = str(total)
         if total:
-            rate = passed / total * 100
-            # One decimal, rounded down: 99.96 % must not read as a clean 100 %.
-            shown = int(rate * 10) / 10
-            values["BUILD_PASS_RATE"] = f"{shown:.1f} %"
+            # One decimal, rounded down: 99.96 % must not read as a clean 100 %. Integer
+            # arithmetic, because float error would turn 29 of 100 into 28.9 %.
+            tenths = passed * 1000 // total
+            values["BUILD_PASS_RATE"] = f"{tenths // 10}.{tenths % 10} %"
             values["BUILD_PASS_CLASS"] = "ok" if passed == total else "bad"
         timing = summary.get("time") or {}
         if isinstance(timing.get("duration"), int | float):

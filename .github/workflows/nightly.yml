@@ -93,6 +93,7 @@ jobs:
       - name: Restore history and describe this build
         run: |
           set -euo pipefail
+          mkdir -p allure-results # missing when the download above found no artifact
           if [ -d gh-pages/report/history ]; then
             cp -r gh-pages/report/history allure-results/history
           fi

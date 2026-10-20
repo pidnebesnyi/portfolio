@@ -34,7 +34,7 @@ jobs:
           while IFS='=' read -r key value; do
             [ "$key" = "ADMIN_EMAIL" ] || echo "::add-mask::$value"
           done < .env
-      - name: Start the stack (db, app, provider-mock)
+      - name: Start the stack (db, app, provider-mock; rabbitmq comes up as a dependency)
         run: docker compose up --build --wait db app provider-mock
       - name: Run Locust (20 users for 3 minutes)
         id: locust

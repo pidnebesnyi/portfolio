@@ -24,7 +24,7 @@ built from an API, a database, a UI, a message broker and an external dependency
 | Risk | Tested at | Why there |
 |------|-----------|-----------|
 | 1 Double charge, over-refund | API (`tests/api`: idempotency, refunds) and DB (`tests/db`) | The rule lives in the service; one HTTP call proves it in milliseconds. The SQL check confirms the stored sums independently of the API's own answer |
-| 2 Wrong state | API: a table of every allowed and forbidden transition (29 cases) | A parametrised table is cheap and readable, and reads like the state machine |
+| 2 Wrong state | API: a table of every status and action pair, allowed or forbidden (28 cases, plus a check that the table covers them all) | A parametrised table is cheap and readable, and reads like the state machine |
 | 2 Provider failure modes | Integration (`tests/integration`) against a provider mock (WireMock) with stubs per card token | Decline, 5xx and timeout cannot be triggered on demand on a real provider. WireMock also records what it received, and the tests read that journal through its admin API, so they assert exactly one charge was attempted |
 | 3, 4 Access | API: basic access checks (no token, expired token, wrong signature, another merchant's id) | Cheapest level that sees the response code. Not a security assessment, see the last section |
 | 4 Login with 2FA | API for the rules, UI for the form (8 tests, 2 smoke) | The rules are decided by the service; the browser only needs to show the form works |
@@ -126,8 +126,9 @@ lines by the id from its response and checks them: the same id throughout, a ref
 order, a rejected transition and a rejected refund logged as rejections, an unauthenticated call
 without a merchant, a hostile `X-Request-ID` not reaching the log. One test runs a login with
 password and second factor, a payment with a card token and a refund, then scans the whole log for
-every password, token, TOTP secret, one-time code and card token it used, for any JWT and for an
-`Authorization` value.
+every password, token, TOTP secret and card token it used, for any JWT and for an `Authorization`
+value. The six-digit one-time code is too short to search for in free text, so it is compared with
+every field value of that test's own lines.
 
 **Why.** When a test fails in CI, the log lines of that request say what the service thought it
 did. The failing test attaches them to Allure next to the last request, response and SQL. Whether
