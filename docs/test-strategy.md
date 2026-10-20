@@ -39,7 +39,7 @@ built from an API, a database, a UI, a message broker and an external dependency
 
 | Level | Tests | Runs |
 |-------|------:|------|
-| Unit (site builder, Allure labels, OpenAPI checker, requirement trace) | 36 | every run |
+| Unit (site builder, Allure labels and UI step names, OpenAPI checker, requirement trace) | 46 | every run |
 | API, `tests/api` | 90 | every PR |
 | OpenAPI contract, `tests/contract` | 1 | every PR |
 | Integration with the WireMock provider stub | 8 | every PR |
@@ -51,10 +51,10 @@ built from an API, a database, a UI, a message broker and an external dependency
 | Postman collection (Newman), `postman/` | 20 requests, 59 assertions | every PR |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
-198 tests in the suite (numbers from the latest local run, the live number is on the landing page).
+208 tests in the suite (numbers from the latest local run, the live number is on the landing page).
 The shape is a pyramid on purpose: about half of the tests are API checks, about a sixth need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
-The 36 unit tests cover the plain code around the suite: the landing-page builder, the Allure
+The 46 unit tests cover the plain code around the suite: the landing-page builder, the Allure
 suite labels, the requirement trace and the OpenAPI checker, which is made to fail on purpose for each kind of violation.
 22 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
 

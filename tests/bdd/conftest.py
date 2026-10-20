@@ -26,6 +26,7 @@ from tests.bdd.steps.ui_refund import *  # noqa: F403
 # provider stub from tests/integration. Importing them here makes them visible to this folder only.
 from tests.integration.conftest import provider_stub  # noqa: F401
 from tests.ui.conftest import (  # noqa: F401
+    _allure_ui_steps,
     _expect_timeout,
     base_url,
     browser_context_args,

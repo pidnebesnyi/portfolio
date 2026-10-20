@@ -1,6 +1,7 @@
 import re
 from uuid import UUID
 
+import allure
 from playwright.sync_api import Locator, Page, expect
 
 from tests.pages.base_page import BasePage
@@ -31,14 +32,18 @@ class PaymentsPage(BasePage):
         self, *, status: str | None = None, created_from: str = "", created_to: str = ""
     ) -> None:
         """Dates are YYYY-MM-DD (UTC days, as the API stores them)."""
-        self.status_filter.select_option(status or "")
-        self.from_filter.fill(created_from)
-        self.to_filter.fill(created_to)
-        self.apply_filter.click()
+        title = f"Filter the list: status={status or 'any'}, from={created_from}, to={created_to}"
+        with allure.step(title):
+            self.status_filter.select_option(status or "")
+            self.from_filter.fill(created_from)
+            self.to_filter.fill(created_to)
+            self.apply_filter.click()
 
+    @allure.step("Expect the list total to be {count}")
     def expect_total(self, count: int) -> None:
         expect(self.total).to_have_text(f"Total: {count}")
 
+    @allure.step("Open payment {payment_id} from the list")
     def open_payment(self, payment_id: UUID) -> None:
         self.page.get_by_test_id(f"payment-link-{payment_id}").click()
         expect(self.page).to_have_url(re.compile(rf"/ui/payments/{payment_id}$"))

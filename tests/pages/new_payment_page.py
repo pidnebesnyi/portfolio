@@ -1,3 +1,4 @@
+import allure
 from playwright.sync_api import Page
 
 from tests.pages.base_page import BasePage
@@ -22,8 +23,9 @@ class NewPaymentPage(BasePage):
         description: str = "",
         card_token: str = "tok_success",
     ) -> None:
-        self.amount.fill(amount)
-        self.currency.select_option(currency)
-        self.description.fill(description)
-        self.card_token.fill(card_token)
-        self.submit.click()
+        with allure.step(f"Fill in and submit the new payment form: {amount} {currency}"):
+            self.amount.fill(amount)
+            self.currency.select_option(currency)
+            self.description.fill(description)
+            self.card_token.fill(card_token)
+            self.submit.click()
