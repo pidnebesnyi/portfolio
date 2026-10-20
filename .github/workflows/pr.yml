@@ -26,7 +26,7 @@ jobs:
       contents: read
       pull-requests: read # gitleaks-action lists the PR's commits
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # the secret scan walks the whole history, not just the tip
       - name: Scan history for secrets
@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Generate throwaway credentials
         run: |
           set -euo pipefail
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Generate throwaway credentials
         run: |
           set -euo pipefail

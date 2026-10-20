@@ -34,7 +34,7 @@ jobs:
       matrix:
         shard: [1, 2, 3]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Generate throwaway credentials
         run: |
           set -euo pipefail
@@ -84,7 +84,7 @@ jobs:
     env:
       REPORT_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/report/
     steps:
-      - uses: actions/checkout@v4 # the landing template and scripts/build_site.py
+      - uses: actions/checkout@v7 # the landing template and scripts/build_site.py
       - name: Download all shards' results
         uses: actions/download-artifact@v4
         with:
@@ -92,7 +92,7 @@ jobs:
           path: allure-results
           merge-multiple: true
       - name: Fetch Allure history from gh-pages
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         continue-on-error: true # the very first run has no gh-pages branch yet
         with:
           ref: gh-pages
