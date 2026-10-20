@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Payments Lab{% endblock %}</title>
+  <style>
+    body { font: 15px/1.4 system-ui, sans-serif; margin: 0 auto; max-width: 56rem; padding: 1rem; }
+    header { display: flex; gap: 1rem; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: .5rem; }
+    header form { margin-left: auto; }
+    label { display: block; margin: .5rem 0; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { text-align: left; padding: .25rem .5rem; border-bottom: 1px solid #eee; }
+    .flash { padding: .5rem; margin: 1rem 0; border: 1px solid; }
+    .flash-success { border-color: #2a7; }
+    .flash-error { border-color: #c33; }
+  </style>
+</head>
+<body>
+  <header data-testid="header">
+    <strong>Payments Lab</strong>
+    {% if principal %}
+    <nav aria-label="Main">
+      {% if principal.role == "merchant" %}
+      <a href="/ui/payments" data-testid="nav-payments">Payments</a>
+      <a href="/ui/payments/new" data-testid="nav-new-payment">New payment</a>
+      {% endif %}
+    </nav>
+    <span data-testid="user-role">{{ principal.role }}</span>
+    <form method="post" action="/ui/logout"><button type="submit" data-testid="logout">Log out</button></form>
+    {% endif %}
+  </header>
+  {% if flash %}
+  <div class="flash flash-{{ flash.level }}" role="status" data-testid="flash-{{ flash.level }}">{{ flash.text }}</div>
+  {% endif %}
+  <main>{% block content %}{% endblock %}</main>
+</body>
+</html>
