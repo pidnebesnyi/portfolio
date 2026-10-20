@@ -77,7 +77,12 @@ class IdempotencyKey(Base):
 @lru_cache
 def get_engine() -> Engine:
     return create_engine(
-        get_settings().database_url, pool_size=10, max_overflow=20, pool_pre_ping=True
+        get_settings().database_url,
+        pool_size=10,
+        max_overflow=20,
+        pool_pre_ping=True,
+        # Timestamps go out in UTC whatever the server's default is; the UI filters by UTC days.
+        connect_args={"options": "-c timezone=UTC"},
     )
 
 

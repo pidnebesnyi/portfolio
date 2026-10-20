@@ -164,7 +164,7 @@ def create_payment(
             return replayed
         raise
     request_log.event(
-        "payment.created", payment_id=payment.id, amount=payment.amount, status=payment.status
+        "payment.created", payment_id=payment.id, amount=payment.amount, to_status=payment.status
     )
     events.publish("payment.created", payment)
     return payment
