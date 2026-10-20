@@ -14,6 +14,7 @@ class NewPaymentPage(BasePage):
         self.description = page.get_by_label("Description")
         self.card_token = page.get_by_label("Card token")
         self.submit = page.get_by_test_id("new-submit")
+        self.form = page.get_by_test_id("new-payment-form")
 
     def create(
         self,
@@ -29,3 +30,7 @@ class NewPaymentPage(BasePage):
             self.description.fill(description)
             self.card_token.fill(card_token)
             self.submit.click()
+
+    def idempotency_key(self) -> str:
+        """The key the server put in the form; one per rendered form, so a resubmit replays."""
+        return str(self.form.evaluate("form => form.elements.idempotency_key.value"))

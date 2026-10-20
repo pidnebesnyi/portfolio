@@ -31,9 +31,10 @@ class MerchantsApi:
         assert raw.status_code == 200, raw.text
         return [Merchant.model_validate(item) for item in raw.json()]
 
-    def list_raw(self) -> ApiResponse[_Unused]:
-        """Status-only variant for access checks (the body is irrelevant on 401/403)."""
-        return parse(self._http.request("GET", "/merchants", token=self._token), None)
+    def list_raw(self, params: dict[str, object] | None = None) -> ApiResponse[_Unused]:
+        """Status-only variant for access and validation checks (the body is irrelevant)."""
+        raw = self._http.request("GET", "/merchants", token=self._token, params=params)
+        return parse(raw, None)
 
     def delete(self, merchant_id: UUID) -> ApiResponse[_Unused]:
         raw = self._http.request("DELETE", f"/merchants/{merchant_id}", token=self._token)

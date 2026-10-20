@@ -62,6 +62,12 @@ class PaymentsApi:
             self._http.request("GET", f"/payments/{payment_id}", token=self.token), Payment
         )
 
+    def get_by_raw_id(self, payment_id: str) -> ApiResponse[Payment]:
+        """GET with any text as the id (for validation tests)."""
+        return parse(
+            self._http.request("GET", f"/payments/{payment_id}", token=self.token), Payment
+        )
+
     def list_payments(
         self,
         *,
@@ -104,6 +110,13 @@ class PaymentsApi:
             f"/payments/{payment_id}/refunds",
             token=self.token,
             json_body={"amount": amount},
+        )
+        return parse(raw, Refund)
+
+    def refund_raw(self, payment_id: UUID, body: dict[str, Any]) -> ApiResponse[Refund]:
+        """Send an arbitrary refund body (for validation tests)."""
+        raw = self._http.request(
+            "POST", f"/payments/{payment_id}/refunds", token=self.token, json_body=body
         )
         return parse(raw, Refund)
 

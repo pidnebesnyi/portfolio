@@ -21,6 +21,10 @@ class PaymentsPage(BasePage):
         self.reset_filter = page.get_by_test_id("filter-reset")
         self.total = page.get_by_test_id("payments-total")
         self.empty_state = page.get_by_test_id("payments-empty")
+        self.truncated = page.get_by_test_id("payments-truncated")
+        self.table = page.get_by_test_id("payments-table")
+        self.rows = page.get_by_test_id(re.compile(r"^payment-row-"))
+        self.header_row = self.table.get_by_role("row").first
 
     def row(self, payment_id: UUID) -> Locator:
         return self.page.get_by_test_id(f"payment-row-{payment_id}")

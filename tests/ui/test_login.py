@@ -121,3 +121,44 @@ def test_protected_pages_redirect_anonymous_visitors_to_login(page: Page, path: 
     page.goto(path)
 
     LoginPage(page).expect_loaded()
+
+
+@pytest.mark.regression
+@allure.title("The login form can be submitted with the Enter key")
+def test_login_form_can_be_submitted_with_the_enter_key(
+    page: Page, merchant: MerchantAccount
+) -> None:
+    login = LoginPage(page)
+    login.open()
+
+    login.email.fill(merchant.email)
+    login.password.fill(merchant.password)
+    login.password.press("Enter")
+
+    PaymentsPage(page).expect_loaded()
+
+
+@pytest.mark.regression
+@allure.title("The password field hides what is typed")
+def test_password_field_hides_what_is_typed(page: Page) -> None:
+    login = LoginPage(page)
+
+    login.open()
+
+    expect(login.password).to_have_attribute("type", "password")
+    expect(login.email).not_to_have_attribute("type", "password")
+
+
+@pytest.mark.regression
+@allure.title("A failed login does not keep the typed password in the page")
+def test_failed_login_does_not_keep_the_typed_password(
+    page: Page, merchant: MerchantAccount
+) -> None:
+    login = LoginPage(page)
+    login.open()
+
+    login.log_in(merchant.email, "wrong-" + merchant.password)
+
+    login.expect_loaded()
+    expect(login.flash_error).to_have_text("Invalid email or password")
+    expect(login.password).to_have_value("")

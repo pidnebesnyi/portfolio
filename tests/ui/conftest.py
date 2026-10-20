@@ -53,6 +53,22 @@ def browser_context_args(browser_context_args: dict[str, Any]) -> dict[str, Any]
     }
 
 
+def start_session(context: BrowserContext, settings: Settings, token: str) -> None:
+    """Put an API token in the cookie the UI reads, as the login form would."""
+    context.add_cookies(
+        [
+            {
+                "name": SESSION_COOKIE,
+                "value": token,
+                "domain": urlparse(settings.base_url).hostname or "localhost",
+                "path": "/ui",
+                "httpOnly": True,
+                "sameSite": "Lax",
+            }
+        ]
+    )
+
+
 @pytest.fixture
 def merchant_page(
     page: Page, context: BrowserContext, merchant: MerchantAccount, settings: Settings
@@ -62,16 +78,12 @@ def merchant_page(
     The session is the merchant's API token placed in the cookie the UI reads, so tests that are
     not about logging in skip the form (and its cost) but still run against the real session.
     """
-    context.add_cookies(
-        [
-            {
-                "name": SESSION_COOKIE,
-                "value": merchant.token,
-                "domain": urlparse(settings.base_url).hostname or "localhost",
-                "path": "/ui",
-                "httpOnly": True,
-                "sameSite": "Lax",
-            }
-        ]
-    )
+    start_session(context, settings, merchant.token)
+    return page
+
+
+@pytest.fixture
+def admin_page(page: Page, context: BrowserContext, admin_token: str, settings: Settings) -> Page:
+    """A page already logged in as the admin (the session an admin gets after the second factor)."""
+    start_session(context, settings, admin_token)
     return page
