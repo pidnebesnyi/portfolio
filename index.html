@@ -34,10 +34,10 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 
 <h2>Latest nightly run</h2>
 <ul class="stats">
-  <li><span class="value">144</span><span class="label">tests</span></li>
+  <li><span class="value">155</span><span class="label">tests</span></li>
   <li><span class="value ok">100.0 %</span><span class="label">passed</span></li>
-  <li><span class="value">1 min 44 s</span><span class="label">duration</span></li>
-  <li><span class="value">2026-10-20</span><span class="label">last run</span><span class="note"><a href="https://github.com/pidnebesnyi/portfolio/actions/runs/39454766663">16:15 UTC, workflow run</a></span></li>
+  <li><span class="value">10 s</span><span class="label">duration</span></li>
+  <li><span class="value">2026-10-20</span><span class="label">last run</span><span class="note"><a href="https://github.com/pidnebesnyi/portfolio/actions/runs/39456029118">16:18 UTC, workflow run</a></span></li>
 </ul>
 
 <h2>Look at the evidence</h2>
@@ -57,6 +57,10 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/ui"><code>tests/ui</code></a>, <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/pages"><code>tests/pages</code></a>: page objects with role and test-id locators; test data comes from the API.</td></tr>
 <tr><td data-label="Claim">Web UI and API test layers</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/api"><code>tests/api</code></a> with typed clients in <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/clients"><code>tests/clients</code></a> and Pydantic response models; <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/ui"><code>tests/ui</code></a> for the browser.</td></tr>
+<tr><td data-label="Claim">UI validated down to fonts and colours</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/ui/test_styles.py"><code>tests/ui/test_styles.py</code></a>: computed styles of key elements compared with the values the stylesheet defines.</td></tr>
+<tr><td data-label="Claim">Backend failures simulated in the browser</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/ui/test_status_refresh.py"><code>tests/ui/test_status_refresh.py</code></a>: <code>page.route</code> answers with a 500, a slow reply, a dropped connection or made-up data, and the page has to cope.</td></tr>
 <tr><td data-label="Claim">Wired into CI/CD</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/.github/workflows"><code>.github/workflows</code></a>: every pull request is gated; <a href="https://github.com/pidnebesnyi/portfolio/actions">run history</a>.</td></tr>
 <tr><td data-label="Claim">Failures diagnosable from the report</td>
