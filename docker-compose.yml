@@ -87,12 +87,22 @@ services:
     # Default command comes from the image: pytest -m "not quarantine" -n auto
 
   locust:
+    # Same version as load/requirements.txt. Start with: docker compose --profile load run --rm locust
     image: locustio/locust:2.32.5
     profiles: [load]
-    # load/locustfile.py is added in phase 4.
-    command: -f /mnt/locust/locustfile.py --host http://app:8000 --headless -u 20 -r 5 -t 1m
+    environment:
+      # The stock image has no pyotp; the locustfile computes the admin TOTP code itself.
+      <<: *secrets
+    # thresholds.py judges the run (p95, error rate), so Locust's own "exit 1 on any error" is off.
+    command: >
+      -f /mnt/locust/locustfile.py,/mnt/locust/thresholds.py
+      --host http://app:8000 --headless -u 20 -r 5 -t 1m --exit-code-on-error 0
+      --html /mnt/report/report.html --csv /mnt/report/stats
     volumes:
       - ./load:/mnt/locust:ro
+      # The report lands here. The container user is not the host user: make the directory
+      # writable first (CI does `mkdir -m 777 load-report`).
+      - ./load-report:/mnt/report
     depends_on:
       app:
         condition: service_healthy

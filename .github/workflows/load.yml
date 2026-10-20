@@ -1,0 +1,100 @@
+# Load test and published report. Triggers: Monday 04:00 UTC and manual runs.
+# Order: `load` starts the compose stack and runs Locust through the compose `load` profile
+# (20 users, 5 new users a second, 3 minutes, headless). load/thresholds.py judges the run: p95
+# above 500 ms or more than 1 % failed requests makes the Locust container exit 1. That step is
+# allowed to fail so the report is always saved; the job turns red in its last step. `publish`
+# then puts the HTML report on gh-pages:/load/ (the other workflows own /report/ and /bugs/, so
+# keep_files stays on) even after a breach: a red report is the evidence. Not a merge gate.
+# Nothing here needs repository secrets: credentials are generated per run and masked.
+name: Load
+
+on:
+  schedule:
+    - cron: "0 4 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: load
+  cancel-in-progress: false # a queued run waits; two publishers must not race on gh-pages
+
+permissions:
+  contents: read
+
+jobs:
+  load:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate throwaway credentials
+        run: |
+          set -euo pipefail
+          scripts/make_env.sh
+          # Mask every generated value in logs (the admin email is not a secret).
+          while IFS='=' read -r key value; do
+            [ "$key" = "ADMIN_EMAIL" ] || echo "::add-mask::$value"
+          done < .env
+      - name: Start the stack (db, app, provider-mock)
+        run: docker compose up --build --wait db app provider-mock
+      - name: Run Locust (20 users for 3 minutes)
+        id: locust
+        continue-on-error: true # save and publish the report first, fail in the last step
+        run: |
+          # The container user is not the runner user; it must be able to write the report.
+          mkdir -m 777 load-report
+          docker compose --profile load run --rm locust \
+            -f /mnt/locust/locustfile.py,/mnt/locust/thresholds.py \
+            --host http://app:8000 --headless -u 20 -r 5 -t 3m --exit-code-on-error 0 \
+            --html /mnt/report/report.html --csv /mnt/report/stats
+      - name: App logs (on failure)
+        if: steps.locust.outcome == 'failure'
+        run: docker compose logs --no-color app provider-mock
+      - name: Upload the report and CSV statistics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-report
+          path: load-report/
+          if-no-files-found: ignore
+          retention-days: 30
+      - name: Tear down
+        if: always()
+        run: docker compose down --volumes
+      - name: Fail if a threshold was breached
+        if: steps.locust.outcome == 'failure'
+        run: |
+          echo "Load run failed: p95 above 500 ms, error rate above 1 %, or Locust itself broke." >&2
+          echo "See the Locust step log and the published report." >&2
+          exit 1
+
+  publish:
+    needs: load
+    if: ${{ !cancelled() }} # publish after a threshold breach too
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # peaceiris pushes to the gh-pages branch; this is the only job that may
+    steps:
+      - name: Download the report
+        continue-on-error: true # no artifact when the stack never came up
+        uses: actions/download-artifact@v4
+        with:
+          name: load-report
+          path: load-report
+      - name: Name the report page index.html
+        if: hashFiles('load-report/report.html') != ''
+        run: |
+          mkdir -p site-load
+          cp load-report/report.html site-load/index.html
+          cp load-report/stats_stats.csv site-load/stats.csv
+      - name: Publish to gh-pages /load/
+        if: hashFiles('site-load/index.html') != ''
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }} # the built-in per-run token, not a stored secret
+          publish_dir: site-load
+          destination_dir: load
+          keep_files: true # other workflows publish /report/ and /bugs/; never wipe the branch
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_message: "docs(load): report #${{ github.run_number }}"

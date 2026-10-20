@@ -7,4 +7,7 @@ COPY requirements-test.txt .
 RUN pip install --no-cache-dir -r requirements-test.txt
 COPY pyproject.toml .test_durations ./
 COPY tests ./tests
+# The unit tests import scripts/build_site.py and check the landing template against it.
+COPY scripts ./scripts
+COPY site ./site
 CMD ["pytest", "-m", "not quarantine", "-n", "auto"]
