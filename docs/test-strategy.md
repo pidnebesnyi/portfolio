@@ -28,7 +28,7 @@ The strategy below is about how the risk in such a flow is covered, and where it
 | 4 Login with 2FA | API for the rules, UI for the form (8 tests, 2 smoke) | The rules are decided by the service; the browser only needs to show the form works |
 | 5 Contract | API: every response is parsed into a Pydantic model by the typed clients (`tests/clients`) | A response that no longer matches its model fails the first test that sees it |
 | 6 Data consistency | SQL invariants after the API tests created data | Catches states the API never admits to, such as refunds above the amount or one idempotency key mapped to two payments |
-| 7 UI | Playwright with page objects, 21 tests; only 4 on every PR | Browser tests are slow and the most fragile, so they check what only a browser can: forms, filters, a refund through the page. Data is created by the API, never by clicking |
+| 7 UI | Playwright with page objects, 32 tests; only 6 on every PR | Browser tests are slow and the most fragile, so they check what only a browser can: forms, filters, a refund through the page, how the page behaves when its own fetch call fails, computed fonts and colours. Data is created by the API, never by clicking |
 | 8 Performance | Locust, weekly, with a pass/fail rule (p95 500 ms, errors 1 %) | Proves the flow works with 20 concurrent merchants and catches a slowdown. It does not predict production capacity |
 
 ## The pyramid as built
@@ -39,15 +39,48 @@ The strategy below is about how the risk in such a flow is covered, and where it
 | API, `tests/api` | 90 | every PR |
 | Integration with the provider mock | 8 | every PR |
 | Database invariants | 6 | every PR |
-| UI (Playwright) | 21, of which 4 smoke | smoke on every PR, all nightly |
+| UI (Playwright) | 32, of which 6 smoke | smoke on every PR, all nightly |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
-144 tests in the suite (numbers from the latest local run, the live number is on the landing page).
-The shape is a pyramid on purpose: about 63 % of the tests are API checks, under 15 % need a browser.
+155 tests in the suite (numbers from the latest local run, the live number is on the landing page).
+The shape is a pyramid on purpose: about 58 % of the tests are API checks, about a fifth need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
 The 19 unit tests cover the plain code around the suite: the landing-page builder and the Allure
 suite labels.
-17 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
+19 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
+
+## Browser techniques
+
+Two techniques that are about the browser, not about payments. The payment detail page is the
+subject only because it has one small `fetch` call to exercise.
+
+### Network interception (`tests/ui/test_status_refresh.py`)
+
+- **What.** The detail page has a "Refresh status" button that calls `GET /ui/payments/{id}/status`
+  with `fetch` and rewrites the status, or shows an error. The tests replace that one endpoint with
+  `page.route`: a made-up JSON answer (the page renders what the server says, even a state the
+  payment is not in), a 500, a dropped connection (`route.abort`), and an answer that is held until
+  the test releases it (loading state first, then the value). One test removes the stub with
+  `page.unroute` and checks the error clears on a retry that reaches the real server, and one
+  uses no stub at all and changes the status through the API behind the page's back.
+- **Why.** A failing or slow backend cannot be summoned on demand, and a page that only works when
+  everything answers is a page nobody tested. Waiting is `expect()` on the page; the held request
+  is released by the test, so there is no sleep and no timing luck. Routes are removed in a
+  fixture at teardown.
+- **Does not cover.** The server side of the endpoint beyond what the real-answer test touches,
+  real network conditions (latency, packet loss), and any browser other than chromium.
+
+### Computed fonts and colours (`tests/ui/test_styles.py`)
+
+- **What.** `getComputedStyle` of key elements (body, heading, labels, table cells, header rule,
+  success and error messages) compared with the values the app's stylesheet defines. The
+  expected values live in one file, `tests/ui/design_tokens.py`, with the CSS they come from next
+  to each.
+- **Why.** The browser's final answer is what a user sees: a typo in a selector, an overridden
+  rule or a changed colour fails a test although the CSS file looks fine. The comparison is on a
+  whole dict, so one failure lists every property that differs.
+- **Does not cover.** Layout, spacing between elements, and anything pictorial: there are no
+  screenshot comparisons, which this small UI does not justify. The app has no custom button or badge styling, so there is nothing to compare for them.
 
 ## Data strategy
 
@@ -87,8 +120,9 @@ settings object, so the four credential variables must exist; any value will do:
 - **Real provider certification.** The mock proves how this service reacts to declines, errors and
   slowness. It says nothing about a real acquirer's formats, 3-D Secure or settlement files; that
   needs the provider's sandbox and their test plan.
-- **Visual and pixel testing.** The UI is a form and a table. Screenshot diffs would cost more
-  maintenance than the defects they would find. Screenshots are kept only as failure evidence.
+- **Pixel-level visual testing.** The UI is a form and a table. Screenshot diffs would cost more
+  maintenance than the defects they would find. Fonts and colours are checked as computed values
+  (see above); screenshots are kept only as failure evidence.
 - **Accessibility audit.** Locators use roles and labels, which gives a basic check as a side
   effect. A real audit (screen readers, contrast, keyboard paths) needs a specialist pass.
 - **Security testing.** Only basic access checks are automated: missing, expired and forged tokens,
