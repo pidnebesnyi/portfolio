@@ -42,7 +42,7 @@ ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 # allure's decorator helpers ship without type hints; the wrapper in this module re-types them.
-module = ["tests.utils.allure_links", "tests.conftest"]
+module = ["tests.utils.allure_links", "tests.utils.allure_evidence", "tests.conftest"]
 disallow_untyped_calls = false
 warn_return_any = false
 
@@ -52,7 +52,10 @@ testpaths = ["tests"]
 pythonpath = ["."]
 # --strict-markers: a typo in a marker must fail collection, not silently select nothing.
 # Retries are never global: only tests carrying @pytest.mark.flaky(reruns=N) are rerun.
-addopts = "--strict-markers --strict-config -ra --alluredir=allure-results"
+# Playwright (UI tests only): keep trace and video of failed tests, screenshot on failure.
+addopts = """--strict-markers --strict-config -ra --alluredir=allure-results
+  --tracing=retain-on-failure --screenshot=only-on-failure --video=retain-on-failure
+  --output=test-results"""
 filterwarnings = ["error::pytest.PytestUnraisableExceptionWarning"]
 markers = [
     "smoke: critical-path checks, run first on every PR (target < 1 min)",
@@ -63,6 +66,7 @@ markers = [
     "requirement(id): requirement id the test covers (Allure label + link)",
     "seeded_bug(id): test is expected to fail when the named bug is injected into the app",
     "ui: browser test (Playwright)",
+    "sensitive: test types credentials into the browser; its trace and video are never kept",
     "db: test reads the database directly to verify state",
     "contract: schema-driven checks against /openapi.json",
     "integration: needs the provider mock to behave in a specific way",
