@@ -95,8 +95,7 @@ settings object, so the four credential variables must exist; any value will do:
 - **Accessibility audit.** Locators use roles and labels, which gives a basic check as a side
   effect. A real audit (screen readers, contrast, keyboard paths) needs a specialist pass.
 - **Security testing.** Only basic access checks are automated: missing, expired and forged tokens,
-  and cross-merchant access. Dependabot alerts and secret scanning run on the repository; penetration
-  testing and header or DAST scanning are out of scope.
+  and cross-merchant access. Penetration testing and header or DAST scanning are out of scope.
 - **Performance at production scale.** The weekly run uses 20 users against one app instance on a
   shared CI runner. It guards against regressions; capacity planning needs production-like
   hardware, data volume and a separate team.
