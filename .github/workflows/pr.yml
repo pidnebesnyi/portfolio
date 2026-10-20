@@ -1,6 +1,6 @@
 # PR gate. Trigger: every pull request (and manual runs).
 # Order: `lint` (ruff; seconds, no containers), `api` (compose stack, then
-# unit, API, contract, integration, DB, log and event tests) and `ui-smoke` (own compose stack, smoke-tagged browser
+# unit, API, contract, integration, DB, log and event tests, then the Postman collection) and `ui-smoke` (own compose stack, smoke-tagged browser
 # tests) run in parallel; a failure in any of them blocks the merge, so make all three required
 # checks in branch protection. Nothing here needs repository secrets: each job generates
 # throwaway credentials for each run.
@@ -54,6 +54,10 @@ jobs:
         env:
           REPO_URL: ${{ github.server_url }}/${{ github.repository }}
         run: docker compose run --rm tests pytest -n auto tests/unit tests/api tests/contract tests/integration tests/db tests/logs tests/events
+      - name: Postman collection (Newman)
+        # Runs even when pytest failed, so one red step does not hide the other's result.
+        if: ${{ !cancelled() }}
+        run: docker compose --profile postman run --rm newman
       - name: App logs (on failure)
         if: failure()
         run: docker compose logs --no-color app provider-mock db

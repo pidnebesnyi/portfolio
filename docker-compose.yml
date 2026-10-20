@@ -119,6 +119,30 @@ services:
       - app-logs:/work/app-logs:ro
     # Default command comes from the image: pytest -n auto
 
+  newman:
+    # Runs the Postman collection in postman/. Start with: docker compose --profile postman run --rm newman
+    image: postman/newman:6.1.3-alpine
+    profiles: [postman]
+    environment:
+      <<: *secrets
+    # The credentials reach Newman as --env-var from the container's environment ($$ = expanded
+    # by the container's shell, not by compose), so they never land in a file.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        newman run /etc/newman/payments-qa-lab.postman_collection.json
+        -e /etc/newman/local.postman_environment.json
+        --env-var baseUrl=http://app:8000
+        --env-var "adminEmail=$$ADMIN_EMAIL"
+        --env-var "adminPassword=$$ADMIN_PASSWORD"
+        --env-var "adminTotpSecret=$$ADMIN_TOTP_SECRET"
+        --color on
+    volumes:
+      - ./postman:/etc/newman:ro
+    depends_on:
+      app:
+        condition: service_healthy
+
   locust:
     # Same version as load/requirements.txt. Start with: docker compose --profile load run --rm locust
     image: locustio/locust:2.46.7

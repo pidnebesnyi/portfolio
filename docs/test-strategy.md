@@ -47,6 +47,7 @@ built from an API, a database, a UI, a message broker and an external dependency
 | Log checks, `tests/logs` | 11 | every PR |
 | Domain events, `tests/events` | 5 | every PR |
 | UI (Playwright) | 32, of which 6 smoke | smoke on every PR, all nightly |
+| Postman collection (Newman), `postman/` | 20 requests, 59 assertions | every PR |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
 188 tests in the suite (numbers from the latest local run, the live number is on the landing page).
@@ -90,6 +91,11 @@ The chain is checked, not trusted:
 
 Risk 8 (slow under load) is covered by the Locust profile in `load/`, outside pytest; OBS-HEALTH
 is only its smallest part.
+
+The Postman collection in `postman/` names its folders with the same ids (OBS-HEALTH, AUTH-LOGIN,
+MERCH-CREATE, PAY-CREATE, PAY-IDEMP, PAY-STATE, PAY-REFUND, PAY-LIST, PAY-ACCESS, MERCH-DELETE).
+It repeats the main path the pytest suite already covers, as a hand-over for people who work in
+Postman, so it adds no requirement of its own and the guards above do not apply to it.
 
 ## Browser techniques
 
