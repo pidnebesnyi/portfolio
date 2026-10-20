@@ -1,1 +1,0 @@
-SELECT COALESCE(SUM(amount), 0) FROM refunds WHERE payment_id = %s
