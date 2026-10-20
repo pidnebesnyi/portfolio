@@ -4,11 +4,13 @@
 <h1>Payment</h1>
 <dl>
   <dt>ID</dt><dd data-testid="payment-id">{{ payment.id }}</dd>
-  <dt>Status</dt><dd data-testid="payment-status">{{ payment.status }}</dd>
+  <dt>Status</dt><dd><span data-testid="payment-status">{{ payment.status }}</span>
+    <button type="button" data-testid="refresh-status">Refresh status</button></dd>
   <dt>Amount</dt><dd data-testid="payment-amount">{{ payment.amount | money }} {{ payment.currency }}</dd>
   <dt>Refunded</dt><dd data-testid="payment-refunded">{{ payment.refunded_amount | money }} {{ payment.currency }}</dd>
   <dt>Description</dt><dd data-testid="payment-description">{{ payment.description }}</dd>
 </dl>
+<div class="flash flash-error" role="alert" data-testid="refresh-error" hidden>Could not refresh the status</div>
 {% if refundable %}
 <form method="post" action="/ui/payments/{{ payment.id }}/refund" data-testid="refund-form">
   <label>Refund amount (minor units, up to {{ remaining }}) <input name="amount" required inputmode="numeric" data-testid="refund-amount"></label>
@@ -17,4 +19,26 @@
 {% else %}
 <p data-testid="refund-unavailable">Refunds are available for captured payments only.</p>
 {% endif %}
+<script>
+  (() => {
+    const button = document.querySelector('[data-testid="refresh-status"]');
+    const statusText = document.querySelector('[data-testid="payment-status"]');
+    const failure = document.querySelector('[data-testid="refresh-error"]');
+    button.addEventListener("click", async () => {
+      failure.hidden = true;
+      button.disabled = true;
+      button.textContent = "Refreshing...";
+      try {
+        const response = await fetch("/ui/payments/{{ payment.id }}/status");
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        statusText.textContent = (await response.json()).status;
+      } catch (e) {
+        failure.hidden = false;
+      } finally {
+        button.disabled = false;
+        button.textContent = "Refresh status";
+      }
+    });
+  })();
+</script>
 {% endblock %}
