@@ -66,7 +66,7 @@ Credentials include a RabbitMQ password; an `.env` made before it existed needs 
 Without Docker: create a Postgres database, load `db/init/001_schema.sql`, set `DATABASE_URL` and
 `DB_DSN` in `.env` (see `.env.example`), start the provider stub with
 `java -jar wiremock-standalone-3.13.2.jar --port 8081 --root-dir provider-mock`, run
-`uvicorn app.main:app`, then `pytest -n auto`. The log and event tests need `LOG_FILE` (app) and `APP_LOG_FILE` (tests) pointing at one file and `RABBITMQ_URL` pointing at a broker (see `.env.example`); without them they skip. Browser tests also need `playwright install chromium`.
+`uvicorn app.main:app`, then `pytest -n auto`. The 11 log tests need only `LOG_FILE` (app) and `APP_LOG_FILE` (tests) pointing at one file; the 5 event tests also need `RABBITMQ_URL` pointing at a broker (see `.env.example`). Without them they skip, so a run without Docker and without a broker shows 5 skipped event tests and nothing else. Browser tests also need `playwright install chromium`.
 
 Credentials are generated per run by `scripts/make_env.sh` and written to the git-ignored `.env`.
 Nothing secret is in the repository. CI generates and masks them the same way, and the repository
