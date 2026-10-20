@@ -61,7 +61,7 @@ needs zero secrets.
 | `tests/integration` | Payment flow against the provider mock: decline, error, timeout | 8 | PR (`api` job); nightly |
 | `tests/db` | SQL invariants (JOIN, GROUP BY / HAVING, window, CTE) on data created through the API | 7 | PR (`api` job); nightly |
 | `tests/ui` | Playwright through page objects; data comes from the API | 21 (4 smoke) | PR (`ui-smoke` job, smoke only); nightly |
-| `tests/unit` | Landing-page builder (`scripts/build_site.py`) | 13 | nightly |
+| `tests/unit` | Landing-page builder (`scripts/build_site.py`) | 13 | PR (`api` job); nightly |
 
 About 145 tests in total, 17 of them tagged `smoke`.
 
@@ -69,7 +69,7 @@ About 145 tests in total, 17 of them tagged `smoke`.
 
 | Workflow | Trigger | What | Publishes |
 |---|---|---|---|
-| `pr.yml` | every pull request | lint (gitleaks, ruff, mypy); `api` job (API, integration, DB and contract tests on compose); `ui-smoke` job (browser smoke tests). Each job has a 10-minute timeout | Allure results and UI traces as workflow artifacts |
+| `pr.yml` | every pull request | lint (gitleaks, ruff, mypy); `api` job (unit, API, integration, DB and contract tests on compose); `ui-smoke` job (browser smoke tests). Each job has a 10-minute timeout | Allure results and UI traces as workflow artifacts |
 | `nightly.yml` | 02:30 UTC daily, manual | full suite in 3 pytest-split shards; one merged Allure report with history | `/report/` and the landing-page numbers at the site root |
 | `seeded-bugs.yml` | Mondays 05:00 UTC, manual | each of BUG-1..4 switched on in turn; a marked test must fail for each. Latest run: 4 seeded, 4 caught | `/bugs/` |
 | `load.yml` | Mondays 04:00 UTC, manual | Locust, 20 users for 3 minutes; fails on p95 > 500 ms or errors > 1 % | `/load/` |
