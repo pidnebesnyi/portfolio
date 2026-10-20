@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Merchants{% endblock %}
+{% block content %}
+<h1>Merchants</h1>
+<table data-testid="merchants-table">
+  <thead><tr><th>Name</th><th>Email</th></tr></thead>
+  <tbody>
+    {% for m in merchants %}
+    <tr data-testid="merchant-row-{{ m.id }}"><td>{{ m.name }}</td><td>{{ m.email }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

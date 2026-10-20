@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<h1>Log in</h1>
+<form method="post" action="/ui/login" data-testid="login-form">
+  <label>Email <input type="email" name="email" required data-testid="login-email"></label>
+  <label>Password <input type="password" name="password" required data-testid="login-password"></label>
+  <button type="submit" data-testid="login-submit">Log in</button>
+</form>
+{% endblock %}

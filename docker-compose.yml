@@ -69,6 +69,11 @@ services:
       BASE_URL: http://app:8000
       DB_DSN: postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/payments
       PROVIDER_URL: http://provider-mock:8081
+      # Shown in the Allure Environment widget; empty outside CI.
+      GITHUB_SHA: ${GITHUB_SHA:-}
+      GITHUB_RUN_ID: ${GITHUB_RUN_ID:-}
+    # Chromium shares memory through /dev/shm; the Playwright image docs recommend this.
+    ipc: host
     depends_on:
       app:
         condition: service_healthy
@@ -77,6 +82,8 @@ services:
     volumes:
       - ./allure-results:/work/allure-results
       - ./junit:/work/junit
+      # Playwright traces, videos and screenshots of failed UI tests.
+      - ./test-results:/work/test-results
     # Default command comes from the image: pytest -m "not quarantine" -n auto
 
   locust:

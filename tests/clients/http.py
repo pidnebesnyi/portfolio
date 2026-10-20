@@ -10,9 +10,20 @@ from typing import Any
 import allure
 import httpx
 
+from tests.utils import evidence
+
 MASK = "***"
 SENSITIVE_JSON_KEYS = frozenset(
-    {"password", "code", "access_token", "mfa_token", "totp_secret", "authorization", "token"}
+    {
+        "password",
+        "code",
+        "access_token",
+        "mfa_token",
+        "totp_secret",
+        "authorization",
+        "token",
+        "password_hash",
+    }
 )
 SENSITIVE_HEADERS = frozenset({"authorization"})
 
@@ -68,28 +79,28 @@ class LoggedHttpClient:
             request = self._client.build_request(
                 method, path, json=json_body, params=params, headers=all_headers
             )
-            allure.attach(
-                _pretty(
-                    {
-                        "url": str(request.url),
-                        "headers": mask_headers(request.headers),
-                        "body": _body(request.content),
-                    }
-                ),
-                name="request",
-                attachment_type=allure.attachment_type.JSON,
+            request_text = _pretty(
+                {
+                    "method": request.method,
+                    "url": str(request.url),
+                    "headers": mask_headers(request.headers),
+                    "body": _body(request.content),
+                }
             )
+            allure.attach(request_text, name="request", attachment_type=allure.attachment_type.JSON)
             response = self._client.send(request)
+            response_text = _pretty(
+                {
+                    "status": response.status_code,
+                    "elapsed_ms": round(response.elapsed.total_seconds() * 1000),
+                    "headers": mask_headers(response.headers),
+                    "body": _body(response.content),
+                }
+            )
             allure.attach(
-                _pretty(
-                    {
-                        "status": response.status_code,
-                        "elapsed_ms": round(response.elapsed.total_seconds() * 1000),
-                        "headers": mask_headers(response.headers),
-                        "body": _body(response.content),
-                    }
-                ),
+                response_text,
                 name=f"response {response.status_code}",
                 attachment_type=allure.attachment_type.JSON,
             )
+            evidence.record_http(request_text, response_text)
         return response

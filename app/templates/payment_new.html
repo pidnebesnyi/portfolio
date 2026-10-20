@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}New payment{% endblock %}
+{% block content %}
+<h1>New payment</h1>
+<form method="post" action="/ui/payments/new" data-testid="new-payment-form">
+  <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
+  <label>Amount (minor units) <input name="amount" required inputmode="numeric" data-testid="new-amount"></label>
+  <label>Currency
+    <select name="currency" data-testid="new-currency">
+      {% for c in currencies %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Description <input name="description" maxlength="255" data-testid="new-description"></label>
+  <label>Card token <input name="card_token" required value="tok_success" data-testid="new-card-token"></label>
+  <button type="submit" data-testid="new-submit">Create payment</button>
+</form>
+{% endblock %}
