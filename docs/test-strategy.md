@@ -35,7 +35,7 @@ The strategy below is about how the risk in such a flow is covered, and where it
 
 | Level | Tests | Runs |
 |-------|------:|------|
-| Unit (the landing-page builder) | 12 | every run |
+| Unit (the landing-page builder) | 13 | every run |
 | API, `tests/api` | 95 | every PR |
 | Contract, `tests/contract` | 1 test, 13 operations as subtests | every PR |
 | Integration with the provider mock | 8 | every PR |
@@ -43,10 +43,10 @@ The strategy below is about how the risk in such a flow is covered, and where it
 | UI (Playwright) | 21, of which 4 smoke | smoke on every PR, all nightly |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
-144 tests in the suite (numbers from the latest local run, the live number is on the landing page).
+145 tests in the suite (numbers from the latest local run, the live number is on the landing page).
 The shape is a pyramid on purpose: about two thirds of the tests are API checks, under 15 % need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
-The 12 unit tests cover the one piece of plain code in the repository (the landing-page builder).
+The 13 unit tests cover the one piece of plain code in the repository (the landing-page builder).
 17 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
 
 ## Data strategy
@@ -105,8 +105,8 @@ settings object, so the four credential variables must exist; any value will do:
 - **Accessibility audit.** Locators use roles and labels, which gives a basic check as a side
   effect. A real audit (screen readers, contrast, keyboard paths) needs a specialist pass.
 - **Security testing.** Only basic access checks are automated: missing, expired and forged tokens,
-  and cross-merchant access. Penetration testing, dependency and header scanning beyond secret
-  scanning in CI are out of scope.
+  and cross-merchant access. Dependabot alerts and secret scanning run on the repository; penetration
+  testing and header or DAST scanning are out of scope.
 - **Performance at production scale.** The weekly run uses 20 users against one app instance on a
   shared CI runner. It guards against regressions; capacity planning needs production-like
   hardware, data volume and a separate team.
