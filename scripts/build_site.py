@@ -7,7 +7,8 @@ Output: the same files in --out-dir, with every `{{BUILD_*}}` value replaced. Th
         what the nightly workflow publishes to the root of the gh-pages branch.
 
 Only `{{BUILD_*}}` values are touched. The profile values (`{{PROFILE_*}}`, `{{LINKEDIN_URL}}`,
-`{{CONTACT_EMAIL}}`) belong to the site owner; a warning lists those that are still unset.
+`{{CONTACT_EMAIL}}`) belong to the site owner. While any of them is unset, the marked profile block
+is left out of the page (a public page must never show template braces) and a warning lists them.
 A missing or unreadable summary is not an error: the numbers show "—" and the page still builds.
 
     python scripts/build_site.py --summary allure-report/widgets/summary.json --out-dir site-build
@@ -28,6 +29,7 @@ MISSING = "—"
 BUILD_PLACEHOLDER = re.compile(r"\{\{(BUILD_[A-Z_]+)\}\}")
 ANY_PLACEHOLDER = re.compile(r"\{\{([A-Z_]+)\}\}")
 HTML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
+PROFILE_BLOCK = re.compile(r"<!-- profile:start.*?<!-- profile:end -->\n?", re.DOTALL)
 # Files copied as they are next to the rendered index.html. cv.pdf is optional.
 STATIC_FILES = ("style.css", "cv.pdf")
 
@@ -104,6 +106,18 @@ def render(template: str, values: dict[str, str]) -> str:
     return BUILD_PLACEHOLDER.sub(lambda match: values[match.group(1)], body)
 
 
+def drop_unfilled_profile(template: str) -> tuple[str, list[str]]:
+    """Remove the profile block while it still holds owner placeholders; return those names."""
+    block = PROFILE_BLOCK.search(template)
+    if block is None:
+        return template, []
+    names = open_placeholders(HTML_COMMENT.sub("", block.group(0)))
+    unset = [name for name in names if not name.startswith("BUILD_")]
+    if not unset:
+        return template, []
+    return template[: block.start()] + template[block.end() :], unset
+
+
 def open_placeholders(rendered: str) -> list[str]:
     """Owner-filled placeholders that are still in the page, in order of first appearance."""
     return list(dict.fromkeys(ANY_PLACEHOLDER.findall(rendered)))
@@ -122,13 +136,14 @@ def build(summary_path: Path, site_dir: Path, out_dir: Path, run_url: str | None
     if summary is None:
         sys.stderr.write(f"warning: no usable summary at {summary_path}; numbers show {MISSING}\n")
     values = build_values(summary, run_url, has_cv=(site_dir / "cv.pdf").is_file())
-    rendered = render((site_dir / "index.html").read_text(encoding="utf-8"), values)
+    template, hidden = drop_unfilled_profile((site_dir / "index.html").read_text(encoding="utf-8"))
+    rendered = render(template, values)
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "index.html").write_text(rendered, encoding="utf-8")
     for name in STATIC_FILES:
         if (site_dir / name).is_file():
             shutil.copyfile(site_dir / name, out_dir / name)
-    return open_placeholders(rendered)
+    return hidden + [name for name in open_placeholders(rendered) if name not in hidden]
 
 
 def main() -> int:
@@ -144,7 +159,7 @@ def main() -> int:
     if unset:
         # A GitHub annotation in CI, a plain line elsewhere. Not an error: the page still works.
         sys.stdout.write(
-            f"::warning::landing page still has unset placeholders: {', '.join(unset)}\n"
+            f"::warning::profile block left out until these are set: {', '.join(unset)}\n"
         )
     return 0
 
