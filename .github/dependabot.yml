@@ -1,0 +1,20 @@
+# pip updates weekly and groups minor/patch bumps to keep the test stack current with fewer PRs.
+# GitHub Actions updates monthly since workflow action pins change rarely and need less churn.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
