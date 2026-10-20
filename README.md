@@ -1,8 +1,13 @@
-# payments-qa-lab
+# Test Automation Lab
 
-A QA automation portfolio: a layered test framework, a CI pipeline and published reports.
-The object under test is a mock payments service (FastAPI + Postgres: merchants, payments, refunds)
-with a WireMock provider stub behind it; the product is the framework, the pipeline and the reports.
+A QA automation portfolio: one pytest framework that covers many kinds of testing, a CI pipeline
+and published reports. REST API checks, SQL verification, Playwright UI tests (page objects,
+network interception, computed styles), RabbitMQ events, structured log checks, WireMock service
+stubs and a Locust load test, all running in Docker and GitHub Actions.
+
+The system under test is a small demo service (FastAPI + Postgres; payments is the example domain:
+merchants, payments, refunds). The domain is only the subject: the product is the framework, the
+pipeline and the reports.
 
 [![PR](https://github.com/pidnebesnyi/portfolio/actions/workflows/pr.yml/badge.svg)](https://github.com/pidnebesnyi/portfolio/actions/workflows/pr.yml)
 [![Nightly](https://github.com/pidnebesnyi/portfolio/actions/workflows/nightly.yml/badge.svg)](https://github.com/pidnebesnyi/portfolio/actions/workflows/nightly.yml)
