@@ -1,0 +1,6 @@
+SELECT p.id, p.amount, SUM(r.amount) AS refunds_sum
+        FROM payments p
+        JOIN refunds r ON r.payment_id = p.id
+        WHERE p.merchant_id = %s
+        GROUP BY p.id, p.amount
+        HAVING SUM(r.amount) > p.amount
