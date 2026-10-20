@@ -119,7 +119,7 @@ services:
 
   locust:
     # Same version as load/requirements.txt. Start with: docker compose --profile load run --rm locust
-    image: locustio/locust:2.32.5
+    image: locustio/locust:2.46.7
     profiles: [load]
     environment:
       # The stock image has no pyotp; the locustfile computes the admin TOTP code itself.
