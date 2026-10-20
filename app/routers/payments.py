@@ -194,7 +194,9 @@ def authorize_payment(
     _require_transition(payment, Action.AUTHORIZE)
     # The row lock is held during the provider call on purpose: a concurrent authorize of the
     # same payment waits, then sees the new status and gets a 409 instead of double-charging.
-    result = provider.charge(payment.amount, payment.currency, payment.card_token)
+    result = provider.charge(
+        payment.amount, payment.currency, payment.card_token, reference=str(payment.id)
+    )
     match result.outcome:
         case ChargeOutcome.APPROVED:
             payment.status = PaymentStatus.AUTHORIZED.value

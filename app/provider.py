@@ -1,5 +1,5 @@
-"""Payment provider client behind a small interface, so the HTTP stub can be swapped
-(for tests, or for the behaviour-by-token mock in phase 3) without touching the handlers."""
+"""Payment provider client behind a small interface, so the HTTP client can be swapped
+(e.g. via app.dependency_overrides) without touching the handlers."""
 
 from dataclasses import dataclass
 from enum import StrEnum
@@ -24,7 +24,9 @@ class ChargeResult:
 
 
 class ProviderClient(Protocol):
-    def charge(self, amount: int, currency: str, card_token: str) -> ChargeResult: ...
+    def charge(
+        self, amount: int, currency: str, card_token: str, reference: str
+    ) -> ChargeResult: ...
 
 
 class HttpProviderClient:
@@ -34,17 +36,25 @@ class HttpProviderClient:
         # provider is cut off after timeout_s; a slow trickle is not a scenario we model.
         self._timeout = httpx.Timeout(timeout_s)
 
-    def charge(self, amount: int, currency: str, card_token: str) -> ChargeResult:
+    def charge(self, amount: int, currency: str, card_token: str, reference: str) -> ChargeResult:
+        # `reference` (the payment id) lets the provider tell a retry from a second charge.
         try:
             response = httpx.post(
                 f"{self._base_url}/charge",
-                json={"amount": amount, "currency": currency, "card_token": card_token},
+                json={
+                    "amount": amount,
+                    "currency": currency,
+                    "card_token": card_token,
+                    "reference": reference,
+                },
                 timeout=self._timeout,
             )
         except httpx.TimeoutException:
             return ChargeResult(ChargeOutcome.TIMEOUT)
         except httpx.HTTPError as exc:
-            return ChargeResult(ChargeOutcome.ERROR, detail=type(exc).__name__)
+            # Refused connection, reset, DNS failure: no answer from the provider. Treated like
+            # a timeout, because in both cases we cannot tell whether the card was charged.
+            return ChargeResult(ChargeOutcome.TIMEOUT, detail=type(exc).__name__)
         if response.status_code >= 500:
             return ChargeResult(ChargeOutcome.ERROR, detail=f"http {response.status_code}")
         if response.status_code != 200:
