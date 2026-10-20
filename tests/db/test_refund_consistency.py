@@ -36,7 +36,7 @@ REFUND_TOTALS = """
 
 
 @pytest.fixture
-def seeded(api: PaymentsApi, payment_factory: PaymentFactory) -> dict[str, PaymentStatus]:
+def scenario(api: PaymentsApi, payment_factory: PaymentFactory) -> dict[str, PaymentStatus]:
     """One payment per refund situation; returns {payment_id: expected final status}."""
     payments = {
         payment_factory.create(PaymentStatus.CREATED, amount=1000).id: PaymentStatus.CREATED,
@@ -56,10 +56,10 @@ def seeded(api: PaymentsApi, payment_factory: PaymentFactory) -> dict[str, Payme
 
 @allure.title("Refunds never add up to more than the payment amount")
 def test_refunds_never_add_up_to_more_than_the_payment_amount(
-    db: Database, merchant: MerchantAccount, seeded: dict[str, PaymentStatus]
+    db: Database, merchant: MerchantAccount, scenario: dict[str, PaymentStatus]
 ) -> None:
     totals = db.fetch_all(REFUND_TOTALS, (merchant.id,))
-    assert len(totals) == len(seeded), "seeded payments are missing from the database"
+    assert len(totals) == len(scenario), "payments are missing from the database"
     assert max(row["refunds_count"] for row in totals) == 3, "the three-step refund is missing"
 
     assert_no_rows(
@@ -79,11 +79,11 @@ def test_refunds_never_add_up_to_more_than_the_payment_amount(
 
 @allure.title("Payment status agrees with the sum of its refunds")
 def test_payment_status_agrees_with_the_sum_of_its_refunds(
-    db: Database, merchant: MerchantAccount, seeded: dict[str, PaymentStatus]
+    db: Database, merchant: MerchantAccount, scenario: dict[str, PaymentStatus]
 ) -> None:
     totals = {str(row["id"]): row for row in db.fetch_all(REFUND_TOTALS, (merchant.id,))}
     assert {pid: row["status"] for pid, row in totals.items()} == {
-        pid: status.value for pid, status in seeded.items()
+        pid: status.value for pid, status in scenario.items()
     }
 
     assert_no_rows(
@@ -104,7 +104,7 @@ def test_payment_status_agrees_with_the_sum_of_its_refunds(
 
 @allure.title("Refund rows match the amounts the API reports")
 def test_refund_rows_match_the_amounts_the_api_reports(
-    api: PaymentsApi, db: Database, merchant: MerchantAccount, seeded: dict[str, PaymentStatus]
+    api: PaymentsApi, db: Database, merchant: MerchantAccount, scenario: dict[str, PaymentStatus]
 ) -> None:
     """Window function: each payment's share of the merchant's total refunded money."""
     rows = db.fetch_all(

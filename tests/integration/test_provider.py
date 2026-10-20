@@ -17,7 +17,7 @@ from tests.clients.provider_mock_api import ProviderMockApi
 from tests.config import Settings
 from tests.factories.payment_factory import PaymentFactory
 from tests.models.payments import Payment, PaymentStatus
-from tests.utils.allure_links import area, requirement, seeded_bug
+from tests.utils.allure_links import area, requirement
 from tests.utils.db import Database
 
 pytestmark = [pytest.mark.integration, area("Provider integration"), requirement("PAY-PROVIDER")]
@@ -32,7 +32,7 @@ FAILURES = [
     pytest.param(
         "tok_timeout",
         "provider_timeout",
-        marks=[pytest.mark.regression, seeded_bug("BUG-4")],
+        marks=[pytest.mark.regression],
         id="timeout",
     ),
 ]

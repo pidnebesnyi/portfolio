@@ -27,7 +27,7 @@ from tests.utils.allure_evidence import (
     clear_browser_artifacts,
     write_run_metadata,
 )
-from tests.utils.allure_links import annotate, label_suites, seeded_run
+from tests.utils.allure_links import annotate, label_suites
 from tests.utils.db import Database
 from tests.utils.tokens import totp_code
 
@@ -48,9 +48,6 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
         # The report reads like prose, not function names (allure-pytest's own lookup of the title).
         if not getattr(getattr(item, "obj", None), "__allure_display_name__", None):
             raise pytest.UsageError(f"{item.nodeid} needs an Allure title: add @allure.title(...)")
-        # Written into the JUnit XML, so scripts/seeded_bugs_report.py knows who guards which bug.
-        for mark in item.iter_markers("seeded_bug"):
-            item.user_properties.append(("seeded_bug", str(mark.args[0])))
         # Retries are opt-in per test and must say why (pytest-rerunfailures reads `reruns`).
         for flaky in item.iter_markers("flaky"):
             if not flaky.kwargs.get("reason"):
@@ -122,8 +119,7 @@ def db(settings: Settings) -> Database:
 def _allure_metadata(request: pytest.FixtureRequest, settings: Settings) -> None:
     evidence.reset()
     annotate(request.node, settings.repo_url)
-    label_suites(request.node.nodeid, settings.seeded_bugs)
-    seeded_run(settings.seeded_bugs)
+    label_suites(request.node.nodeid)
 
 
 # --- function layer ----------------------------------------------------------------------

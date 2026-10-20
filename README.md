@@ -6,14 +6,12 @@ with a provider mock behind it; the product is the framework, the pipeline and t
 
 [![PR](https://github.com/pidnebesnyi/portfolio/actions/workflows/pr.yml/badge.svg)](https://github.com/pidnebesnyi/portfolio/actions/workflows/pr.yml)
 [![Nightly](https://github.com/pidnebesnyi/portfolio/actions/workflows/nightly.yml/badge.svg)](https://github.com/pidnebesnyi/portfolio/actions/workflows/nightly.yml)
-[![Seeded bugs](https://github.com/pidnebesnyi/portfolio/actions/workflows/seeded-bugs.yml/badge.svg)](https://github.com/pidnebesnyi/portfolio/actions/workflows/seeded-bugs.yml)
 [![Load](https://github.com/pidnebesnyi/portfolio/actions/workflows/load.yml/badge.svg)](https://github.com/pidnebesnyi/portfolio/actions/workflows/load.yml)
 
 ## Live reports
 
 - Landing page with the latest numbers: https://pidnebesnyi.github.io/portfolio/
 - Allure report (merged nightly, with history): https://pidnebesnyi.github.io/portfolio/report/
-- Seeded bugs: https://pidnebesnyi.github.io/portfolio/bugs/
 - Load report: https://pidnebesnyi.github.io/portfolio/load/
 
 ## Architecture
@@ -61,7 +59,7 @@ needs zero secrets.
 | `tests/integration` | Payment flow against the provider mock: decline, error, timeout | 8 | PR (`api` job); nightly |
 | `tests/db` | SQL invariants (JOIN, GROUP BY / HAVING, window, CTE) on data created through the API | 7 | PR (`api` job); nightly |
 | `tests/ui` | Playwright through page objects; data comes from the API | 21 (4 smoke) | PR (`ui-smoke` job, smoke only); nightly |
-| `tests/unit` | Landing-page builder, seeded-bugs report script, Allure suite labels | 25 | PR (`api` job); nightly |
+| `tests/unit` | Landing-page builder, Allure suite labels | 25 | PR (`api` job); nightly |
 
 About 157 tests in total, 17 of them tagged `smoke`.
 
@@ -71,19 +69,7 @@ About 157 tests in total, 17 of them tagged `smoke`.
 |---|---|---|---|
 | `pr.yml` | every pull request | lint (gitleaks, ruff, mypy); `api` job (unit, API, integration, DB and contract tests on compose); `ui-smoke` job (browser smoke tests). Each job has a 10-minute timeout | Allure results and UI traces as workflow artifacts |
 | `nightly.yml` | 02:30 UTC daily, manual | full suite in 3 pytest-split shards; one merged Allure report with history | `/report/` and the landing-page numbers at the site root |
-| `seeded-bugs.yml` | Mondays 05:00 UTC, manual | each of BUG-1..4 switched on in turn; a marked test must fail for each. Latest run: 4 seeded, 4 caught; the four failing runs are also published as one Allure report | `/bugs/`, `/bugs/report/` |
 | `load.yml` | Mondays 04:00 UTC, manual | Locust, 20 users for 3 minutes; fails on p95 > 500 ms or errors > 1 % | `/load/` |
-
-## Seeded bugs
-
-The `SEEDED_BUGS` environment variable switches on known defects in the app: BUG-1 creates a second
-payment on an idempotent replay, BUG-2 removes the over-refund guard, BUG-3 lets a merchant read
-another merchant's payment, and BUG-4 leaves a payment `authorized` after a provider timeout.
-The weekly job passes only if a marked test fails for each bug and the suite is green with no bug on.
-Results are at https://pidnebesnyi.github.io/portfolio/bugs/. The failing tests, with their steps,
-last request/response and SQL, are in the Allure report at
-https://pidnebesnyi.github.io/portfolio/bugs/report/ (each result carries the bug that was on as its
-parent suite and a `seeded bugs` parameter).
 
 ## Framework decisions
 

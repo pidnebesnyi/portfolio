@@ -46,7 +46,6 @@ services:
       DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/payments
       PROVIDER_URL: http://provider-mock:8081
       PROVIDER_TIMEOUT_S: "2"
-      SEEDED_BUGS: ${SEEDED_BUGS:-}
     depends_on:
       db:
         condition: service_healthy
@@ -69,8 +68,6 @@ services:
       BASE_URL: http://app:8000
       DB_DSN: postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/payments
       PROVIDER_URL: http://provider-mock:8081
-      # Only labels the results (Allure parent suite + parameter); the bug itself lives in the app.
-      SEEDED_BUGS: ${SEEDED_BUGS:-}
       # Shown in the Allure Environment widget; empty outside CI.
       GITHUB_SHA: ${GITHUB_SHA:-}
       GITHUB_RUN_ID: ${GITHUB_RUN_ID:-}

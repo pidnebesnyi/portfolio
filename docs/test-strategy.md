@@ -35,7 +35,7 @@ The strategy below is about how the risk in such a flow is covered, and where it
 
 | Level | Tests | Runs |
 |-------|------:|------|
-| Unit (site builder, report script, Allure labels) | 25 | every run |
+| Unit (site builder, Allure labels) | 25 | every run |
 | API, `tests/api` | 95 | every PR |
 | Contract, `tests/contract` | 1 test, 13 operations as subtests | every PR |
 | Integration with the provider mock | 8 | every PR |
@@ -46,8 +46,8 @@ The strategy below is about how the risk in such a flow is covered, and where it
 157 tests in the suite (numbers from the latest local run, the live number is on the landing page).
 The shape is a pyramid on purpose: about 60 % of the tests are API checks, under 15 % need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
-The 25 unit tests cover the plain code around the suite: the landing-page builder, the seeded-bugs
-report script and the Allure suite labels.
+The 25 unit tests cover the plain code around the suite: the landing-page builder and the Allure
+suite labels.
 17 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
 
 ## Data strategy
@@ -78,16 +78,6 @@ report script and the Allure suite labels.
   browser assertions wait for the condition and return as soon as it holds.
 - Every test carries exactly one tier marker (`smoke`, `regression` or `quarantine`), and collection
   fails otherwise, so `-m` expressions select what we think they select.
-
-## Seeded bugs: why
-
-A green suite proves little unless it can also go red. Four defects can be switched on in the app,
-one per important risk: replayed idempotency key creates a second payment (BUG-1), the over-refund
-guard is removed (BUG-2), another merchant's payment is readable (BUG-3), a provider timeout leaves
-the payment `authorized` (BUG-4). Each is guarded by tests marked with the bug id (6 tests). A weekly
-workflow turns each bug on in turn and requires a marked test to fail, and requires the suite to
-be green with no bug on. The result is published on the `bugs` page. If a refactor makes a test
-too lenient, this is where it shows.
 
 ## Running only the unit tests
 

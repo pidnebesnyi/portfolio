@@ -13,7 +13,7 @@ from tests.config import Settings
 from tests.factories.merchant_factory import MerchantAccount
 from tests.factories.payment_factory import PaymentFactory
 from tests.models.payments import PaymentStatus
-from tests.utils.allure_links import area, requirement, seeded_bug
+from tests.utils.allure_links import area, requirement
 from tests.utils.tokens import forge_token
 
 pytestmark = [area("Basic access checks"), requirement("PAY-ACCESS")]
@@ -32,7 +32,6 @@ def test_expired_token_is_rejected(
 
 
 @pytest.mark.smoke
-@seeded_bug("BUG-3")
 @allure.title("A merchant cannot read another merchant's payment")
 def test_merchant_cannot_read_another_merchants_payment(
     other_merchant: MerchantAccount, api: PaymentsApi, payment_factory: PaymentFactory

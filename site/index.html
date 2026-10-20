@@ -48,7 +48,6 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <h2>Look at the evidence</h2>
 <ul class="cards">
   <li><a href="report/"><b>Test report</b><span>Allure report of the nightly run: steps, requests, SQL, traces.</span></a></li>
-  <li><a href="bugs/"><b>Seeded bugs</b><span>Four defects injected on purpose, and the tests that catch them.</span></a></li>
   <li><a href="load/"><b>Load test</b><span>Locust report with a pass/fail rule on p95 and error rate.</span></a></li>
   <li><a href="https://github.com/pidnebesnyi/portfolio"><b>Source code</b><span>Repository: app, tests, workflows, docs.</span></a></li>
 </ul>
@@ -66,7 +65,7 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <tr><td data-label="Claim">Wired into CI/CD</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/.github/workflows"><code>.github/workflows</code></a>: every pull request is gated; <a href="https://github.com/pidnebesnyi/portfolio/actions">run history</a>.</td></tr>
 <tr><td data-label="Claim">Failures diagnosable from the report</td>
-<td data-label="Proof"><a href="bugs/report/">Allure report of the seeded-bug runs</a>: real failures with steps, request and response attached; the <a href="report/">nightly report</a> keeps the trend.</td></tr>
+<td data-label="Proof"><a href="report/">Nightly Allure report</a>: a failed test carries its steps, last request and response, and SQL; the report keeps the trend.</td></tr>
 <tr><td data-label="Claim">Fixture-based test data management</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/factories"><code>tests/factories</code></a>, <a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/conftest.py"><code>tests/conftest.py</code></a>: a fresh merchant per test, created through the API and cleaned up after.</td></tr>
 <tr><td data-label="Claim">SQL backend verification</td>
@@ -81,8 +80,6 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docs/test-strategy.md#flakiness-policy">Flakiness policy</a>: no global retries, <code>flaky</code> needs a reason, <code>quarantine</code> is excluded from every gate.</td></tr>
 <tr><td data-label="Claim">Testing around an external provider</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/integration"><code>tests/integration</code></a>: decline, 5xx and timeout against a provider mock.</td></tr>
-<tr><td data-label="Claim">Tests that catch real defects</td>
-<td data-label="Proof"><a href="bugs/">Seeded bugs</a>: each bug is switched on in turn; a marked test must fail.</td></tr>
 <tr><td data-label="Claim">Load testing</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/load"><code>load</code></a> and the <a href="load/">published Locust report</a>: the run fails on p95 over 500 ms or errors over 1 %.</td></tr>
 <tr><td data-label="Claim">Docker</td>

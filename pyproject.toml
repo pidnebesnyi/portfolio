@@ -77,7 +77,6 @@ markers = [
     "flaky(reruns=N): the only way a test is retried; each use needs a written reason",
     "area(name): product area, shown as the Allure feature",
     "requirement(id): requirement id the test covers (Allure label + link)",
-    "seeded_bug(id): test is expected to fail when the named bug is injected into the app",
     "ui: browser test (Playwright)",
     "sensitive: test types credentials into the browser; its trace and video are never kept",
     "db: test reads the database directly to verify state",

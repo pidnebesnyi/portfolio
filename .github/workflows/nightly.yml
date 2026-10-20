@@ -6,7 +6,7 @@
 # scripts/build_site.py, which writes the report's numbers into the landing page, and publishes
 # ONLY site-build/ (index.html, style.css, cv.pdf if present) to the gh-pages ROOT. Every publish
 # here uses keep_files: true, so it adds or overwrites just the files it ships and cannot remove
-# /report/, /bugs/ or /load/ (other workflows own the last two). Nothing here needs repository
+# /report/ or /load/ (the load workflow owns the latter). Nothing here needs repository
 # secrets: every shard generates throwaway credentials. Not a merge gate; a red night shows in
 # the report.
 name: Nightly
@@ -139,7 +139,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }} # the built-in per-run token, not a stored secret
           publish_dir: allure-report
           destination_dir: report
-          keep_files: true # other workflows publish /bugs/ and /load/; never wipe the branch
+          keep_files: true # other workflows publish /load/; never wipe the branch
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
           commit_message: "docs(report): nightly #${{ github.run_number }}"
@@ -149,7 +149,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: site-build # only the landing files, never the whole branch
           # destination_dir is left empty on purpose: the root of the branch.
-          keep_files: true # without it the root publish would delete report/, bugs/ and load/
+          keep_files: true # without it the root publish would delete report/ and load/
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
           commit_message: "docs(site): landing page, nightly #${{ github.run_number }}"
