@@ -28,7 +28,10 @@ from typing import Any
 
 BUGS = {
     "BUG-1": "Idempotency replay creates a second payment instead of returning the first.",
-    "BUG-2": "A refund larger than the refundable amount is accepted by the app.",
+    "BUG-2": (
+        "The app-level over-refund guard is removed: only the database CHECK constraint stops "
+        "the money, and the API answers 500 instead of 422 refund_exceeds_amount."
+    ),
     "BUG-3": "GET /payments/{id} returns another merchant's payment.",
     "BUG-4": "A provider timeout leaves the payment authorized instead of failed.",
 }
