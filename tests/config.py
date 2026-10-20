@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     # (scripts/make_env.sh generates them). Nothing secret has a default.
     db_dsn: str
     provider_url: str = "http://localhost:8081"
+    # Must equal the app's PROVIDER_TIMEOUT_S (compose sets 2). Integration tests derive their
+    # time budget from it: a provider hang may cost timeout + 1 s, never more.
+    provider_timeout_s: float = 2.0
 
     # The app creates this admin at startup from the same variables, so the tests can log in
     # and compute TOTP codes.
