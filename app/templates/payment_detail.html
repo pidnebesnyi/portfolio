@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Payment {{ payment.id }}{% endblock %}
+{% block content %}
+<h1>Payment</h1>
+<dl>
+  <dt>ID</dt><dd data-testid="payment-id">{{ payment.id }}</dd>
+  <dt>Status</dt><dd data-testid="payment-status">{{ payment.status }}</dd>
+  <dt>Amount</dt><dd data-testid="payment-amount">{{ payment.amount | money }} {{ payment.currency }}</dd>
+  <dt>Refunded</dt><dd data-testid="payment-refunded">{{ payment.refunded_amount | money }} {{ payment.currency }}</dd>
+  <dt>Description</dt><dd data-testid="payment-description">{{ payment.description }}</dd>
+</dl>
+{% if refundable %}
+<form method="post" action="/ui/payments/{{ payment.id }}/refund" data-testid="refund-form">
+  <label>Refund amount (minor units, up to {{ remaining }}) <input name="amount" required inputmode="numeric" data-testid="refund-amount"></label>
+  <button type="submit" data-testid="refund-submit">Refund</button>
+</form>
+{% else %}
+<p data-testid="refund-unavailable">Refunds are available for captured payments only.</p>
+{% endif %}
+{% endblock %}

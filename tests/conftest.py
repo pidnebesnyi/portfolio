@@ -3,11 +3,14 @@
   session   settings -> http client -> admin token -> admin API, db
   function  merchant_factory -> merchant (fresh, unique per test) -> payment_factory
 
+Failure evidence (last request/response/SQL, and for UI tests screenshot, trace, video) is
+attached to the Allure result by the hooks below; see tests/utils/allure_evidence.py.
+
 Anything a test mutates hangs off a function-scoped merchant, so pytest-xdist workers never
 share data and every test can run alone, in any order.
 """
 
-from collections.abc import Iterator
+from collections.abc import Generator, Iterator
 
 import pytest
 
@@ -18,11 +21,18 @@ from tests.clients.payments_api import PaymentsApi
 from tests.config import Settings
 from tests.factories.merchant_factory import MerchantAccount, MerchantFactory
 from tests.factories.payment_factory import PaymentFactory
+from tests.utils import evidence
+from tests.utils.allure_evidence import (
+    attach_failure_evidence,
+    clear_browser_artifacts,
+    write_run_metadata,
+)
 from tests.utils.allure_links import annotate
 from tests.utils.db import Database
 from tests.utils.tokens import totp_code
 
 TIER_MARKERS = {"smoke", "regression", "quarantine"}
+FAILED = pytest.StashKey[bool]()
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
@@ -37,6 +47,31 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
         # Written into the JUnit XML, so scripts/seeded_bugs_report.py knows who guards which bug.
         for mark in item.iter_markers("seeded_bug"):
             item.user_properties.append(("seeded_bug", str(mark.args[0])))
+        # Retries are opt-in per test and must say why (pytest-rerunfailures reads `reruns`).
+        for flaky in item.iter_markers("flaky"):
+            if not flaky.kwargs.get("reason"):
+                raise pytest.UsageError(f"{item.nodeid}: @pytest.mark.flaky needs reason=...")
+
+
+def pytest_sessionstart(session: pytest.Session) -> None:
+    """Once per run, in the xdist controller only: Allure run metadata, clean browser artifacts."""
+    config = session.config
+    if hasattr(config, "workerinput"):
+        return
+    if alluredir := config.getoption("allure_report_dir"):
+        write_run_metadata(str(alluredir), Settings())
+    clear_browser_artifacts(str(config.getoption("output")))
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item: pytest.Item) -> Generator[None, object, None]:
+    """Attach evidence to failed tests. Browser files only exist once the fixtures that record
+    them have been torn down, so the attaching happens in the teardown report."""
+    report = (yield).get_result()  # type: ignore[attr-defined]
+    if report.when in ("setup", "call") and report.failed:
+        item.stash[FAILED] = True
+    elif report.when == "teardown" and item.stash.get(FAILED, False):
+        attach_failure_evidence(item)
 
 
 # --- session layer -----------------------------------------------------------------------
@@ -81,6 +116,7 @@ def db(settings: Settings) -> Database:
 
 @pytest.fixture(autouse=True)
 def _allure_metadata(request: pytest.FixtureRequest, settings: Settings) -> None:
+    evidence.reset()
     annotate(request.node, settings.repo_url)
 
 
