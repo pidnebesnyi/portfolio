@@ -148,10 +148,5 @@ def test_real_template_only_uses_known_placeholders() -> None:
     page = build_site.render(template, values)  # raises on a BUILD name the script does not know
 
     assert "{{BUILD_" not in page
-    assert build_site.drop_unfilled_profile(template)[1]  # the real page hides an unfilled profile
-    assert set(build_site.open_placeholders(page)) == {
-        "PROFILE_HEADLINE",
-        "PROFILE_SUMMARY",
-        "LINKEDIN_URL",
-        "CONTACT_EMAIL",
-    }
+    assert build_site.open_placeholders(page) == []  # the profile is filled in
+    assert build_site.drop_unfilled_profile(template)[1] == []  # so the build keeps it
