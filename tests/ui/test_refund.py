@@ -1,3 +1,4 @@
+import allure
 import pytest
 from playwright.sync_api import Page, expect
 
@@ -13,6 +14,7 @@ AMOUNT = 2000  # 20.00
 
 
 @pytest.mark.smoke
+@allure.title("A merchant refunds a captured payment in two steps")
 def test_merchant_refunds_a_captured_payment_in_two_steps(
     merchant_page: Page, api: PaymentsApi, payment_factory: PaymentFactory
 ) -> None:
@@ -38,6 +40,7 @@ def test_merchant_refunds_a_captured_payment_in_two_steps(
 
 
 @pytest.mark.regression
+@allure.title("A refund over the remaining amount is refused and changes nothing")
 def test_refund_over_the_remaining_amount_is_refused_and_changes_nothing(
     merchant_page: Page, api: PaymentsApi, payment_factory: PaymentFactory
 ) -> None:
@@ -55,6 +58,7 @@ def test_refund_over_the_remaining_amount_is_refused_and_changes_nothing(
 
 @pytest.mark.regression
 @pytest.mark.parametrize("status", [PaymentStatus.CREATED, PaymentStatus.AUTHORIZED])
+@allure.title("A payment in the {status} state offers no refund form")
 def test_payments_that_are_not_captured_offer_no_refund_form(
     merchant_page: Page, payment_factory: PaymentFactory, status: PaymentStatus
 ) -> None:

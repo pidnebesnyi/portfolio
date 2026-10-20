@@ -1,3 +1,4 @@
+import allure
 import pytest
 
 from tests.clients.payments_api import PaymentsApi
@@ -11,6 +12,7 @@ pytestmark = [area("Refunds"), requirement("PAY-REFUND")]
 
 @pytest.mark.smoke
 @seeded_bug("BUG-2")
+@allure.title("A refund over the payment amount is rejected")
 def test_refund_over_the_payment_amount_is_rejected(
     api: PaymentsApi, payment_factory: PaymentFactory
 ) -> None:
@@ -24,6 +26,7 @@ def test_refund_over_the_payment_amount_is_rejected(
 
 
 @pytest.mark.smoke
+@allure.title("Partial refunds accumulate until the payment is fully refunded")
 def test_partial_refunds_accumulate_until_fully_refunded(
     api: PaymentsApi, payment_factory: PaymentFactory
 ) -> None:
@@ -46,6 +49,7 @@ def test_partial_refunds_accumulate_until_fully_refunded(
 
 
 @pytest.mark.regression
+@allure.title("A full refund in one call marks the payment refunded")
 def test_full_refund_in_one_call_marks_payment_refunded(
     api: PaymentsApi, payment_factory: PaymentFactory
 ) -> None:
@@ -59,6 +63,7 @@ def test_full_refund_in_one_call_marks_payment_refunded(
 
 @pytest.mark.regression
 @seeded_bug("BUG-2")
+@allure.title("A refund exceeding the remainder is rejected")
 def test_refund_exceeding_the_remainder_is_rejected(
     api: PaymentsApi, payment_factory: PaymentFactory
 ) -> None:
@@ -73,6 +78,7 @@ def test_refund_exceeding_the_remainder_is_rejected(
 
 @pytest.mark.regression
 @pytest.mark.parametrize("amount", [0, -1])
+@allure.title("A refund amount must be positive: {amount}")
 def test_refund_amount_must_be_positive(
     api: PaymentsApi, payment_factory: PaymentFactory, amount: int
 ) -> None:
@@ -83,6 +89,7 @@ def test_refund_amount_must_be_positive(
 
 @pytest.mark.regression
 @pytest.mark.db
+@allure.title("Refund rows match the payment's refunded total")
 def test_refund_rows_match_the_payment_total(
     api: PaymentsApi, payment_factory: PaymentFactory, db: Database
 ) -> None:

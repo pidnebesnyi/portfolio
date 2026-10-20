@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+import allure
 import pytest
 from playwright.sync_api import Page, expect
 
@@ -13,6 +14,7 @@ pytestmark = [pytest.mark.ui, area("UI payments"), requirement("PAY-LIST")]
 
 
 @pytest.mark.regression
+@allure.title("The payment list shows own payments with their status")
 def test_payment_list_shows_own_payments_with_their_status(
     merchant_page: Page, payment_factory: PaymentFactory
 ) -> None:
@@ -30,6 +32,7 @@ def test_payment_list_shows_own_payments_with_their_status(
 
 
 @pytest.mark.regression
+@allure.title("The status filter narrows the list and reset restores it")
 def test_status_filter_narrows_the_list_and_reset_restores_it(
     merchant_page: Page, payment_factory: PaymentFactory
 ) -> None:
@@ -55,6 +58,7 @@ def test_status_filter_narrows_the_list_and_reset_restores_it(
 
 
 @pytest.mark.regression
+@allure.title("The date range filter includes today and excludes other days")
 def test_date_range_filter_includes_today_and_excludes_other_days(
     merchant_page: Page, payment_factory: PaymentFactory
 ) -> None:
@@ -78,6 +82,7 @@ def test_date_range_filter_includes_today_and_excludes_other_days(
 
 
 @pytest.mark.regression
+@allure.title("The status and date filters combine")
 def test_status_and_date_filters_combine(
     merchant_page: Page, payment_factory: PaymentFactory
 ) -> None:

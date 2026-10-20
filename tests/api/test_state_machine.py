@@ -6,6 +6,7 @@ The two tables below are the specification. Adding a status or an action means a
 
 from uuid import UUID
 
+import allure
 import pytest
 
 from tests.clients.payments_api import PaymentsApi
@@ -67,6 +68,7 @@ def _perform(
     ("start", "action", "expected"),
     [pytest.param(s, a, e, id=f"{s}--{a}-->{e}") for (s, a), e in ALLOWED.items()],
 )
+@allure.title("Allowed transition: {param_id}")
 def test_allowed_transition(
     api: PaymentsApi, payment_factory: PaymentFactory, start: S, action: str, expected: S
 ) -> None:
@@ -90,6 +92,7 @@ def test_allowed_transition(
         for s, a in FORBIDDEN
     ],
 )
+@allure.title("A forbidden transition is rejected and changes nothing: {param_id}")
 def test_forbidden_transition_is_rejected_and_changes_nothing(
     api: PaymentsApi, payment_factory: PaymentFactory, start: S, action: str
 ) -> None:
@@ -103,6 +106,7 @@ def test_forbidden_transition_is_rejected_and_changes_nothing(
 
 
 @pytest.mark.regression
+@allure.title("The forbidden table covers every status and action pair")
 def test_forbidden_table_covers_every_pair() -> None:
     """Guards the guard: if ALLOWED or REACHABLE change, the sizes below must be revisited."""
     assert len(ALLOWED) + len(FORBIDDEN) == len(REACHABLE) * len(ACTIONS)

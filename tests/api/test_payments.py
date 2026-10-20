@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 
+import allure
 import pytest
 
 from tests.clients.payments_api import PaymentsApi
@@ -12,6 +13,7 @@ pytestmark = area("Payments")
 
 
 @pytest.mark.smoke
+@allure.title("Creating a payment returns the created payment")
 def test_create_payment_returns_created_payment(
     api: PaymentsApi, merchant: MerchantAccount
 ) -> None:
@@ -43,11 +45,13 @@ def test_create_payment_returns_created_payment(
         pytest.param({"currency": "UAH", "card_token": "t"}, id="missing-amount"),
     ],
 )
+@allure.title("Payment creation rejects an invalid body: {param_id}")
 def test_create_payment_rejects_invalid_body(api: PaymentsApi, body: dict[str, object]) -> None:
     api.create_raw(body).expect_error(422, "validation_error")
 
 
 @pytest.mark.regression
+@allure.title("The list returns only own payments, newest first")
 def test_list_returns_only_own_payments_newest_first(
     api: PaymentsApi, other_merchant: MerchantAccount, payment_factory: PaymentFactory
 ) -> None:
@@ -62,6 +66,7 @@ def test_list_returns_only_own_payments_newest_first(
 
 
 @pytest.mark.regression
+@allure.title("The list filters by status")
 def test_list_filters_by_status(api: PaymentsApi, payment_factory: PaymentFactory) -> None:
     created = payment_factory.create()
     captured = payment_factory.create(PaymentStatus.CAPTURED)
@@ -74,6 +79,7 @@ def test_list_filters_by_status(api: PaymentsApi, payment_factory: PaymentFactor
 
 
 @pytest.mark.regression
+@allure.title("The list filters by created date range")
 def test_list_filters_by_created_date_range(
     api: PaymentsApi, payment_factory: PaymentFactory
 ) -> None:
@@ -92,6 +98,7 @@ def test_list_filters_by_created_date_range(
 
 
 @pytest.mark.regression
+@allure.title("The list paginates without overlap")
 def test_list_paginates_without_overlap(api: PaymentsApi, payment_factory: PaymentFactory) -> None:
     created = [payment_factory.create().id for _ in range(3)]
 
@@ -108,5 +115,6 @@ def test_list_paginates_without_overlap(api: PaymentsApi, payment_factory: Payme
     [{"limit": 0}, {"limit": 101}, {"offset": -1}, {"status": "bogus"}],
     ids=["limit-zero", "limit-too-big", "negative-offset", "unknown-status"],
 )
+@allure.title("The list rejects an invalid query: {param_id}")
 def test_list_rejects_invalid_query(api: PaymentsApi, params: dict[str, object]) -> None:
     api.list_raw(params).expect_error(422, "validation_error")

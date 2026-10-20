@@ -3,6 +3,7 @@
 import secrets
 from uuid import uuid4
 
+import allure
 import pytest
 
 from tests.clients.http import LoggedHttpClient
@@ -19,6 +20,7 @@ pytestmark = [area("Basic access checks"), requirement("PAY-ACCESS")]
 
 
 @pytest.mark.smoke
+@allure.title("An expired token is rejected")
 def test_expired_token_is_rejected(
     api: PaymentsApi, merchant: MerchantAccount, settings: Settings
 ) -> None:
@@ -31,6 +33,7 @@ def test_expired_token_is_rejected(
 
 @pytest.mark.smoke
 @seeded_bug("BUG-3")
+@allure.title("A merchant cannot read another merchant's payment")
 def test_merchant_cannot_read_another_merchants_payment(
     other_merchant: MerchantAccount, api: PaymentsApi, payment_factory: PaymentFactory
 ) -> None:
@@ -42,6 +45,7 @@ def test_merchant_cannot_read_another_merchants_payment(
 
 
 @pytest.mark.regression
+@allure.title("A request without a token is unauthorized")
 def test_request_without_token_is_unauthorized(api: PaymentsApi) -> None:
     anonymous = api.with_token(None)
 
@@ -51,11 +55,13 @@ def test_request_without_token_is_unauthorized(api: PaymentsApi) -> None:
 
 @pytest.mark.regression
 @pytest.mark.parametrize("token", ["not-a-jwt", "a.b.c"], ids=["garbage", "malformed"])
+@allure.title("A malformed token is unauthorized: {param_id}")
 def test_malformed_token_is_unauthorized(api: PaymentsApi, token: str) -> None:
     api.with_token(token).list_payments().expect_error(401, "invalid_token")
 
 
 @pytest.mark.regression
+@allure.title("A token signed with another secret is rejected")
 def test_token_signed_with_another_secret_is_rejected(
     api: PaymentsApi, merchant: MerchantAccount
 ) -> None:
@@ -66,6 +72,7 @@ def test_token_signed_with_another_secret_is_rejected(
 
 @pytest.mark.regression
 @pytest.mark.parametrize("action", ["authorize", "capture", "void", "refund"])
+@allure.title("A merchant cannot {action} another merchant's payment")
 def test_merchant_cannot_act_on_another_merchants_payment(
     other_merchant: MerchantAccount,
     payment_factory: PaymentFactory,
@@ -84,6 +91,7 @@ def test_merchant_cannot_act_on_another_merchants_payment(
 
 
 @pytest.mark.regression
+@allure.title("The payment list never shows other merchants' payments")
 def test_list_never_shows_other_merchants_payments(
     other_merchant: MerchantAccount, payment_factory: PaymentFactory
 ) -> None:
@@ -93,6 +101,7 @@ def test_list_never_shows_other_merchants_payments(
 
 
 @pytest.mark.regression
+@allure.title("A merchant cannot use admin endpoints")
 def test_merchant_cannot_use_admin_endpoints(
     http: LoggedHttpClient, merchant: MerchantAccount
 ) -> None:
@@ -100,10 +109,12 @@ def test_merchant_cannot_use_admin_endpoints(
 
 
 @pytest.mark.regression
+@allure.title("An admin token cannot use merchant endpoints")
 def test_admin_token_cannot_use_merchant_endpoints(admin_token: str, api: PaymentsApi) -> None:
     api.with_token(admin_token).list_payments().expect_error(403, "forbidden")
 
 
 @pytest.mark.regression
+@allure.title("Admin endpoints require a token")
 def test_admin_endpoints_require_a_token(http: LoggedHttpClient) -> None:
     MerchantsApi(http, None).list_raw().expect_error(401, "unauthorized")

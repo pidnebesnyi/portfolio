@@ -7,6 +7,7 @@ docs/test-strategy.md for how to run them without the stack.
 import json
 from pathlib import Path
 
+import allure
 import pytest
 
 from scripts import build_site
@@ -47,6 +48,7 @@ def make_site(tmp_path: Path, *, with_cv: bool = False) -> Path:
     return site
 
 
+@allure.title("Run numbers land in the landing page")
 def test_numbers_land_in_the_page(tmp_path: Path) -> None:
     summary = write_summary(tmp_path / "summary.json", total=170, passed=170)
     out = tmp_path / "out"
@@ -61,6 +63,7 @@ def test_numbers_land_in_the_page(tmp_path: Path) -> None:
     assert not (out / "cv.pdf").exists()
 
 
+@allure.title("A missing summary shows dashes and the page still builds")
 def test_missing_summary_shows_dashes_and_still_builds(tmp_path: Path) -> None:
     out = tmp_path / "out"
 
@@ -72,6 +75,7 @@ def test_missing_summary_shows_dashes_and_still_builds(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("content", ["not json", "[]", '{"statistic": 3}', ""])
+@allure.title("An unreadable summary is treated as missing: '{content}'")
 def test_unreadable_summary_is_treated_as_missing(tmp_path: Path, content: str) -> None:
     path = tmp_path / "summary.json"
     path.write_text(content, encoding="utf-8")
@@ -79,6 +83,7 @@ def test_unreadable_summary_is_treated_as_missing(tmp_path: Path, content: str) 
     assert build_site.load_summary(path) is None
 
 
+@allure.title("A failing run is not rounded up to 100 percent")
 def test_a_failing_run_is_not_rounded_up_to_100_percent() -> None:
     summary = {"statistic": {"total": 2000, "passed": 1999}, "time": {}}
 
@@ -88,6 +93,7 @@ def test_a_failing_run_is_not_rounded_up_to_100_percent() -> None:
     assert values["BUILD_PASS_CLASS"] == "bad"
 
 
+@allure.title("The CV link appears only when the PDF exists")
 def test_cv_link_only_when_the_pdf_exists(tmp_path: Path) -> None:
     out = tmp_path / "out"
     summary = write_summary(tmp_path / "summary.json", total=1, passed=1)
@@ -98,6 +104,7 @@ def test_cv_link_only_when_the_pdf_exists(tmp_path: Path) -> None:
     assert (out / "cv.pdf").is_file()
 
 
+@allure.title("Unset owner placeholders are reported, placeholders in comments are ignored")
 def test_unset_owner_placeholders_are_reported_but_comments_are_ignored(tmp_path: Path) -> None:
     out = tmp_path / "out"
 
@@ -107,6 +114,7 @@ def test_unset_owner_placeholders_are_reported_but_comments_are_ignored(tmp_path
     assert "owner note" not in (out / "index.html").read_text(encoding="utf-8")
 
 
+@allure.title("The profile block is left out until the owner fills it in")
 def test_profile_block_is_left_out_until_the_owner_fills_it() -> None:
     template = (
         "<h1>x</h1>\n<!-- profile:start note -->\n<p>{{PROFILE_HEADLINE}}</p>{{BUILD_CV_LINK}}\n"
@@ -125,11 +133,13 @@ def test_profile_block_is_left_out_until_the_owner_fills_it() -> None:
     assert "QA engineer" in filled
 
 
+@allure.title("An unknown build placeholder is an error")
 def test_unknown_build_placeholder_is_an_error() -> None:
     with pytest.raises(ValueError, match="BUILD_TYPO"):
         build_site.render("{{BUILD_TYPO}}", {"BUILD_TESTS": "1"})
 
 
+@allure.title("The run URL is HTML-escaped")
 def test_run_url_is_escaped() -> None:
     values = build_site.build_values(
         {"statistic": {"total": 1, "passed": 1}, "time": {"stop": STOP_MS, "duration": 1000}},
@@ -140,6 +150,7 @@ def test_run_url_is_escaped() -> None:
     assert "<script>" not in values["BUILD_RUN_LINK"]
 
 
+@allure.title("The real template only uses known placeholders")
 def test_real_template_only_uses_known_placeholders() -> None:
     """Catches drift between site/index.html and build_site.build_values."""
     template = (REPO / "site" / "index.html").read_text(encoding="utf-8")

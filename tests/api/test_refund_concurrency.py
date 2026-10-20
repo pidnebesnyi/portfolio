@@ -10,6 +10,7 @@ import threading
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 
+import allure
 import pytest
 
 from tests.clients.payments_api import PaymentsApi
@@ -52,6 +53,7 @@ def _fire_together(calls: list[Callable[[], ApiResponse[Refund]]]) -> list[ApiRe
         pytest.param(1000, 1000, 1, PaymentStatus.REFUNDED, 1000, id="double-full-refund"),
     ],
 )
+@allure.title("Parallel refunds never exceed the payment amount: {param_id}")
 def test_parallel_refunds_never_exceed_the_payment_amount(
     api: PaymentsApi,
     payment_factory: PaymentFactory,
@@ -93,6 +95,7 @@ def test_parallel_refunds_never_exceed_the_payment_amount(
     assert api.get(payment.id).expect(200).refunded_amount == final_total
 
 
+@allure.title("Many small parallel refunds stop exactly at the payment amount")
 def test_many_small_parallel_refunds_stop_exactly_at_the_amount(
     api: PaymentsApi, payment_factory: PaymentFactory, db: Database
 ) -> None:

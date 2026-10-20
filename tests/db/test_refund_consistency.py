@@ -5,6 +5,7 @@ these checks read the tables directly. Every test seeds its own merchant through
 "sanity" query that proves the data is really there, then a "violations" query that must be empty.
 """
 
+import allure
 import pytest
 
 from tests.clients.payments_api import PaymentsApi
@@ -53,6 +54,7 @@ def seeded(api: PaymentsApi, payment_factory: PaymentFactory) -> dict[str, Payme
     return {str(k): v for k, v in payments.items()}
 
 
+@allure.title("Refunds never add up to more than the payment amount")
 def test_refunds_never_add_up_to_more_than_the_payment_amount(
     db: Database, merchant: MerchantAccount, seeded: dict[str, PaymentStatus]
 ) -> None:
@@ -75,6 +77,7 @@ def test_refunds_never_add_up_to_more_than_the_payment_amount(
     )
 
 
+@allure.title("Payment status agrees with the sum of its refunds")
 def test_payment_status_agrees_with_the_sum_of_its_refunds(
     db: Database, merchant: MerchantAccount, seeded: dict[str, PaymentStatus]
 ) -> None:
@@ -99,6 +102,7 @@ def test_payment_status_agrees_with_the_sum_of_its_refunds(
     )
 
 
+@allure.title("Refund rows match the amounts the API reports")
 def test_refund_rows_match_the_amounts_the_api_reports(
     api: PaymentsApi, db: Database, merchant: MerchantAccount, seeded: dict[str, PaymentStatus]
 ) -> None:
