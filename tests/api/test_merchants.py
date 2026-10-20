@@ -6,7 +6,7 @@ import pytest
 from tests.clients.auth_api import AuthApi
 from tests.clients.merchants_api import MerchantsApi
 from tests.factories.merchant_factory import MerchantAccount, MerchantFactory
-from tests.utils.allure_links import area
+from tests.utils.allure_links import area, requirement
 from tests.utils.db import Database
 
 VALID_PASSWORD = secrets.token_urlsafe(12)
@@ -26,6 +26,7 @@ def _expect_rejected(
 
 
 @pytest.mark.regression
+@requirement("MERCH-CREATE")
 @allure.title("An admin creates a merchant who can log in")
 def test_admin_creates_merchant_who_can_log_in(
     merchant_factory: MerchantFactory, auth_api: AuthApi
@@ -36,6 +37,7 @@ def test_admin_creates_merchant_who_can_log_in(
 
 
 @pytest.mark.regression
+@requirement("MERCH-CREATE")
 @allure.title("A created merchant is listed")
 def test_created_merchant_is_listed(merchant: MerchantAccount, admin_api: MerchantsApi) -> None:
     # The list is capped, so under heavy parallel load a very new merchant is still on top.
@@ -45,6 +47,7 @@ def test_created_merchant_is_listed(merchant: MerchantAccount, admin_api: Mercha
 
 
 @pytest.mark.regression
+@requirement("MERCH-CREATE")
 @allure.title("A duplicate merchant email is a conflict")
 def test_duplicate_merchant_email_is_a_conflict(
     merchant: MerchantAccount, admin_api: MerchantsApi
@@ -61,6 +64,7 @@ def test_duplicate_merchant_email_is_a_conflict(
         pytest.param("n", "x@lab.test", "short", id="short-password"),
     ],
 )
+@requirement("MERCH-CREATE")
 @allure.title("Merchant creation rejects invalid input: {param_id}")
 def test_merchant_creation_validates_input(
     admin_api: MerchantsApi, name: str, email: str, password: str
@@ -70,6 +74,7 @@ def test_merchant_creation_validates_input(
 
 @pytest.mark.regression
 @pytest.mark.db
+@requirement("MERCH-DELETE")
 @allure.title("Deleting a merchant cascades and revokes access")
 def test_deleting_merchant_cascades_and_revokes_access(
     merchant_factory: MerchantFactory, admin_api: MerchantsApi, auth_api: AuthApi, db: Database

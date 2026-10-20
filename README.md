@@ -77,9 +77,9 @@ needs zero secrets.
 | `tests/ui` | Playwright through page objects; data comes from the API; includes network interception (`page.route`) and computed-style checks | 32 (6 smoke) | PR (`ui-smoke` job, smoke only); nightly |
 | `tests/logs` | The app's JSON request log: request ids, domain events, no secrets | 11 (2 smoke) | PR (`api` job); nightly |
 | `tests/events` | Domain events consumed from RabbitMQ: captured, refunded, failed, nothing for rejected requests | 5 (1 smoke) | PR (`api` job); nightly |
-| `tests/unit` | Landing-page builder, Allure suite labels, the OpenAPI checker | 32 | PR (`api` job); nightly |
+| `tests/unit` | Landing-page builder, Allure suite labels, the OpenAPI checker, the requirement trace | 35 | PR (`api` job); nightly |
 
-About 185 tests in total, 22 of them tagged `smoke`.
+About 188 tests in total, 22 of them tagged `smoke`.
 
 ## Pipeline
 
@@ -137,8 +137,12 @@ docker compose run --rm tests pytest -q tests/ui --video=off --tracing=off   # c
   `tests/contract` until the pinned file is regenerated (`scripts/export_openapi.py`) and committed,
   so the contract change is reviewed in the pull request diff.
 - Configuration is loaded with pydantic-settings.
-- Markers are enforced: every test has exactly one of `smoke` or `regression`, and
-  `--strict-markers` fails on typos. Retries happen only through `@pytest.mark.flaky` with a reason.
+- Every test outside `tests/unit` traces to a requirement: a GitHub issue labelled
+  [`requirement`](https://github.com/pidnebesnyi/portfolio/issues?q=label%3Arequirement) with
+  acceptance criteria and the risk it covers. The Allure report links each test to its issue; the
+  matrix is in [`docs/test-strategy.md`](docs/test-strategy.md#traceability).
+- Markers are enforced: every test has exactly one of `smoke` or `regression`, a known
+  requirement, and `--strict-markers` fails on typos. Retries happen only through `@pytest.mark.flaky` with a reason.
 - A failed test keeps evidence in Allure: last request and response, last SQL, and for UI tests a
   screenshot, trace and video. Credentials are masked.
 - UI tests get their data from the API and verify only what the UI shows.

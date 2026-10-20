@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     # answers in milliseconds; anything near this limit is a real hang.
     http_timeout_s: float = 15.0
 
-    # Optional: base URL of the GitHub repo, used to turn requirement ids into Allure links.
+    # Optional: base URL of the GitHub repo, used to link requirement ids to their issues.
     repo_url: str = ""
 
     # Where the app writes its JSON request log (the app's LOG_FILE) as seen from the tests; compose

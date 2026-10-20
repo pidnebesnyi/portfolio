@@ -13,7 +13,7 @@ from tests.utils.allure_links import area, requirement
 from tests.utils.tokens import totp_code
 
 # `sensitive`: these tests type credentials, so their trace and video are discarded on failure.
-pytestmark = [pytest.mark.ui, pytest.mark.sensitive, area("UI login"), requirement("AUTH-UI")]
+pytestmark = [pytest.mark.ui, pytest.mark.sensitive, area("UI login"), requirement("AUTH-LOGIN")]
 
 
 @pytest.mark.smoke

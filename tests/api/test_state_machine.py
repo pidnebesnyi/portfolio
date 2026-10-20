@@ -14,9 +14,9 @@ from tests.clients.responses import ApiResponse
 from tests.factories.payment_factory import PaymentFactory
 from tests.models.payments import Payment, Refund
 from tests.models.payments import PaymentStatus as S
-from tests.utils.allure_links import area
+from tests.utils.allure_links import area, requirement
 
-pytestmark = area("Payment state machine")
+pytestmark = [area("Payment state machine"), requirement("PAY-STATE")]
 
 AMOUNT = 1000
 ACTIONS = ("authorize", "capture", "void", "refund")

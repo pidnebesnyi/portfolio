@@ -24,6 +24,7 @@ from tests.clients.payments_api import PaymentsApi
 from tests.config import Settings
 from tests.factories.merchant_factory import MerchantAccount, MerchantFactory
 from tests.factories.payment_factory import PaymentFactory
+from tests.requirements import REQUIREMENTS
 from tests.utils import evidence
 from tests.utils.allure_evidence import (
     attach_failure_evidence,
@@ -42,7 +43,7 @@ FAILED = pytest.StashKey[bool]()
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
     """Every test belongs to exactly one tier, so -m expressions in CI select what we think,
-    and has an Allure title."""
+    has an Allure title, and (outside tests/unit) traces to a known requirement."""
     for item in items:
         tiers = TIER_MARKERS & {m.name for m in item.iter_markers()}
         if len(tiers) != 1:
@@ -53,6 +54,14 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
         # The report reads like prose, not function names (allure-pytest's own lookup of the title).
         if not getattr(getattr(item, "obj", None), "__allure_display_name__", None):
             raise pytest.UsageError(f"{item.nodeid} needs an Allure title: add @allure.title(...)")
+        # The requirement trace (tests/requirements.py); unit tests check tooling, not the product.
+        req_ids = {str(m.args[0]) for m in item.iter_markers("requirement")}
+        if unknown := sorted(req_ids - REQUIREMENTS.keys()):
+            raise pytest.UsageError(
+                f"{item.nodeid}: unknown requirement {unknown}, add it to tests/requirements.py"
+            )
+        if not req_ids and not item.nodeid.startswith("tests/unit/"):
+            raise pytest.UsageError(f"{item.nodeid} needs a requirement: add requirement(...)")
         # Retries are opt-in per test and must say why (pytest-rerunfailures reads `reruns`).
         for flaky in item.iter_markers("flaky"):
             if not flaky.kwargs.get("reason"):

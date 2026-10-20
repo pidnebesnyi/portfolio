@@ -39,7 +39,7 @@ built from an API, a database, a UI, a message broker and an external dependency
 
 | Level | Tests | Runs |
 |-------|------:|------|
-| Unit (site builder, Allure labels, OpenAPI checker) | 32 | every run |
+| Unit (site builder, Allure labels, OpenAPI checker, requirement trace) | 35 | every run |
 | API, `tests/api` | 90 | every PR |
 | OpenAPI contract, `tests/contract` | 1 | every PR |
 | Integration with the WireMock provider stub | 8 | every PR |
@@ -49,12 +49,47 @@ built from an API, a database, a UI, a message broker and an external dependency
 | UI (Playwright) | 32, of which 6 smoke | smoke on every PR, all nightly |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
-185 tests in the suite (numbers from the latest local run, the live number is on the landing page).
+188 tests in the suite (numbers from the latest local run, the live number is on the landing page).
 The shape is a pyramid on purpose: about half of the tests are API checks, about a sixth need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
-The 32 unit tests cover the plain code around the suite: the landing-page builder, the Allure
-suite labels and the OpenAPI checker, which is made to fail on purpose for each kind of violation.
+The 35 unit tests cover the plain code around the suite: the landing-page builder, the Allure
+suite labels, the requirement trace and the OpenAPI checker, which is made to fail on purpose for each kind of violation.
 22 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
+
+## Traceability
+
+Requirements live as GitHub issues labelled
+[`requirement`](https://github.com/pidnebesnyi/portfolio/issues?q=label%3Arequirement), each with
+acceptance criteria, the risks above it covers and the tests that check it. Tests name their
+requirement with `requirement("PAY-REFUND")`; `tests/requirements.py` maps each id to its issue.
+The chain is checked, not trusted:
+
+- collection fails for an unknown id, and for a test outside `tests/unit` that names none;
+- a unit test fails when a requirement is named by no test;
+- in the Allure report every test links to its issue, and the Behaviors tab groups tests by
+  area and requirement.
+
+| Requirement | What | Risk | Tests |
+|---|---|---|---|
+| [PAY-CREATE](https://github.com/pidnebesnyi/portfolio/issues/32) | A merchant creates a payment; invalid input is rejected | 7 | [`api/test_payments.py`](../tests/api/test_payments.py), [`ui/test_create_payment.py`](../tests/ui/test_create_payment.py) |
+| [PAY-LIST](https://github.com/pidnebesnyi/portfolio/issues/33) | A merchant lists own payments with filters and pagination | 3, 6, 7 | [`api/test_payments.py`](../tests/api/test_payments.py), [`ui/test_filters.py`](../tests/ui/test_filters.py), [`db/test_totals_and_cleanup.py`](../tests/db/test_totals_and_cleanup.py) |
+| [PAY-STATE](https://github.com/pidnebesnyi/portfolio/issues/34) | A payment follows its state machine; forbidden transitions change nothing | 2 | [`api/test_state_machine.py`](../tests/api/test_state_machine.py) |
+| [PAY-PROVIDER](https://github.com/pidnebesnyi/portfolio/issues/35) | Provider decline, error and timeout end in a defined state | 1, 2 | [`integration/test_provider.py`](../tests/integration/test_provider.py) |
+| [PAY-IDEMP](https://github.com/pidnebesnyi/portfolio/issues/36) | Payment creation is idempotent per merchant and key | 1, 6 | [`api/test_idempotency.py`](../tests/api/test_idempotency.py), [`db/test_idempotency_keys.py`](../tests/db/test_idempotency_keys.py) |
+| [PAY-REFUND](https://github.com/pidnebesnyi/portfolio/issues/37) | Partial refunds never exceed the payment amount | 1, 6, 7 | [`api/test_refunds.py`](../tests/api/test_refunds.py), [`db/test_refund_consistency.py`](../tests/db/test_refund_consistency.py), [`ui/test_refund.py`](../tests/ui/test_refund.py) |
+| [PAY-ACCESS](https://github.com/pidnebesnyi/portfolio/issues/38) | A merchant reaches only own payments; roles and tokens are enforced | 3 | [`api/test_access.py`](../tests/api/test_access.py) |
+| [PAY-REFRESH](https://github.com/pidnebesnyi/portfolio/issues/39) | The payment page refreshes its status and copes with backend failures | 7 | [`ui/test_status_refresh.py`](../tests/ui/test_status_refresh.py) |
+| [AUTH-LOGIN](https://github.com/pidnebesnyi/portfolio/issues/40) | Login with a password, and a second factor for admins | 4, 7 | [`api/test_health_and_auth.py`](../tests/api/test_health_and_auth.py), [`ui/test_login.py`](../tests/ui/test_login.py) |
+| [MERCH-CREATE](https://github.com/pidnebesnyi/portfolio/issues/41) | An admin creates and lists merchants | 4 | [`api/test_merchants.py`](../tests/api/test_merchants.py) |
+| [MERCH-DELETE](https://github.com/pidnebesnyi/portfolio/issues/42) | Deleting a merchant removes their data and revokes access | 4, 6 | [`api/test_merchants.py`](../tests/api/test_merchants.py), [`db/test_totals_and_cleanup.py`](../tests/db/test_totals_and_cleanup.py) |
+| [EVT-PUBLISH](https://github.com/pidnebesnyi/portfolio/issues/43) | Payment changes are published as events, once, after the commit | 2 | [`events/test_payment_events.py`](../tests/events/test_payment_events.py) |
+| [OBS-LOG](https://github.com/pidnebesnyi/portfolio/issues/44) | Every request is traceable in a structured log without secrets | 2 | [`logs/test_request_log.py`](../tests/logs/test_request_log.py) |
+| [OBS-HEALTH](https://github.com/pidnebesnyi/portfolio/issues/45) | The health endpoint reports whether the database is reachable | 8 | [`api/test_health_and_auth.py`](../tests/api/test_health_and_auth.py) |
+| [API-CONTRACT](https://github.com/pidnebesnyi/portfolio/issues/46) | The API matches its published OpenAPI document; changes are reviewed | 5 | [`contract/test_pinned_contract.py`](../tests/contract/test_pinned_contract.py), [`utils/openapi.py`](../tests/utils/openapi.py) |
+| [UI-STYLE](https://github.com/pidnebesnyi/portfolio/issues/47) | The UI uses the defined fonts and colours | 7 | [`ui/test_styles.py`](../tests/ui/test_styles.py) |
+
+Risk 8 (slow under load) is covered by the Locust profile in `load/`, outside pytest; OBS-HEALTH
+is only its smallest part.
 
 ## Browser techniques
 

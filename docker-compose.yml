@@ -102,6 +102,8 @@ services:
       # Shown in the Allure Environment widget; empty outside CI.
       GITHUB_SHA: ${GITHUB_SHA:-}
       GITHUB_RUN_ID: ${GITHUB_RUN_ID:-}
+      # Requirement ids become links to their GitHub issues; empty = labels only.
+      REPO_URL: ${REPO_URL:-}
     # Chromium shares memory through /dev/shm; the Playwright image docs recommend this.
     ipc: host
     depends_on:
