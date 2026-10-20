@@ -40,19 +40,19 @@ built from an API, a database, a UI, a message broker and an external dependency
 | Level | Tests | Runs |
 |-------|------:|------|
 | Unit (site builder, Allure labels and UI step names, OpenAPI checker, requirement trace) | 46 | every run |
-| API, `tests/api` | 90 | every PR |
+| API, `tests/api` | 160 | every PR |
 | OpenAPI contract, `tests/contract` | 1 | every PR |
-| Integration with the WireMock provider stub | 8 | every PR |
+| Integration with the WireMock provider stub | 9 | every PR |
 | Database invariants | 6 | every PR |
 | Log checks, `tests/logs` | 11 | every PR |
 | Gherkin scenarios, `tests/bdd` | 9 (5 are rows of one outline), of which 1 in the browser | API scenarios every PR, browser scenario nightly |
 | Domain events, `tests/events` | 5 | every PR |
-| UI (Playwright) | 32, of which 6 smoke | smoke on every PR, all nightly |
+| UI (Playwright) | 69, of which 6 smoke | smoke on every PR, all nightly |
 | Postman collection (Newman), `postman/` | 20 requests, 59 assertions | every PR |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
-208 tests in the suite (numbers from the latest local run, the live number is on the landing page).
-The shape is a pyramid on purpose: about half of the tests are API checks, about a sixth need a browser.
+316 tests in the suite (numbers from the latest local run, the live number is on the landing page).
+The shape is a pyramid on purpose: about half of the tests are API checks, about a fifth need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
 The 46 unit tests cover the plain code around the suite: the landing-page builder, the Allure
 suite labels, the requirement trace and the OpenAPI checker, which is made to fail on purpose for each kind of violation.
@@ -65,6 +65,20 @@ failed, one merchant not seeing another's payment, a refund through the browser)
 for readers who do not write Python. The steps call the same factories, clients and page objects, so
 there is no second framework to maintain. Each scenario is bound to a test function that carries
 its Allure title, tier and requirement, which keeps the collection checks below in force.
+
+Depth beyond the happy path, by design:
+
+- **Limits.** Each input has a test at the largest value that passes and the first that fails
+  (amount ceiling, text lengths, idempotency key length, page sizes, merchant name and password).
+- **Races.** The service relies on a row lock (`SELECT ... FOR UPDATE`) and a unique constraint.
+  One request at a time cannot show a broken lock, so `tests/api/test_concurrency.py` and
+  `tests/integration/test_concurrent_authorize.py` send requests together
+  (`tests/utils/parallel.py`): parallel refunds never exceed the amount, one idempotency key makes
+  one payment, capture and void race to exactly one winner, and the provider is charged once.
+  Removing the lock from the service makes five of these fail; that check was done by hand.
+- **Tokens.** Unsigned, expiry-less, wrongly typed and orphaned tokens are refused.
+- **Browser access and navigation.** Titles and headings, links, redirects, the back button with
+  filters, an admin on merchant pages, another merchant's payment, forged or stale sessions.
 
 ## Traceability
 
