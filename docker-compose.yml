@@ -76,6 +76,7 @@ services:
         condition: service_healthy
     volumes:
       - ./allure-results:/work/allure-results
+      - ./junit:/work/junit
     # Default command comes from the image: pytest -m "not quarantine" -n auto
 
   locust:
