@@ -15,6 +15,9 @@
   <a href="/ui/payments" data-testid="filter-reset">Reset</a>
 </form>
 <p data-testid="payments-total">Total: {{ page.total }}</p>
+{% if page.total > page.items|length %}
+<p data-testid="payments-truncated">Showing the newest {{ page.items|length }}; narrow the filters to see the rest.</p>
+{% endif %}
 {% if page.items %}
 <table data-testid="payments-table">
   <thead><tr><th>Created</th><th>Description</th><th>Amount</th><th>Status</th><th></th></tr></thead>

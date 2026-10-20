@@ -8,8 +8,6 @@ that closes the request. What it found is kept as Allure evidence for a failing 
 import json
 from pathlib import Path
 
-from pydantic import ValidationError
-
 from tests.models.logs import LogLine
 from tests.utils import evidence
 from tests.utils.waiting import eventually
@@ -33,9 +31,11 @@ class AppLog:
             if request_id not in raw:
                 continue
             try:
-                lines.append(LogLine.model_validate(json.loads(raw)))
-            except (ValueError, ValidationError):
+                parsed = json.loads(raw)
+            except ValueError:
                 continue
+            # A line that parses but does not fit the model is schema drift: fail, never skip.
+            lines.append(LogLine.model_validate(parsed))
         return [line for line in lines if line.request_id == request_id]
 
     def request(self, request_id: str) -> list[LogLine]:

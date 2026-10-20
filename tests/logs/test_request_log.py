@@ -190,6 +190,7 @@ def test_no_secret_appears_in_the_log(
     # The scan is only meaningful if the requests above are really in the log.
     own_lines = [line for request_id in request_ids for line in app_log.request(request_id)]
     assert {"/auth/login", "/auth/2fa", "/payments"} <= {line.path for line in own_lines}
+    assert {"payment.created", "refund.accepted"} <= {line.event for line in own_lines}
 
     log = app_log.text()
     secrets = {

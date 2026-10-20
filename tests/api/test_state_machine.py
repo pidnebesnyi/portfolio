@@ -74,7 +74,7 @@ def test_allowed_transition(
 ) -> None:
     payment = payment_factory.create(start, amount=AMOUNT)
 
-    assert _perform(api, payment.id, action).status_code in (200, 201)
+    assert _perform(api, payment.id, action).status_code == (201 if action == "refund" else 200)
 
     after = api.get(payment.id).expect(200)
     assert after.status is expected

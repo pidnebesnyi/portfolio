@@ -79,10 +79,10 @@ jobs:
           while IFS='=' read -r key value; do
             [ "$key" = "ADMIN_EMAIL" ] || echo "::add-mask::$value"
           done < .env
-      - name: Start the stack (db, app, provider-mock)
+      - name: Start the stack (db, app, provider-mock; rabbitmq comes up as a dependency)
         run: docker compose up --build --wait db app provider-mock
       - name: Browser smoke tests
-        # 4 smoke tests; two workers is enough and leaves CPU for the app on a 2-core runner.
+        # 6 smoke tests; two workers is enough and leaves CPU for the app on a 2-core runner.
         run: docker compose run --rm tests pytest -m "smoke and ui" -n 2
       - name: App logs (on failure)
         if: failure()

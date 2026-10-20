@@ -24,7 +24,7 @@ from app.config import get_settings
 from app.db import Payment
 
 EXCHANGE = "payments.events"
-TIMEOUT_S = 2.0  # connecting, handshake and the broker's confirm are each capped
+TIMEOUT_S = 2.0  # connecting, the handshake and each socket operation are capped
 
 
 def _send(url: str, routing_key: str, body: dict[str, object]) -> None:

@@ -44,8 +44,8 @@ def install_error_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(StarletteHTTPException)
     async def _http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
-        # Framework-level errors (malformed JSON body, unknown route, wrong method) get the
-        # same body shape as ours instead of FastAPI's {"detail": ...}.
+        # Framework-level errors (unknown route, wrong method) get the same body shape as ours
+        # instead of FastAPI's {"detail": ...}. A malformed JSON body is a validation error (422).
         codes = {400: "bad_request", 404: "not_found", 405: "method_not_allowed"}
         return JSONResponse(
             status_code=exc.status_code,

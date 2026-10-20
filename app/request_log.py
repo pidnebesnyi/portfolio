@@ -26,6 +26,9 @@ from starlette.datastructures import MutableHeaders
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
 HEADER = "X-Request-ID"
+# Sent by the middleware when a handler raises before answering. Starlette's own 500 is sent by a
+# middleware outside this one, so it would go out without the request id.
+_INTERNAL_ERROR = b'{"code":"internal_error","message":"Internal server error"}'
 # Only a short, plain token is accepted from the client, so a header cannot forge extra log lines.
 _VALID_ID = re.compile(r"^[A-Za-z0-9._-]{8,64}$")
 
@@ -88,17 +91,27 @@ class RequestLogMiddleware:
         context: dict[str, Any] = {"request_id": request_id}
         token = _context.set(context)
         status = 500  # what the client gets if the app raises before answering
+        response_started = False
         started = time.perf_counter()
 
         async def send_with_id(message: Message) -> None:
-            nonlocal status
+            nonlocal status, response_started
             if message["type"] == "http.response.start":
                 status = message["status"]
+                response_started = True
                 MutableHeaders(scope=message)[HEADER] = request_id
             await send(message)
 
         try:
             await self.app(scope, receive, send_with_id)
+        except Exception:
+            if not response_started:
+                headers = [(b"content-type", b"application/json")]
+                await send_with_id(
+                    {"type": "http.response.start", "status": 500, "headers": headers}
+                )
+                await send_with_id({"type": "http.response.body", "body": _INTERNAL_ERROR})
+            raise  # still reaches the server's error log with its traceback
         finally:
             _write(
                 "http.request",

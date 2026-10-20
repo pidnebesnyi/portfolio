@@ -77,14 +77,15 @@ def test_deleting_a_merchant_leaves_no_payments_refunds_or_keys(
     leftovers = """
         SELECT 'payments' AS tbl, COUNT(*)::int AS n FROM payments WHERE merchant_id = %(m)s
         UNION ALL
-        SELECT 'refunds', COUNT(*)::int FROM refunds r
-            JOIN payments p ON p.id = r.payment_id WHERE p.merchant_id = %(m)s
+        SELECT 'refunds', COUNT(*)::int FROM refunds WHERE payment_id = %(p)s
         UNION ALL
         SELECT 'idempotency_keys', COUNT(*)::int FROM idempotency_keys WHERE merchant_id = %(m)s
         UNION ALL
         SELECT 'users', COUNT(*)::int FROM users WHERE merchant_id = %(m)s
     """
-    before = {row["tbl"]: row["n"] for row in db.fetch_all(leftovers, {"m": doomed.id})}
+    before = {
+        row["tbl"]: row["n"] for row in db.fetch_all(leftovers, {"m": doomed.id, "p": payment.id})
+    }
     assert before == {"payments": 1, "refunds": 1, "idempotency_keys": 1, "users": 1}
 
     admin_api.delete(doomed.id).expect_no_content(204)
@@ -92,6 +93,6 @@ def test_deleting_a_merchant_leaves_no_payments_refunds_or_keys(
     assert_no_rows(
         db,
         f"SELECT * FROM ({leftovers}) t WHERE n > 0",
-        {"m": doomed.id},
+        {"m": doomed.id, "p": payment.id},
         "rows left behind by a deleted merchant",
     )

@@ -14,6 +14,17 @@ VALID_PASSWORD = secrets.token_urlsafe(12)
 pytestmark = area("Merchants (admin)")
 
 
+def _expect_rejected(
+    admin_api: MerchantsApi, name: str, email: str, password: str, status: int, code: str
+) -> None:
+    """A merchant created by mistake (the bug under test) is deleted, so it cannot break later
+    runs with a 409 on its fixed email."""
+    response = admin_api.create(name, email, password)
+    if response.status_code == 201:
+        admin_api.delete(response.expect(201).id)
+    response.expect_error(status, code)
+
+
 @pytest.mark.regression
 @allure.title("An admin creates a merchant who can log in")
 def test_admin_creates_merchant_who_can_log_in(
@@ -38,7 +49,7 @@ def test_created_merchant_is_listed(merchant: MerchantAccount, admin_api: Mercha
 def test_duplicate_merchant_email_is_a_conflict(
     merchant: MerchantAccount, admin_api: MerchantsApi
 ) -> None:
-    admin_api.create("dup", merchant.email, merchant.password).expect_error(409, "email_taken")
+    _expect_rejected(admin_api, "dup", merchant.email, merchant.password, 409, "email_taken")
 
 
 @pytest.mark.regression
@@ -54,7 +65,7 @@ def test_duplicate_merchant_email_is_a_conflict(
 def test_merchant_creation_validates_input(
     admin_api: MerchantsApi, name: str, email: str, password: str
 ) -> None:
-    admin_api.create(name, email, password).expect_error(422, "validation_error")
+    _expect_rejected(admin_api, name, email, password, 422, "validation_error")
 
 
 @pytest.mark.regression

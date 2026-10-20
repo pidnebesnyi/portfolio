@@ -82,6 +82,8 @@ def test_a_500_answer_shows_an_error_and_leaves_the_status_as_it_was(
 
     detail.refresh_status()
 
+    # The text is in the page even while the message is hidden, so visibility is the check.
+    expect(detail.refresh_error).to_be_visible()
     expect(detail.refresh_error).to_have_text("Could not refresh the status")
     expect(detail.status).to_have_text("created")
     expect(detail.refresh_button).to_be_enabled()
@@ -141,7 +143,11 @@ def test_the_error_goes_away_after_a_retry_that_works(
     expect(detail.refresh_error).to_be_visible()
 
     detail.page.unroute(STATUS_ENDPOINT, failing)  # the real server answers from here on
-    detail.refresh_status()
+    # The click hides the error before the fetch starts, so wait for the real answer first.
+    with detail.page.expect_response(STATUS_ENDPOINT) as answer:
+        detail.refresh_status()
+    assert answer.value.ok, answer.value.status
 
+    expect(detail.refresh_button).to_be_enabled()
     expect(detail.refresh_error).to_be_hidden()
     expect(detail.status).to_have_text("created")

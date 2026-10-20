@@ -22,7 +22,7 @@ router = APIRouter(prefix="/auth", tags=["auth"], responses=ERROR_RESPONSES)
 
 # Verified against when the email is unknown, so response time does not reveal which emails exist.
 @lru_cache
-def _dummy_hash() -> str:
+def dummy_hash() -> str:
     return hash_password("not-a-real-password")
 
 
@@ -31,7 +31,7 @@ def login(body: LoginRequest, session: Session = Depends(get_session)) -> LoginR
     """Merchants get an access token. Admins get an MFA token and must call /auth/2fa."""
     user = session.scalar(select(User).where(User.email == body.email))
     if user is None:
-        verify_password(body.password, _dummy_hash())
+        verify_password(body.password, dummy_hash())
         raise ApiError(401, "invalid_credentials", "Invalid email or password")
     if not verify_password(body.password, user.password_hash):
         raise ApiError(401, "invalid_credentials", "Invalid email or password")

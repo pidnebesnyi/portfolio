@@ -19,10 +19,11 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app import request_log
 from app.config import get_settings
 from app.db import Merchant, User, get_session
 from app.errors import ApiError
-from app.routers import payments
+from app.routers import auth, payments
 from app.schemas import Currency, PaymentCreate, RefundCreate
 from app.security import (
     Principal,
@@ -87,14 +88,21 @@ def _start_session(response: Response, token: str) -> None:
 
 def current_principal(
     session_cookie: Annotated[str | None, Cookie(alias=SESSION_COOKIE)] = None,
+    db: Session = Depends(get_session),
 ) -> Principal | None:
     """None when there is no valid session; handlers then redirect to the login page."""
     if not session_cookie:
         return None
     try:
-        return principal_from_token(session_cookie)
+        principal = principal_from_token(session_cookie)
     except ApiError:
         return None
+    if principal.role == "merchant":
+        # Same rule as the API's require_merchant: a session can outlive its merchant.
+        if db.scalar(select(Merchant.id).where(Merchant.id == principal.merchant_id)) is None:
+            return None
+        request_log.bind(merchant_id=principal.merchant_id)
+    return principal
 
 
 # --- login / 2fa -----------------------------------------------------------------------------
@@ -112,7 +120,10 @@ def login(
     db: Session = Depends(get_session),
 ) -> RedirectResponse:
     user = db.scalar(select(User).where(User.email == email))
-    if user is None or not verify_password(password, user.password_hash):
+    if user is None:
+        verify_password(password, auth.dummy_hash())  # same timing as a wrong password
+        return _redirect("/ui/login", ("error", "Invalid email or password"))
+    if not verify_password(password, user.password_hash):
         return _redirect("/ui/login", ("error", "Invalid email or password"))
     if user.role == "admin":
         response = _redirect("/ui/2fa")

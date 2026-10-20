@@ -25,14 +25,16 @@ SENSITIVE_JSON_KEYS = frozenset(
         "password_hash",
     }
 )
+# "code" is the one-time code in a request, but the error code in a response, which must show.
+RESPONSE_SENSITIVE_JSON_KEYS = SENSITIVE_JSON_KEYS - {"code"}
 SENSITIVE_HEADERS = frozenset({"authorization"})
 
 
-def mask_json(value: Any) -> Any:
+def mask_json(value: Any, keys: frozenset[str] = SENSITIVE_JSON_KEYS) -> Any:
     if isinstance(value, dict):
-        return {k: MASK if k in SENSITIVE_JSON_KEYS else mask_json(v) for k, v in value.items()}
+        return {k: MASK if k in keys else mask_json(v, keys) for k, v in value.items()}
     if isinstance(value, list):
-        return [mask_json(v) for v in value]
+        return [mask_json(v, keys) for v in value]
     return value
 
 
@@ -44,12 +46,12 @@ def _pretty(value: Any) -> str:
     return json.dumps(value, indent=2, ensure_ascii=False, default=str)
 
 
-def _body(content: bytes) -> Any:
+def _body(content: bytes, keys: frozenset[str] = SENSITIVE_JSON_KEYS) -> Any:
     """Body as a masked JSON value when it is JSON, otherwise as text; None when empty."""
     if not content:
         return None
     try:
-        return mask_json(json.loads(content))
+        return mask_json(json.loads(content), keys)
     except ValueError:
         return content.decode(errors="replace")
 
@@ -94,7 +96,7 @@ class LoggedHttpClient:
                     "status": response.status_code,
                     "elapsed_ms": round(response.elapsed.total_seconds() * 1000),
                     "headers": mask_headers(response.headers),
-                    "body": _body(response.content),
+                    "body": _body(response.content, RESPONSE_SENSITIVE_JSON_KEYS),
                 }
             )
             allure.attach(

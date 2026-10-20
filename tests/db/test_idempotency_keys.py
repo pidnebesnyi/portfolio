@@ -44,6 +44,8 @@ def test_no_idempotency_key_maps_to_two_payments(
     )
     assert {row["key"] for row in stored} == set(keys), "keys sent and keys stored differ"
 
+    # UNIQUE (key, merchant_id) makes this impossible today; the check guards against the
+    # constraint being dropped in a later migration.
     assert_no_rows(
         db,
         """
