@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>payments-qa-lab</title>
-<meta name="description" content="QA automation portfolio: API, contract, database and browser tests, CI, a load test and a test strategy around a small payments service.">
+<meta name="description" content="QA automation portfolio: API, database and browser tests, CI, a load test and a test strategy around a small payments service.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -34,16 +34,15 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 
 <h2>Latest nightly run</h2>
 <ul class="stats">
-  <li><span class="value">157</span><span class="label">tests</span></li>
+  <li><span class="value">144</span><span class="label">tests</span></li>
   <li><span class="value ok">100.0 %</span><span class="label">passed</span></li>
-  <li><span class="value">24 s</span><span class="label">duration</span><span class="note">3 shards in parallel</span></li>
-  <li><span class="value">2026-10-20</span><span class="label">last run</span><span class="note"><a href="https://github.com/pidnebesnyi/portfolio/actions/runs/39448600474">15:29 UTC, workflow run</a></span></li>
+  <li><span class="value">1 min 44 s</span><span class="label">duration</span></li>
+  <li><span class="value">2026-10-20</span><span class="label">last run</span><span class="note"><a href="https://github.com/pidnebesnyi/portfolio/actions/runs/39454766663">16:15 UTC, workflow run</a></span></li>
 </ul>
 
 <h2>Look at the evidence</h2>
 <ul class="cards">
   <li><a href="report/"><b>Test report</b><span>Allure report of the nightly run: steps, requests, SQL, traces.</span></a></li>
-  <li><a href="bugs/"><b>Seeded bugs</b><span>Four defects injected on purpose, and the tests that catch them.</span></a></li>
   <li><a href="load/"><b>Load test</b><span>Locust report with a pass/fail rule on p95 and error rate.</span></a></li>
   <li><a href="https://github.com/pidnebesnyi/portfolio"><b>Source code</b><span>Repository: app, tests, workflows, docs.</span></a></li>
 </ul>
@@ -61,33 +60,29 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <tr><td data-label="Claim">Wired into CI/CD</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/.github/workflows"><code>.github/workflows</code></a>: every pull request is gated; <a href="https://github.com/pidnebesnyi/portfolio/actions">run history</a>.</td></tr>
 <tr><td data-label="Claim">Failures diagnosable from the report</td>
-<td data-label="Proof"><a href="bugs/report/">Allure report of the seeded-bug runs</a>: real failures with steps, request and response attached; the <a href="report/">nightly report</a> keeps the trend.</td></tr>
+<td data-label="Proof"><a href="report/">Nightly Allure report</a>: a failed test carries its steps, last request and response, and SQL; the report keeps the trend.</td></tr>
 <tr><td data-label="Claim">Fixture-based test data management</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/factories"><code>tests/factories</code></a>, <a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/conftest.py"><code>tests/conftest.py</code></a>: a fresh merchant per test, created through the API and cleaned up after.</td></tr>
 <tr><td data-label="Claim">SQL backend verification</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/db"><code>tests/db</code></a>: JOIN, GROUP BY / HAVING, CTE and window checks on data the tests created; the SQL is attached to the report.</td></tr>
-<tr><td data-label="Claim">REST APIs against Swagger / OpenAPI</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/contract"><code>tests/contract</code></a>: Schemathesis generates requests for all 13 operations from the OpenAPI schema.</td></tr>
 <tr><td data-label="Claim">Payments domain</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/api"><code>tests/api</code></a>: payment state machine, idempotency keys, partial and parallel refunds.</td></tr>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/api"><code>tests/api</code></a>: payment state machine, idempotency keys, partial refunds.</td></tr>
 <tr><td data-label="Claim">2FA flows with PyOTP</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/ui/test_login.py"><code>tests/ui/test_login.py</code></a>: admin login with a time-based one-time code.</td></tr>
 <tr><td data-label="Claim">Flaky-test triage and retry policy</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docs/test-strategy.md#flakiness-policy">Flakiness policy</a>: no global retries, <code>flaky</code> needs a reason, <code>quarantine</code> is excluded from every gate.</td></tr>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docs/test-strategy.md#flakiness-policy">Flakiness policy</a>: no global retries, <code>flaky</code> needs a reason, and collection fails without one.</td></tr>
 <tr><td data-label="Claim">Testing around an external provider</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/integration"><code>tests/integration</code></a>: decline, 5xx and timeout against a provider mock.</td></tr>
-<tr><td data-label="Claim">Tests that catch real defects</td>
-<td data-label="Proof"><a href="bugs/">Seeded bugs</a>: each bug is switched on in turn; a marked test must fail.</td></tr>
 <tr><td data-label="Claim">Load testing</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/load"><code>load</code></a> and the <a href="load/">published Locust report</a>: the run fails on p95 over 500 ms or errors over 1 %.</td></tr>
 <tr><td data-label="Claim">Docker</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docker-compose.yml"><code>docker-compose.yml</code></a>: app, database, provider mock and tests with health checks; multi-stage <a href="https://github.com/pidnebesnyi/portfolio/blob/main/app/Dockerfile"><code>app/Dockerfile</code></a>.</td></tr>
 <tr><td data-label="Claim">GitHub Actions and parallel runs</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/nightly.yml"><code>.github/workflows/nightly.yml</code></a>: the full suite in three shards, merged into one Allure report with history.</td></tr>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/nightly.yml"><code>.github/workflows/nightly.yml</code></a>: the full suite in parallel with pytest-xdist, published as one Allure report with history.</td></tr>
 <tr><td data-label="Claim">Type hints, ruff, pre-commit</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.pre-commit-config.yaml"><code>.pre-commit-config.yaml</code></a> and the lint job in <a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/pr.yml"><code>.github/workflows/pr.yml</code></a>: ruff, strict mypy and a secret scan on every pull request.</td></tr>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.pre-commit-config.yaml"><code>.pre-commit-config.yaml</code></a> and the lint job in <a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/pr.yml"><code>.github/workflows/pr.yml</code></a>: ruff and ruff format on every pull request.</td></tr>
 <tr><td data-label="Claim">No secrets in a public repository</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/scripts/make_env.sh"><code>scripts/make_env.sh</code></a>: credentials are generated per run and masked; gitleaks scans every pull request.</td></tr>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/scripts/make_env.sh"><code>scripts/make_env.sh</code></a>: credentials are generated per run and masked, so the repository holds no secrets.</td></tr>
 </tbody>
 </table>
 
