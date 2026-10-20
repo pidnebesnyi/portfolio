@@ -1,0 +1,6 @@
+# Local development and the lint job: test deps + app deps (mypy needs them) + linters.
+-r requirements-test.txt
+-r app/requirements.txt
+ruff==0.17.1
+mypy==2.4.0
+pre-commit==4.7.0

@@ -1,0 +1,12 @@
+# Everything the test suite needs at runtime (also installed into tests/Dockerfile).
+httpx==0.28.1
+pydantic==2.14.1
+pydantic-settings==2.16.0
+psycopg[binary]==3.3.6
+PyJWT==2.15.1
+pyotp==2.10.0
+pytest==9.1.1
+pytest-xdist==3.8.0
+pytest-rerunfailures==16.7
+allure-pytest==2.16.2
+schemathesis==4.32.1
