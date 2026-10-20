@@ -1,0 +1,5 @@
+SELECT p.amount, p.refunded_amount, p.status,
+               COALESCE(SUM(r.amount), 0) AS refunds_sum, COUNT(r.id) AS refunds_count
+        FROM payments p LEFT JOIN refunds r ON r.payment_id = p.id
+        WHERE p.id = %s
+        GROUP BY p.id
