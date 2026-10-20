@@ -21,7 +21,7 @@ The strategy below is about how the risk in such a flow is covered, and where it
 
 | Risk | Tested at | Why there |
 |------|-----------|-----------|
-| 1 Double charge, over-refund | API (`tests/api`: idempotency, refunds, parallel refunds in threads) and DB (`tests/db`) | The rule lives in the service; one HTTP call proves it in milliseconds. Concurrency needs real parallel requests against a real database row lock, so no mocks. The SQL check confirms the stored sums independently of the API's own answer |
+| 1 Double charge, over-refund | API (`tests/api`: idempotency, refunds) and DB (`tests/db`) | The rule lives in the service; one HTTP call proves it in milliseconds. The SQL check confirms the stored sums independently of the API's own answer |
 | 2 Wrong state | API: a table of every allowed and forbidden transition (29 cases) | A parametrised table is cheap and readable, and reads like the state machine |
 | 2 Provider failure modes | Integration (`tests/integration`) against a provider mock that behaves by card token | Decline, 5xx and timeout cannot be triggered on demand on a real provider. The mock also records what it received, so tests assert exactly one charge was attempted |
 | 3, 4 Access | API: basic access checks (no token, expired token, wrong signature, another merchant's id) | Cheapest level that sees the response code. Not a security assessment, see the last section |

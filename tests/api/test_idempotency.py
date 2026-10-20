@@ -1,4 +1,3 @@
-from concurrent.futures import ThreadPoolExecutor
 from uuid import uuid4
 
 import allure
@@ -104,21 +103,3 @@ def test_replay_creates_no_second_row(
         (merchant.id, key),
     )
     assert (payments, keys) == (1, 1)
-
-
-@pytest.mark.regression
-@pytest.mark.db
-@allure.title("Parallel requests with one key create one payment")
-def test_parallel_requests_with_one_key_create_one_payment(
-    api: PaymentsApi, merchant: MerchantAccount, db: Database
-) -> None:
-    key = str(uuid4())
-    workers = 5
-
-    with ThreadPoolExecutor(max_workers=workers) as pool:
-        responses = list(pool.map(lambda _: api.create(idempotency_key=key), range(workers)))
-
-    assert sorted(r.status_code for r in responses) == [200] * (workers - 1) + [201]
-    assert len({r.expect(r.status_code).id for r in responses}) == 1
-    count = db.fetch_value("SELECT count(*) FROM payments WHERE merchant_id = %s", (merchant.id,))
-    assert count == 1

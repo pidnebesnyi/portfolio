@@ -7,7 +7,7 @@ The helpers return plain pytest marks (typed, strict-marker friendly, usable as 
 Links point at real pages only when REPO_URL is set; otherwise the ids remain as labels.
 
 `label_suites()` gives the Suites tab two readable levels instead of allure-pytest's package and
-module names: the layer (the folder under tests/) and the module ("Refund concurrency"). Dynamic
+module names: the layer (the folder under tests/) and the module ("Refunds"). Dynamic
 suite labels replace allure-pytest's defaults, which are only added for a level left unset; this
 repo has no test classes, so the default sub suite never appears.
 """
@@ -51,7 +51,7 @@ def annotate(node: pytest.Item, repo_url: str) -> None:
 
 
 def label_suites(nodeid: str) -> None:
-    """Parent suite = layer, suite = module, e.g. "API" > "Refund concurrency"."""
+    """Parent suite = layer, suite = module, e.g. "API" > "Refunds"."""
     path = PurePosixPath(nodeid.split("::")[0])
     layer = LAYERS.get(path.parent.name, path.parent.name)
     module = path.stem.removeprefix("test_").replace("_", " ").capitalize()

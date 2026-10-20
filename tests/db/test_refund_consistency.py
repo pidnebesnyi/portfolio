@@ -1,8 +1,8 @@
 """Refund invariants checked in SQL, not through the API.
 
-A response body can look right while the rows are wrong (the concurrency suite proved that once);
-these checks read the tables directly. Every test seeds its own merchant through the API, runs a
-"sanity" query that proves the data is really there, then a "violations" query that must be empty.
+A response body can look right while the rows are wrong; these checks read the tables directly.
+Every test seeds its own merchant through the API, runs a "sanity" query that proves the data is
+really there, then a "violations" query that must be empty.
 """
 
 import allure

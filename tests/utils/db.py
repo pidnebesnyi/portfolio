@@ -18,8 +18,7 @@ Params = tuple[Any, ...] | dict[str, Any]
 
 
 class Database:
-    """One short-lived connection per call: trivially thread-safe (the concurrency tests query
-    from several threads) and never leaves a transaction open between tests."""
+    """One short-lived connection per call, so no transaction is ever left open between tests."""
 
     def __init__(self, dsn: str) -> None:
         self._dsn = dsn

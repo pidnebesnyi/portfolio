@@ -14,7 +14,7 @@ pytestmark = [pytest.mark.regression, area("Reporting")]
 @pytest.mark.parametrize(
     ("path", "parent", "suite"),
     [
-        ("tests/api/test_refund_concurrency.py", "API", "Refund concurrency"),
+        ("tests/api/test_refunds.py", "API", "Refunds"),
         ("tests/api/test_health_and_auth.py", "API", "Health and auth"),
         ("tests/db/test_totals_and_cleanup.py", "Database", "Totals and cleanup"),
         ("tests/integration/test_provider.py", "Provider integration", "Provider"),
