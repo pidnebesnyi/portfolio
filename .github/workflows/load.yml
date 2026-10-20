@@ -72,6 +72,9 @@ jobs:
     if: ${{ !cancelled() }} # publish after a threshold breach too
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    concurrency:
+      group: gh-pages # one writer at a time across workflows; a parallel push is rejected
+      cancel-in-progress: false
     permissions:
       contents: write # peaceiris pushes to the gh-pages branch; this is the only job that may
     steps:
