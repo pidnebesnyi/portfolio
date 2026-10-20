@@ -5,7 +5,7 @@ One test runs at a time per pytest process (xdist workers are separate processes
 module-level state is enough.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -14,6 +14,8 @@ class _Evidence:
     response: str | None = None
     sql: str | None = None
     sql_result: str | None = None
+    # Other evidence by attachment name, e.g. the app's log lines or the events a consumer saw.
+    extras: dict[str, str] = field(default_factory=dict)
 
 
 _state = _Evidence()
@@ -30,6 +32,11 @@ def record_http(request: str, response: str) -> None:
 
 def record_sql(sql: str, result: str) -> None:
     _state.sql, _state.sql_result = sql, result
+
+
+def record_extra(name: str, text: str) -> None:
+    """Keep the latest text under this attachment name (a later call replaces the earlier one)."""
+    _state.extras[name] = text
 
 
 def snapshot() -> _Evidence:

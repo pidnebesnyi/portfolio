@@ -22,6 +22,7 @@ LAYERS = {
     "api": "API",
     "db": "Database",
     "integration": "Provider integration",
+    "logs": "Logs",
     "ui": "UI",
     "unit": "Unit",
 }

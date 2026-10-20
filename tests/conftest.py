@@ -11,6 +11,7 @@ share data and every test can run alone, in any order.
 """
 
 from collections.abc import Generator, Iterator
+from pathlib import Path
 
 import pytest
 
@@ -28,6 +29,7 @@ from tests.utils.allure_evidence import (
     write_run_metadata,
 )
 from tests.utils.allure_links import annotate, label_suites
+from tests.utils.app_log import AppLog
 from tests.utils.db import Database
 from tests.utils.tokens import totp_code
 
@@ -113,6 +115,14 @@ def admin_api(http: LoggedHttpClient, admin_token: str) -> MerchantsApi:
 @pytest.fixture(scope="session")
 def db(settings: Settings) -> Database:
     return Database(settings.db_dsn)
+
+
+@pytest.fixture(scope="session")
+def app_log(settings: Settings) -> AppLog:
+    """The app's JSON request log; tests that need it skip when APP_LOG_FILE is not set."""
+    if not settings.app_log_file:
+        pytest.skip("APP_LOG_FILE is not set: point it at the file the app writes (LOG_FILE)")
+    return AppLog(Path(settings.app_log_file))
 
 
 @pytest.fixture(autouse=True)
