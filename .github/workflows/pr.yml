@@ -1,0 +1,78 @@
+# PR gate. Trigger: every pull request (and manual runs).
+# Order: `lint` (secret scan, ruff, mypy; seconds, no containers) and `api` (compose stack, then
+# API + contract tests) run in parallel; a failure in either blocks the merge, so make both
+# required checks in branch protection. Nothing here needs repository secrets: `api` generates
+# throwaway credentials for each run. Quarantined tests are excluded from the gate.
+name: PR
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+# A new push to the same PR makes the previous run obsolete.
+concurrency:
+  group: pr-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: read # gitleaks-action lists the PR's commits
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the secret scan walks the whole history, not just the tip
+      - name: Scan history for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - name: ruff check
+        run: ruff check .
+      - name: ruff format
+        run: ruff format --check .
+      - name: mypy (strict)
+        run: mypy
+
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate throwaway credentials
+        run: |
+          set -euo pipefail
+          scripts/make_env.sh
+          # Mask every generated value in logs (the admin email is not a secret).
+          while IFS='=' read -r key value; do
+            [ "$key" = "ADMIN_EMAIL" ] || echo "::add-mask::$value"
+          done < .env
+      - name: Start the stack (db, app, provider-mock)
+        run: docker compose up --build --wait db app provider-mock
+      - name: API and contract tests
+        run: docker compose run --rm tests pytest -m "not quarantine" -n auto tests/api tests/contract
+      - name: App logs (on failure)
+        if: failure()
+        run: docker compose logs --no-color app provider-mock db
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-api
+          path: allure-results/
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Tear down
+        if: always()
+        run: docker compose down --volumes
