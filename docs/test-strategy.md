@@ -56,7 +56,7 @@ suite labels.
   silently preparing wrong data.
 - Every test gets its own merchant with a unique name and a random password, created in a
   fixture. Two tests, and two parallel workers, never touch the same rows. That is why the suite
-  runs with `pytest-xdist` (`-n auto`) and in three shards at night without ordering rules.
+  runs with `pytest-xdist` (`-n auto`) without ordering rules.
 - Factories remember what they created and delete it at teardown (deleting a merchant cascades to
   payments and refunds), and a database test checks that nothing is left behind. The SQL invariant
   tests scope every query to the test's own merchant, so they stay valid while other tests run.

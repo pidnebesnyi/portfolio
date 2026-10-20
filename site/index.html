@@ -41,7 +41,7 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <ul class="stats">
   <li><span class="value">{{BUILD_TESTS}}</span><span class="label">tests</span></li>
   <li><span class="value {{BUILD_PASS_CLASS}}">{{BUILD_PASS_RATE}}</span><span class="label">passed</span></li>
-  <li><span class="value">{{BUILD_DURATION}}</span><span class="label">duration</span><span class="note">3 shards in parallel</span></li>
+  <li><span class="value">{{BUILD_DURATION}}</span><span class="label">duration</span></li>
   <li><span class="value">{{BUILD_LAST_RUN}}</span><span class="label">last run</span>{{BUILD_RUN_LINK}}</li>
 </ul>
 
@@ -83,7 +83,7 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <tr><td data-label="Claim">Docker</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/docker-compose.yml"><code>docker-compose.yml</code></a>: app, database, provider mock and tests with health checks; multi-stage <a href="https://github.com/pidnebesnyi/portfolio/blob/main/app/Dockerfile"><code>app/Dockerfile</code></a>.</td></tr>
 <tr><td data-label="Claim">GitHub Actions and parallel runs</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/nightly.yml"><code>.github/workflows/nightly.yml</code></a>: the full suite in three shards, merged into one Allure report with history.</td></tr>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/nightly.yml"><code>.github/workflows/nightly.yml</code></a>: the full suite in parallel with pytest-xdist, published as one Allure report with history.</td></tr>
 <tr><td data-label="Claim">Type hints, ruff, pre-commit</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/.pre-commit-config.yaml"><code>.pre-commit-config.yaml</code></a> and the lint job in <a href="https://github.com/pidnebesnyi/portfolio/blob/main/.github/workflows/pr.yml"><code>.github/workflows/pr.yml</code></a>: ruff, strict mypy and a secret scan on every pull request.</td></tr>
 <tr><td data-label="Claim">No secrets in a public repository</td>

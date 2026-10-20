@@ -5,7 +5,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /work
 COPY requirements-test.txt .
 RUN pip install --no-cache-dir -r requirements-test.txt
-COPY pyproject.toml .test_durations ./
+COPY pyproject.toml ./
 COPY tests ./tests
 # The unit tests import scripts/build_site.py and check the landing template against it.
 COPY scripts ./scripts

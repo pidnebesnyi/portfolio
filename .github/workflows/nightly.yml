@@ -1,14 +1,13 @@
 # Nightly regression + published Allure report. Triggers: 02:30 UTC every day and manual runs.
-# Order: `tests` runs the whole suite (api, db, ui; quarantine excluded) as 3 parallel
-# shards, each on its own compose stack and split by recorded durations (.test_durations); then
-# `report` merges the shards' allure-results, restores the trend history from the gh-pages
-# branch, builds the Allure report and publishes gh-pages:/report/. It then runs
-# scripts/build_site.py, which writes the report's numbers into the landing page, and publishes
-# ONLY site-build/ (index.html, style.css, cv.pdf if present) to the gh-pages ROOT. Every publish
-# here uses keep_files: true, so it adds or overwrites just the files it ships and cannot remove
-# /report/ or /load/ (the load workflow owns the latter). Nothing here needs repository
-# secrets: every shard generates throwaway credentials. Not a merge gate; a red night shows in
-# the report.
+# Order: `tests` runs the whole suite (api, db, ui; quarantine excluded) on one compose stack,
+# in parallel with pytest-xdist; then `report` restores the trend history from the gh-pages
+# branch, adds it to the run's allure-results, builds the Allure report and publishes
+# gh-pages:/report/. It then runs scripts/build_site.py, which writes the report's numbers into
+# the landing page, and publishes ONLY site-build/ (index.html, style.css, cv.pdf if present) to
+# the gh-pages ROOT. Every publish here uses keep_files: true, so it adds or overwrites just the
+# files it ships and cannot remove /report/ or /load/ (the load workflow owns the latter).
+# Nothing here needs repository secrets: the tests job generates throwaway credentials. Not a
+# merge gate; a red night shows in the report.
 name: Nightly
 
 on:
@@ -26,13 +25,8 @@ permissions:
 
 jobs:
   tests:
-    name: tests (shard ${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    strategy:
-      fail-fast: false # a red shard must not hide the other two shards' results
-      matrix:
-        shard: [1, 2, 3]
     steps:
       - uses: actions/checkout@v4
       - name: Generate throwaway credentials
@@ -44,13 +38,9 @@ jobs:
           done < .env
       - name: Start the stack (db, app, provider-mock)
         run: docker compose up --build --wait db app provider-mock
-      - name: Run shard ${{ matrix.shard }} of 3
-        # GITHUB_SHA / GITHUB_RUN_ID reach the container through docker-compose.yml. least_duration
-        # balances the shards even though one contract test alone takes ~9 s.
-        run: >
-          docker compose run --rm tests
-          pytest -m "not quarantine" -n auto --splits 3 --group ${{ matrix.shard }}
-          --splitting-algorithm least_duration
+      - name: Run the suite
+        # GITHUB_SHA / GITHUB_RUN_ID reach the container through docker-compose.yml.
+        run: docker compose run --rm tests pytest -m "not quarantine" -n auto
       - name: App logs (on failure)
         if: failure()
         run: docker compose logs --no-color app provider-mock db
@@ -58,7 +48,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-${{ matrix.shard }}
+          name: allure-results
           path: allure-results/
           if-no-files-found: ignore
           retention-days: 7
@@ -66,7 +56,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-test-results-${{ matrix.shard }}
+          name: playwright-test-results
           path: test-results/
           if-no-files-found: ignore
           retention-days: 7
@@ -76,7 +66,7 @@ jobs:
 
   report:
     needs: tests
-    if: ${{ !cancelled() }} # publish even when a shard failed: the report is the point
+    if: ${{ !cancelled() }} # publish even when a test failed: the report is the point
     runs-on: ubuntu-latest
     timeout-minutes: 15
     concurrency:
@@ -88,12 +78,12 @@ jobs:
       REPORT_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/report/
     steps:
       - uses: actions/checkout@v4 # the landing template and scripts/build_site.py
-      - name: Download all shards' results
+      - name: Download the run's results
+        continue-on-error: true # no artifact when the stack never came up; the report then shows no data
         uses: actions/download-artifact@v4
         with:
-          pattern: allure-results-*
+          name: allure-results
           path: allure-results
-          merge-multiple: true
       - name: Fetch Allure history from gh-pages
         uses: actions/checkout@v4
         continue-on-error: true # the very first run has no gh-pages branch yet

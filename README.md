@@ -67,13 +67,13 @@ About 157 tests in total, 17 of them tagged `smoke`.
 | Workflow | Trigger | What | Publishes |
 |---|---|---|---|
 | `pr.yml` | every pull request | lint (gitleaks, ruff, mypy); `api` job (unit, API, integration and DB tests on compose); `ui-smoke` job (browser smoke tests). Each job has a 10-minute timeout | Allure results and UI traces as workflow artifacts |
-| `nightly.yml` | 02:30 UTC daily, manual | full suite in 3 pytest-split shards; one merged Allure report with history | `/report/` and the landing-page numbers at the site root |
+| `nightly.yml` | 02:30 UTC daily, manual | full suite in one job (pytest-xdist); Allure report with history | `/report/` and the landing-page numbers at the site root |
 | `load.yml` | Mondays 04:00 UTC, manual | Locust, 20 users for 3 minutes; fails on p95 > 500 ms or errors > 1 % | `/load/` |
 
 ## Framework decisions
 
 - Each test creates its own merchant through the API and deletes it at teardown, so tests run in
-  parallel (`pytest-xdist`) and in shards without ordering rules.
+  parallel (`pytest-xdist`) without ordering rules.
 - API clients are typed, and responses are parsed into Pydantic models.
 - Configuration is loaded with pydantic-settings.
 - Markers are enforced: every test has exactly one of `smoke`, `regression` or `quarantine`, and
