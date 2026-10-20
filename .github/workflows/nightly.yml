@@ -2,9 +2,13 @@
 # Order: `tests` runs the whole suite (api, contract, db, ui; quarantine excluded) as 3 parallel
 # shards, each on its own compose stack and split by recorded durations (.test_durations); then
 # `report` merges the shards' allure-results, restores the trend history from the gh-pages
-# branch, builds the Allure report and publishes ONLY gh-pages:/report/ (other workflows own
-# /bugs/ and /load/, so the branch is never wiped). Nothing here needs repository secrets: every
-# shard generates throwaway credentials. Not a merge gate; a red night shows in the report.
+# branch, builds the Allure report and publishes gh-pages:/report/. It then runs
+# scripts/build_site.py, which writes the report's numbers into the landing page, and publishes
+# ONLY site-build/ (index.html, style.css, cv.pdf if present) to the gh-pages ROOT. Every publish
+# here uses keep_files: true, so it adds or overwrites just the files it ships and cannot remove
+# /report/, /bugs/ or /load/ (other workflows own the last two). Nothing here needs repository
+# secrets: every shard generates throwaway credentials. Not a merge gate; a red night shows in
+# the report.
 name: Nightly
 
 on:
@@ -80,6 +84,7 @@ jobs:
     env:
       REPORT_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/report/
     steps:
+      - uses: actions/checkout@v4 # the landing template and scripts/build_site.py
       - name: Download all shards' results
         uses: actions/download-artifact@v4
         with:
@@ -116,6 +121,9 @@ jobs:
         run: |
           npm install --global allure-commandline@2.32.0
           allure generate allure-results --clean --output allure-report
+      - name: Build the landing page from the report's summary
+        # Standard library only. A missing summary.json shows "-" instead of failing the job.
+        run: python3 scripts/build_site.py --summary allure-report/widgets/summary.json --out-dir site-build
       - name: Upload the report as an artifact (also when publishing fails)
         uses: actions/upload-artifact@v4
         with:
@@ -132,3 +140,13 @@ jobs:
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
           commit_message: "docs(report): nightly #${{ github.run_number }}"
+      - name: Publish the landing page to the gh-pages root
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: site-build # only the landing files, never the whole branch
+          # destination_dir is left empty on purpose: the root of the branch.
+          keep_files: true # without it the root publish would delete report/, bugs/ and load/
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          commit_message: "docs(site): landing page, nightly #${{ github.run_number }}"

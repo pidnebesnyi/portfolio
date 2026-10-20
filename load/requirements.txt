@@ -1,0 +1,3 @@
+# Load-test tooling only. The version equals the locustio/locust image tag in docker-compose.yml,
+# so a local run and the CI run (compose `load` profile) measure with the same Locust.
+locust==2.32.5

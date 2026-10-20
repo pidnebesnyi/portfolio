@@ -1,0 +1,77 @@
+/* Landing page styles. Same palette and type as the seeded-bugs page (scripts/seeded_bugs_report.py)
+   so the whole site reads as one product. Light by default, dark via prefers-color-scheme. */
+:root {
+  --bg: #fff; --fg: #1b1f24; --muted: #59636e; --line: #d1d9e0; --card: #f6f8fa;
+  --ok: #1a7f37; --bad: #cf222e; --link: #0969da;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117; --fg: #e6edf3; --muted: #8d96a0; --line: #30363d; --card: #161b22;
+    --ok: #3fb950; --bad: #f85149; --link: #58a6ff;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--fg);
+  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+main { max-width: 56rem; margin: 0 auto; padding: 1.5rem 16px 3rem; }
+a { color: var(--link); }
+h1 { font-size: 1.9rem; line-height: 1.2; margin: .25rem 0 .5rem; }
+h2 {
+  font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  margin: 2.25rem 0 .75rem;
+}
+code { font: .85rem ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+.eyebrow { color: var(--muted); font-size: .9rem; margin: 0; }
+.lead { font-size: 1.15rem; margin: 0 0 .5rem; }
+.muted { color: var(--muted); font-size: .9rem; }
+.ok { color: var(--ok); font-weight: 600; }
+.bad { color: var(--bad); font-weight: 600; }
+
+/* Profile: values the operator fills in. */
+.profile { background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+  padding: 1rem 1.1rem; }
+.profile p { margin: 0 0 .5rem; overflow-wrap: anywhere; }
+.profile .name { font-weight: 600; }
+.links { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; margin: 0; padding: 0; list-style: none; }
+
+/* Live numbers. */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .75rem; margin: 0; padding: 0;
+  list-style: none; }
+.stats li { background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+  padding: .7rem .9rem; }
+.stats .value { display: block; font-size: 1.5rem; font-weight: 600; line-height: 1.2; }
+.stats .label { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--muted); }
+.stats .note { display: block; font-size: .8rem; color: var(--muted); }
+
+/* Where to look. */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: .75rem;
+  margin: 0; padding: 0; list-style: none; }
+.cards a { display: block; height: 100%; text-decoration: none; color: inherit;
+  background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: .8rem .9rem; }
+.cards a:hover, .cards a:focus-visible { border-color: var(--link); }
+.cards b { display: block; color: var(--link); }
+.cards span { font-size: .9rem; color: var(--muted); }
+
+/* Claims and evidence. */
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; vertical-align: top; padding: .6rem .5rem;
+  border-bottom: 1px solid var(--line); }
+th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+td:first-child { width: 38%; }
+td ul { margin: 0; padding-left: 1.1rem; }
+
+footer { margin-top: 2.5rem; }
+
+@media (max-width: 640px) {
+  h1 { font-size: 1.5rem; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  thead { display: none; }
+  tr { display: block; background: var(--card); border: 1px solid var(--line);
+    border-radius: 8px; margin-bottom: .75rem; padding: .25rem .5rem; }
+  td, td:first-child { display: block; width: auto; border: 0; padding: .3rem 0; }
+  td::before { content: attr(data-label); display: block; font-size: .75rem;
+    text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+}
