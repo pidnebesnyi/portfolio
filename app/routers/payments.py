@@ -9,7 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app import request_log
+from app import events, request_log
 from app.db import IdempotencyKey, Payment, Refund, get_session
 from app.errors import ERROR_RESPONSES, ApiError
 from app.provider import ChargeOutcome, ProviderClient, get_provider
@@ -73,8 +73,19 @@ def _require_transition(payment: Payment, action: Action) -> None:
         )
 
 
-def _announce_change(payment: Payment, action: Action, before: PaymentStatus) -> None:
-    """After the commit: log the status change, if there was one."""
+# Event published for each action; a failed authorization is announced as payment.failed.
+_EVENT_TYPES = {
+    Action.AUTHORIZE: "payment.authorized",
+    Action.CAPTURE: "payment.captured",
+    Action.VOID: "payment.voided",
+    Action.REFUND: "payment.refunded",
+}
+
+
+def _announce_change(
+    payment: Payment, action: Action, before: PaymentStatus, *, refund_amount: int | None = None
+) -> None:
+    """After the commit: log the status change (if there was one) and publish the event."""
     after = PaymentStatus(payment.status)
     if after is not before:
         request_log.event(
@@ -84,6 +95,8 @@ def _announce_change(payment: Payment, action: Action, before: PaymentStatus) ->
             from_status=before.value,
             to_status=after.value,
         )
+    event_type = "payment.failed" if after is PaymentStatus.FAILED else _EVENT_TYPES[action]
+    events.publish(event_type, payment, refund_amount=refund_amount)
 
 
 @router.post(
@@ -153,6 +166,7 @@ def create_payment(
     request_log.event(
         "payment.created", payment_id=payment.id, amount=payment.amount, status=payment.status
     )
+    events.publish("payment.created", payment)
     return payment
 
 
@@ -305,7 +319,7 @@ def refund_payment(
         amount=refund.amount,
         refunded_amount=payment.refunded_amount,
     )
-    _announce_change(payment, Action.REFUND, status_before)
+    _announce_change(payment, Action.REFUND, status_before, refund_amount=refund.amount)
     return RefundOut(
         id=refund.id,
         payment_id=payment.id,

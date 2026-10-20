@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     # Structured request log (app/request_log.py): always on stdout, also appended to this file
     # when set. The test suite reads the file.
     log_file: str = ""
+    # Domain events (app/events.py) go to a topic exchange on this broker. Empty = publishing off.
+    # The URL carries the broker password, so it is never logged.
+    rabbitmq_url: str = ""
 
 
 @lru_cache
