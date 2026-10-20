@@ -12,7 +12,7 @@ The strategy below is about how the risk in such a flow is covered, and where it
 | 2 | A payment ends in a wrong or hanging state: provider timeout leaves it `authorized`, illegal transitions are accepted | Merchant and customer disagree about what was paid |
 | 3 | One merchant sees or changes another merchant's payments | Data leak, trust loss |
 | 4 | Login or second factor lets the wrong person in, or locks the right one out | Gate to everything else |
-| 5 | The API contract drifts from its documentation, and clients break | Silent, costs integrators time |
+| 5 | The shape of an API response drifts, and clients break | Silent, costs integrators time |
 | 6 | Stored data contradicts itself (refund sums, orphaned rows) | Surfaces later, in reconciliation |
 | 7 | The UI cannot complete the main tasks | Visible at once, but cheap to fix |
 | 8 | The service gets slow or starts failing under normal load | Matters at scale; here only a regression signal |
@@ -26,7 +26,7 @@ The strategy below is about how the risk in such a flow is covered, and where it
 | 2 Provider failure modes | Integration (`tests/integration`) against a provider mock that behaves by card token | Decline, 5xx and timeout cannot be triggered on demand on a real provider. The mock also records what it received, so tests assert exactly one charge was attempted |
 | 3, 4 Access | API: basic access checks (no token, expired token, wrong signature, another merchant's id) | Cheapest level that sees the response code. Not a security assessment, see the last section |
 | 4 Login with 2FA | API for the rules, UI for the form (8 tests, 2 smoke) | The rules are decided by the service; the browser only needs to show the form works |
-| 5 Contract | Schemathesis generates requests from `/openapi.json` for all 13 operations | A hand-written test only covers inputs someone thought of |
+| 5 Contract | API: every response is parsed into a Pydantic model by the typed clients (`tests/clients`) | A response that no longer matches its model fails the first test that sees it |
 | 6 Data consistency | SQL invariants after the API tests created data | Catches states the API never admits to, such as refunds above the amount or one idempotency key mapped to two payments |
 | 7 UI | Playwright with page objects, 21 tests; only 4 on every PR | Browser tests are slow and the most fragile, so they check what only a browser can: forms, filters, a refund through the page. Data is created by the API, never by clicking |
 | 8 Performance | Locust, weekly, with a pass/fail rule (p95 500 ms, errors 1 %) | Proves the flow works with 20 concurrent merchants and catches a slowdown. It does not predict production capacity |
@@ -37,7 +37,6 @@ The strategy below is about how the risk in such a flow is covered, and where it
 |-------|------:|------|
 | Unit (site builder, Allure labels) | 25 | every run |
 | API, `tests/api` | 95 | every PR |
-| Contract, `tests/contract` | 1 test, 13 operations as subtests | every PR |
 | Integration with the provider mock | 8 | every PR |
 | Database invariants | 7 | every PR |
 | UI (Playwright) | 21, of which 4 smoke | smoke on every PR, all nightly |

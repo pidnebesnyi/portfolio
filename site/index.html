@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>payments-qa-lab</title>
-<meta name="description" content="QA automation portfolio: API, contract, database and browser tests, CI, a load test and a test strategy around a small payments service.">
+<meta name="description" content="QA automation portfolio: API, database and browser tests, CI, a load test and a test strategy around a small payments service.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -70,8 +70,6 @@ Everything on this page is produced by the pipeline, not written by hand.</p>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/factories"><code>tests/factories</code></a>, <a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/conftest.py"><code>tests/conftest.py</code></a>: a fresh merchant per test, created through the API and cleaned up after.</td></tr>
 <tr><td data-label="Claim">SQL backend verification</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/db"><code>tests/db</code></a>: JOIN, GROUP BY / HAVING, CTE and window checks on data the tests created; the SQL is attached to the report.</td></tr>
-<tr><td data-label="Claim">REST APIs against Swagger / OpenAPI</td>
-<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/contract"><code>tests/contract</code></a>: Schemathesis generates requests for all 13 operations from the OpenAPI schema.</td></tr>
 <tr><td data-label="Claim">Payments domain</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/api"><code>tests/api</code></a>: payment state machine, idempotency keys, partial and parallel refunds.</td></tr>
 <tr><td data-label="Claim">2FA flows with PyOTP</td>

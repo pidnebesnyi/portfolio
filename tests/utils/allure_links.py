@@ -20,14 +20,11 @@ import pytest
 # Top-level folder under tests/ -> the layer shown as the parent suite.
 LAYERS = {
     "api": "API",
-    "contract": "Contract",
     "db": "Database",
     "integration": "Provider integration",
     "ui": "UI",
     "unit": "Unit",
 }
-# Module names that read badly after the mechanical rewrite (test_openapi -> "Openapi").
-SUITE_NAMES = {"test_openapi": "OpenAPI contract"}
 
 
 def area(name: str) -> pytest.MarkDecorator:
@@ -57,8 +54,6 @@ def label_suites(nodeid: str) -> None:
     """Parent suite = layer, suite = module, e.g. "API" > "Refund concurrency"."""
     path = PurePosixPath(nodeid.split("::")[0])
     layer = LAYERS.get(path.parent.name, path.parent.name)
-    module = (
-        SUITE_NAMES.get(path.stem) or path.stem.removeprefix("test_").replace("_", " ").capitalize()
-    )
+    module = path.stem.removeprefix("test_").replace("_", " ").capitalize()
     allure.dynamic.parent_suite(layer)
     allure.dynamic.suite(module)

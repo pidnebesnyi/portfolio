@@ -1,5 +1,5 @@
 # Nightly regression + published Allure report. Triggers: 02:30 UTC every day and manual runs.
-# Order: `tests` runs the whole suite (api, contract, db, ui; quarantine excluded) as 3 parallel
+# Order: `tests` runs the whole suite (api, db, ui; quarantine excluded) as 3 parallel
 # shards, each on its own compose stack and split by recorded durations (.test_durations); then
 # `report` merges the shards' allure-results, restores the trend history from the gh-pages
 # branch, builds the Allure report and publishes gh-pages:/report/. It then runs
