@@ -6,6 +6,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    # playwright must match the browsers baked into tests/Dockerfile's image tag,
+    # so it and pytest-playwright are bumped by hand together with that tag.
+    ignore:
+      - dependency-name: "playwright"
+      - dependency-name: "pytest-playwright"
     groups:
       minor-and-patch:
         patterns:
