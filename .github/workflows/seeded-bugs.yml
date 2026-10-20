@@ -73,7 +73,7 @@ jobs:
             tests/api tests/integration --junitxml="junit/${BUG}.xml"
       - name: Upload JUnit results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: junit-${{ matrix.bug }}
           path: junit/
@@ -114,7 +114,7 @@ jobs:
           keep_files: true
       - name: Upload bugs.json
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: bugs-report
           path: bugs.json

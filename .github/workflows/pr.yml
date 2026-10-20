@@ -68,7 +68,7 @@ jobs:
         run: docker compose logs --no-color app provider-mock db
       - name: Upload Allure results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: allure-results-api
           path: allure-results/
@@ -100,7 +100,7 @@ jobs:
         run: docker compose logs --no-color app provider-mock db
       - name: Upload Playwright traces, videos and screenshots
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-test-results-smoke
           path: test-results/
@@ -108,7 +108,7 @@ jobs:
           retention-days: 7
       - name: Upload Allure results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: allure-results-ui-smoke
           path: allure-results/
