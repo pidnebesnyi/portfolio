@@ -1,0 +1,43 @@
+{
+  "status": 200,
+  "elapsed_ms": 12,
+  "headers": {
+    "date": "Tue, 20 Oct 2026 15:29:32 GMT",
+    "server": "uvicorn",
+    "content-length": "709",
+    "content-type": "application/json"
+  },
+  "body": {
+    "items": [
+      {
+        "id": "5610cfc3-1008-4dad-8c63-7eb4bb924088",
+        "merchant_id": "3a3abb9f-edd4-4e26-8105-8b65f71346ee",
+        "amount": 1000,
+        "currency": "UAH",
+        "description": "test payment",
+        "card_token": "tok_success",
+        "status": "created",
+        "failure_reason": null,
+        "refunded_amount": 0,
+        "created_at": "2026-10-20T15:29:32.889504Z",
+        "updated_at": "2026-10-20T15:29:32.889507Z"
+      },
+      {
+        "id": "f5162167-d3b6-49f0-a769-3da595e9f98e",
+        "merchant_id": "3a3abb9f-edd4-4e26-8105-8b65f71346ee",
+        "amount": 1000,
+        "currency": "UAH",
+        "description": "test payment",
+        "card_token": "tok_success",
+        "status": "created",
+        "failure_reason": null,
+        "refunded_amount": 0,
+        "created_at": "2026-10-20T15:29:32.874651Z",
+        "updated_at": "2026-10-20T15:29:32.874654Z"
+      }
+    ],
+    "total": 2,
+    "limit": 20,
+    "offset": 0
+  }
+}
