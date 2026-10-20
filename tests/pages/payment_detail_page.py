@@ -7,7 +7,7 @@ from tests.pages.base_page import BasePage
 
 
 class PaymentDetailPage(BasePage):
-    """/ui/payments/{id}: read-only facts plus the refund form (captured payments only)."""
+    """/ui/payments/{id}: facts, a status refresh button and the refund form (captured only)."""
 
     def __init__(self, page: Page, payment_id: UUID | None = None) -> None:
         super().__init__(page)
@@ -21,10 +21,16 @@ class PaymentDetailPage(BasePage):
         self.refund_amount = page.get_by_label("Refund amount")
         self.refund_submit = page.get_by_test_id("refund-submit")
         self.refund_unavailable = page.get_by_test_id("refund-unavailable")
+        self.refresh_button = page.get_by_test_id("refresh-status")
+        self.refresh_error = page.get_by_test_id("refresh-error")
 
     def expect_loaded(self) -> None:
         expect(self.page).to_have_url(re.compile(r"/ui/payments/[0-9a-f-]{36}$"))
         expect(self.id).to_be_visible()
+
+    def refresh_status(self) -> None:
+        """Ask the server for the current status (a fetch call; the page does not reload)."""
+        self.refresh_button.click()
 
     def refund(self, amount: int) -> None:
         self.refund_amount.fill(str(amount))

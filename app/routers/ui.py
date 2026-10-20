@@ -14,7 +14,7 @@ from uuid import UUID
 
 import pyotp
 from fastapi import APIRouter, Cookie, Depends, Form, Request, Response
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -296,6 +296,22 @@ def payment_page(
         refundable=payment.status in REFUNDABLE,
         remaining=payment.amount - payment.refunded_amount,
     )
+
+
+@router.get("/payments/{payment_id}/status")
+def payment_status(
+    payment_id: UUID,
+    principal: Principal | None = Depends(current_principal),
+    db: Session = Depends(get_session),
+) -> JSONResponse:
+    """The one JSON endpoint of the UI: the page's "Refresh status" button fetches it."""
+    if principal is None or principal.role == "admin":
+        return JSONResponse({"code": "unauthorized"}, status_code=401)
+    try:
+        payment = payments.get_payment(payment_id, principal=principal, session=db)
+    except ApiError as exc:
+        return JSONResponse(exc.body, status_code=exc.status_code)
+    return JSONResponse({"status": payment.status})
 
 
 @router.post("/payments/{payment_id}/refund")
