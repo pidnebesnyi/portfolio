@@ -29,12 +29,20 @@ ALLOWED: dict[tuple[S, str], S] = {
     (S.CAPTURED, "refund"): S.PARTIALLY_REFUNDED,
     (S.PARTIALLY_REFUNDED, "refund"): S.PARTIALLY_REFUNDED,
 }
-# Statuses a test can reach with the real API in this phase (failed needs a provider that
-# declines; the integration suite covers it).
-REACHABLE = (S.CREATED, S.AUTHORIZED, S.CAPTURED, S.PARTIALLY_REFUNDED, S.REFUNDED, S.VOIDED)
+# `failed` is reached by authorizing with the declining card token (see PaymentFactory); how the
+# provider's other failure modes end up there is covered in tests/integration.
+REACHABLE = (
+    S.CREATED,
+    S.AUTHORIZED,
+    S.CAPTURED,
+    S.PARTIALLY_REFUNDED,
+    S.REFUNDED,
+    S.VOIDED,
+    S.FAILED,
+)
 FORBIDDEN = [(s, a) for s in REACHABLE for a in ACTIONS if (s, a) not in ALLOWED]
 # One forbidden pair per kind of mistake is critical-path; the rest is regression.
-SMOKE_FORBIDDEN = {(S.CREATED, "capture"), (S.REFUNDED, "refund")}
+SMOKE_FORBIDDEN = {(S.CREATED, "capture"), (S.REFUNDED, "refund"), (S.FAILED, "authorize")}
 
 
 def _perform(
@@ -98,4 +106,4 @@ def test_forbidden_transition_is_rejected_and_changes_nothing(
 def test_forbidden_table_covers_every_pair() -> None:
     """Guards the guard: if ALLOWED or REACHABLE change, the sizes below must be revisited."""
     assert len(ALLOWED) + len(FORBIDDEN) == len(REACHABLE) * len(ACTIONS)
-    assert len(FORBIDDEN) == 19
+    assert len(FORBIDDEN) == 23
