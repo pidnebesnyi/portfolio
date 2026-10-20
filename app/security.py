@@ -75,15 +75,19 @@ class Principal:
     merchant_id: UUID | None
 
 
-def _principal(credentials: HTTPAuthorizationCredentials | None) -> Principal:
-    if credentials is None:
-        raise ApiError(401, "unauthorized", "Missing bearer token")
-    claims = decode_token(credentials.credentials, "access")
+def principal_from_token(token: str) -> Principal:
+    claims = decode_token(token, "access")
     try:
         merchant_id = UUID(claims["merchant_id"]) if claims.get("merchant_id") else None
         return Principal(UUID(claims["sub"]), claims["role"], merchant_id)
     except (KeyError, ValueError):
         raise ApiError(401, "invalid_token", "Malformed claims") from None
+
+
+def _principal(credentials: HTTPAuthorizationCredentials | None) -> Principal:
+    if credentials is None:
+        raise ApiError(401, "unauthorized", "Missing bearer token")
+    return principal_from_token(credentials.credentials)
 
 
 def require_merchant(

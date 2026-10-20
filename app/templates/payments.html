@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Payments{% endblock %}
+{% block content %}
+<h1>Payments</h1>
+<form method="get" action="/ui/payments" data-testid="filters-form">
+  <label>Status
+    <select name="status" data-testid="filter-status">
+      <option value="">All</option>
+      {% for s in statuses %}<option value="{{ s }}"{% if filters.status == s %} selected{% endif %}>{{ s }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Created from <input type="date" name="created_from" value="{{ filters.created_from }}" data-testid="filter-from"></label>
+  <label>Created to <input type="date" name="created_to" value="{{ filters.created_to }}" data-testid="filter-to"></label>
+  <button type="submit" data-testid="filter-apply">Apply</button>
+  <a href="/ui/payments" data-testid="filter-reset">Reset</a>
+</form>
+<p data-testid="payments-total">Total: {{ page.total }}</p>
+{% if page.items %}
+<table data-testid="payments-table">
+  <thead><tr><th>Created</th><th>Description</th><th>Amount</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+    {% for p in page.items %}
+    <tr data-testid="payment-row-{{ p.id }}">
+      <td>{{ p.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+      <td>{{ p.description }}</td>
+      <td>{{ p.amount | money }} {{ p.currency }}</td>
+      <td data-testid="payment-status-{{ p.id }}">{{ p.status }}</td>
+      <td><a href="/ui/payments/{{ p.id }}" data-testid="payment-link-{{ p.id }}">Details</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p data-testid="payments-empty">No payments match.</p>
+{% endif %}
+{% endblock %}
