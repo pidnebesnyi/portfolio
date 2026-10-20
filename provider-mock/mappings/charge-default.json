@@ -1,0 +1,13 @@
+{
+  "name": "any other card_token (tok_success included): approved",
+  "priority": 10,
+  "request": {
+    "method": "POST",
+    "urlPath": "/charge"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": { "status": "approved" }
+  }
+}

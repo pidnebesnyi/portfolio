@@ -1,0 +1,17 @@
+{
+  "name": "tok_slow: approved after 1 s, inside the app timeout",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/charge",
+    "bodyPatterns": [
+      { "equalToJson": { "card_token": "tok_slow" }, "ignoreExtraElements": true }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "fixedDelayMilliseconds": 1000,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": { "status": "approved" }
+  }
+}

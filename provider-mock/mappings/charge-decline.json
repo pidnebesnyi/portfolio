@@ -1,0 +1,16 @@
+{
+  "name": "tok_decline: 200 with a declined result",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/charge",
+    "bodyPatterns": [
+      { "equalToJson": { "card_token": "tok_decline" }, "ignoreExtraElements": true }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": { "status": "declined", "reason": "do_not_honor" }
+  }
+}

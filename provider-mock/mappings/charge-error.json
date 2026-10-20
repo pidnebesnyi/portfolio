@@ -1,0 +1,16 @@
+{
+  "name": "tok_error: HTTP 500",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/charge",
+    "bodyPatterns": [
+      { "equalToJson": { "card_token": "tok_error" }, "ignoreExtraElements": true }
+    ]
+  },
+  "response": {
+    "status": 500,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": { "detail": "provider exploded" }
+  }
+}
