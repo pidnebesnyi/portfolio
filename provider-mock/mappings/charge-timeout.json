@@ -1,0 +1,17 @@
+{
+  "name": "tok_timeout: approved after 10 s, past the app timeout (PROVIDER_TIMEOUT_S=2)",
+  "priority": 1,
+  "request": {
+    "method": "POST",
+    "urlPath": "/charge",
+    "bodyPatterns": [
+      { "equalToJson": { "card_token": "tok_timeout" }, "ignoreExtraElements": true }
+    ]
+  },
+  "response": {
+    "status": 200,
+    "fixedDelayMilliseconds": 10000,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": { "status": "approved" }
+  }
+}

@@ -49,5 +49,5 @@ markers = [
     "ui: browser test (Playwright)",
     "sensitive: test types credentials into the browser; its trace and video are never kept",
     "db: test reads the database directly to verify state",
-    "integration: needs the provider mock to behave in a specific way",
+    "integration: needs the provider stub (WireMock) to behave in a specific way",
 ]

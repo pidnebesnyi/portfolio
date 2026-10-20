@@ -23,7 +23,7 @@ The strategy below is about how the risk in such a flow is covered, and where it
 |------|-----------|-----------|
 | 1 Double charge, over-refund | API (`tests/api`: idempotency, refunds) and DB (`tests/db`) | The rule lives in the service; one HTTP call proves it in milliseconds. The SQL check confirms the stored sums independently of the API's own answer |
 | 2 Wrong state | API: a table of every allowed and forbidden transition (29 cases) | A parametrised table is cheap and readable, and reads like the state machine |
-| 2 Provider failure modes | Integration (`tests/integration`) against a provider mock that behaves by card token | Decline, 5xx and timeout cannot be triggered on demand on a real provider. The mock also records what it received, so tests assert exactly one charge was attempted |
+| 2 Provider failure modes | Integration (`tests/integration`) against a provider mock (WireMock) with stubs per card token | Decline, 5xx and timeout cannot be triggered on demand on a real provider. WireMock also records what it received, and the tests read that journal through its admin API, so they assert exactly one charge was attempted |
 | 3, 4 Access | API: basic access checks (no token, expired token, wrong signature, another merchant's id) | Cheapest level that sees the response code. Not a security assessment, see the last section |
 | 4 Login with 2FA | API for the rules, UI for the form (8 tests, 2 smoke) | The rules are decided by the service; the browser only needs to show the form works |
 | 5 Contract | API: every response is parsed into a Pydantic model by the typed clients (`tests/clients`) | A response that no longer matches its model fails the first test that sees it |
@@ -39,7 +39,7 @@ The strategy below is about how the risk in such a flow is covered, and where it
 |-------|------:|------|
 | Unit (site builder, Allure labels) | 19 | every run |
 | API, `tests/api` | 90 | every PR |
-| Integration with the provider mock | 8 | every PR |
+| Integration with the WireMock provider stub | 8 | every PR |
 | Database invariants | 6 | every PR |
 | Log checks, `tests/logs` | 11 | every PR |
 | Domain events, `tests/events` | 5 | every PR |

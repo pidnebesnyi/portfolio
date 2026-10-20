@@ -2,7 +2,7 @@
 
 A QA automation portfolio: a layered test framework, a CI pipeline and published reports.
 The object under test is a mock payments service (FastAPI + Postgres: merchants, payments, refunds)
-with a provider mock behind it; the product is the framework, the pipeline and the reports.
+with a WireMock provider stub behind it; the product is the framework, the pipeline and the reports.
 
 [![PR](https://github.com/pidnebesnyi/portfolio/actions/workflows/pr.yml/badge.svg)](https://github.com/pidnebesnyi/portfolio/actions/workflows/pr.yml)
 [![Nightly](https://github.com/pidnebesnyi/portfolio/actions/workflows/nightly.yml/badge.svg)](https://github.com/pidnebesnyi/portfolio/actions/workflows/nightly.yml)
@@ -19,15 +19,20 @@ with a provider mock behind it; the product is the framework, the pipeline and t
 ```
 tests, locust --HTTP--> app --SQL--> db
                          |
-                         +--HTTP--> provider-mock
+                         +--HTTP--> provider-mock (WireMock)
                          +--AMQP--> rabbitmq (payments.events)
                          +--file--> app log (shared volume, read by tests)
 tests <--AMQP-- rabbitmq
 tests -------------SQL (direct checks)-----------> db
+tests --HTTP (admin API: sent charges)--> provider-mock
 ```
 
-The provider mock chooses its behaviour per request from the `card_token`: `tok_success`,
-`tok_decline`, `tok_error`, `tok_timeout` or `tok_slow`. Parallel tests never share provider state.
+The provider stub is [WireMock](https://wiremock.org/) with one JSON mapping per behaviour in
+`provider-mock/mappings`. It chooses the response from the `card_token` in the request body:
+`tok_success` (and any unknown token) approves, `tok_decline` declines, `tok_error` answers HTTP 500,
+`tok_slow` approves after 1 s and `tok_timeout` after 10 s, past the app's 2 s timeout. The tests
+ask WireMock's admin API (`/__admin/requests/find`) which charges carry a given payment id, so
+parallel tests never share provider state.
 
 ## Run it
 
@@ -48,8 +53,9 @@ mkdir -m 777 load-report && docker compose --profile load run --rm locust
 Credentials include a RabbitMQ password; an `.env` made before it existed needs `scripts/make_env.sh --force`.
 
 Without Docker: create a Postgres database, load `db/init/001_schema.sql`, set `DATABASE_URL` and
-`DB_DSN` in `.env` (see `.env.example`), run `uvicorn app.main:app`, then
-`pytest -n auto`. The log and event tests need `LOG_FILE` (app) and `APP_LOG_FILE` (tests) pointing at one file and `RABBITMQ_URL` pointing at a broker (see `.env.example`); without them they skip. Browser tests also need `playwright install chromium`.
+`DB_DSN` in `.env` (see `.env.example`), start the provider stub with
+`java -jar wiremock-standalone-3.13.2.jar --port 8081 --root-dir provider-mock`, run
+`uvicorn app.main:app`, then `pytest -n auto`. The log and event tests need `LOG_FILE` (app) and `APP_LOG_FILE` (tests) pointing at one file and `RABBITMQ_URL` pointing at a broker (see `.env.example`); without them they skip. Browser tests also need `playwright install chromium`.
 
 Credentials are generated per run by `scripts/make_env.sh` and written to the git-ignored `.env`.
 Nothing secret is in the repository. CI generates and masks them the same way, and the repository
@@ -60,7 +66,7 @@ needs zero secrets.
 | Folder | What | Count | Gate |
 |---|---|---:|---|
 | `tests/api` | REST behaviour: payments, refunds, idempotency, transitions, access | 90 | PR (`api` job); nightly |
-| `tests/integration` | Payment flow against the provider mock: decline, error, timeout | 8 | PR (`api` job); nightly |
+| `tests/integration` | Payment flow against the WireMock provider stub: decline, error, timeout | 8 | PR (`api` job); nightly |
 | `tests/db` | SQL invariants (JOIN, GROUP BY / HAVING, window, CTE) on data created through the API | 6 | PR (`api` job); nightly |
 | `tests/ui` | Playwright through page objects; data comes from the API; includes network interception (`page.route`) and computed-style checks | 32 (6 smoke) | PR (`ui-smoke` job, smoke only); nightly |
 | `tests/logs` | The app's JSON request log: request ids, domain events, no secrets | 11 (2 smoke) | PR (`api` job); nightly |

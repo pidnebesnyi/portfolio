@@ -43,14 +43,20 @@ services:
       - "127.0.0.1:15672:15672" # management UI
 
   provider-mock:
-    build: ./provider-mock
+    # WireMock; the stubs are the JSON files in provider-mock/mappings (one per card token).
+    image: wiremock/wiremock:3.13.2-3
+    # Journal capped so a long load run cannot grow the container's memory without limit.
+    command: ["--max-request-journal-entries", "10000", "--disable-banner"]
+    volumes:
+      - ./provider-mock/mappings:/home/wiremock/mappings:ro
     healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/health', timeout=2)"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/__admin/health"]
       interval: 3s
       timeout: 3s
       retries: 20
     ports:
-      - "8081:8081"
+      # WireMock listens on 8080 inside the network; 8081 on the host stays the PROVIDER_URL default.
+      - "8081:8080"
 
   app:
     build:
@@ -59,7 +65,7 @@ services:
     environment:
       <<: *secrets
       DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/payments
-      PROVIDER_URL: http://provider-mock:8081
+      PROVIDER_URL: http://provider-mock:8080
       PROVIDER_TIMEOUT_S: "2"
       # JSON request log: stdout (docker compose logs app) and this file, which the tests read.
       LOG_FILE: /var/log/app/app.log
@@ -89,7 +95,7 @@ services:
       <<: *secrets
       BASE_URL: http://app:8000
       DB_DSN: postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@db:5432/payments
-      PROVIDER_URL: http://provider-mock:8081
+      PROVIDER_URL: http://provider-mock:8080
       # The app's log file (read-only mount of the app's volume) and the broker it publishes to.
       APP_LOG_FILE: /work/app-logs/app.log
       RABBITMQ_URL: amqp://lab:${RABBITMQ_PASSWORD:?set RABBITMQ_PASSWORD in .env}@rabbitmq:5672/

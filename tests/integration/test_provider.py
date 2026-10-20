@@ -1,9 +1,10 @@
 """Authorize against a provider that approves, declines, breaks, hangs or is merely slow.
 
-The mock picks the behaviour from the card token. Every case ends in a final state (authorized or
-failed, never left hanging) and is checked from three sides: the API response, the database row,
-and what the provider actually received. Time budget: a hung provider costs the app's timeout
-(2 s) plus one second of slack, never more.
+The WireMock stub picks the behaviour from the card token (mappings in provider-mock/mappings).
+Every case ends in a final state (authorized or failed, never left hanging) and is checked from
+three sides: the API response, the database row, and what the provider actually received (read
+from WireMock's request journal through its admin API). Time budget: a hung provider costs the
+app's timeout (2 s) plus one second of slack, never more.
 """
 
 import time
@@ -13,7 +14,7 @@ import allure
 import pytest
 
 from tests.clients.payments_api import PaymentsApi
-from tests.clients.provider_mock_api import ProviderMockApi
+from tests.clients.provider_stub import ProviderStub
 from tests.config import Settings
 from tests.factories.payment_factory import PaymentFactory
 from tests.models.payments import Payment, PaymentStatus
@@ -65,7 +66,7 @@ def test_approved_charge_authorizes_the_payment(
     authorize: Callable[[str], tuple[Payment, float]],
     api: PaymentsApi,
     db: Database,
-    provider_mock: ProviderMockApi,
+    provider_stub: ProviderStub,
 ) -> None:
     payment, _ = authorize("tok_success")
 
@@ -73,7 +74,7 @@ def test_approved_charge_authorizes_the_payment(
     assert api.get(payment.id).expect(200).status is PaymentStatus.AUTHORIZED
     assert _db_row(db, payment) == {"status": "authorized", "failure_reason": None}
     # The provider got what the merchant asked for, tagged with our payment id.
-    [charge] = provider_mock.charges_for(payment.id)
+    [charge] = provider_stub.charges_for(payment.id)
     assert (charge.amount, charge.currency, charge.card_token) == (AMOUNT, CURRENCY, "tok_success")
 
 
@@ -83,7 +84,7 @@ def test_provider_failure_ends_in_failed_with_a_reason(
     authorize: Callable[[str], tuple[Payment, float]],
     api: PaymentsApi,
     db: Database,
-    provider_mock: ProviderMockApi,
+    provider_stub: ProviderStub,
     settings: Settings,
     card_token: str,
     reason: str,
@@ -94,8 +95,8 @@ def test_provider_failure_ends_in_failed_with_a_reason(
     stored = api.get(payment.id).expect(200)
     assert (stored.status, stored.failure_reason) == (PaymentStatus.FAILED, reason)
     assert _db_row(db, payment) == {"status": "failed", "failure_reason": reason}
-    assert len(provider_mock.charges_for(payment.id)) == 1
-    # The mock hangs for 10 s on tok_timeout; the app must cut it off at its own timeout.
+    assert len(provider_stub.charges_for(payment.id)) == 1
+    # The stub answers tok_timeout after 10 s; the app must cut it off at its own timeout.
     assert seconds < settings.provider_timeout_s + 1, f"authorize took {seconds:.1f}s"
 
 
@@ -104,15 +105,15 @@ def test_provider_failure_ends_in_failed_with_a_reason(
 def test_slow_provider_within_the_timeout_still_succeeds(
     authorize: Callable[[str], tuple[Payment, float]],
     db: Database,
-    provider_mock: ProviderMockApi,
+    provider_stub: ProviderStub,
     settings: Settings,
 ) -> None:
     payment, seconds = authorize("tok_slow")
 
     assert payment.status is PaymentStatus.AUTHORIZED
     assert _db_row(db, payment) == {"status": "authorized", "failure_reason": None}
-    assert len(provider_mock.charges_for(payment.id)) == 1
-    # Slow means slow (the mock waits 1 s) but below the limit: not mistaken for a timeout.
+    assert len(provider_stub.charges_for(payment.id)) == 1
+    # Slow means slow (the stub delays 1 s) but below the limit: not mistaken for a timeout.
     assert 0.9 <= seconds < settings.provider_timeout_s
 
 
@@ -122,7 +123,7 @@ def test_slow_provider_within_the_timeout_still_succeeds(
 def test_retrying_a_failed_payment_does_not_charge_again(
     authorize: Callable[[str], tuple[Payment, float]],
     api: PaymentsApi,
-    provider_mock: ProviderMockApi,
+    provider_stub: ProviderStub,
     card_token: str,
 ) -> None:
     payment, _ = authorize(card_token)
@@ -130,5 +131,5 @@ def test_retrying_a_failed_payment_does_not_charge_again(
     api.authorize(payment.id).expect_error(409, "invalid_transition")
 
     # `failed` is terminal: the second attempt is refused before the provider is called.
-    assert len(provider_mock.charges_for(payment.id)) == 1
+    assert len(provider_stub.charges_for(payment.id)) == 1
     assert api.get(payment.id).expect(200).status is PaymentStatus.FAILED
