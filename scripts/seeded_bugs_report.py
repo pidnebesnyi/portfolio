@@ -10,6 +10,8 @@ Rules
   - bug n:    with the bug on, at least one test marked for it FAILS
 
 Output: bugs.json, site/bugs/index.html, a summary on stdout (and on the GitHub job summary).
+The page links to report/, the Allure report of the runs with a bug on that the workflow
+publishes next to it (this script does not build it).
 Exit code 1 when a bug escaped or the baseline is red, so the CI job turns red.
 
     python scripts/seeded_bugs_report.py --junit-dir junit
@@ -150,6 +152,8 @@ td:first-child{white-space:nowrap}
 th{font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
 code{font:.82rem ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}
 ul{margin:0;padding-left:1.1rem}
+.evidence{margin:1rem 0 0}
+.evidence a{display:inline-block;padding:.5rem 0;font-weight:600}
 @media(max-width:640px){
 thead{display:none}
 tr{display:block;background:var(--card);border:1px solid var(--line);border-radius:8px;
@@ -196,6 +200,9 @@ integration suites. A bug counts as caught when at least one test marked for it 
 With no bug switched on, the same suites must be green:
 <span class="{base_css}">{esc(str(baseline["result"]))}</span>
 ({baseline["tests"]} tests, {baseline["failed"]} failed).</p>
+<p class="evidence"><a href="report/">Open the failing tests in Allure</a><br>
+<span class="muted">Every caught failure has its evidence attached: steps, the last request and
+response, and the SQL where the test reads the database.</span></p>
 <table>
 <thead><tr><th>Bug</th><th>What was broken</th>
 <th>Failing tests with the bug on</th><th>Result</th></tr></thead>
