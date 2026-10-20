@@ -102,6 +102,9 @@ jobs:
     if: always() # a missing run must show up as "no data" in the report, not skip it
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    concurrency:
+      group: gh-pages # one writer at a time across workflows; a parallel push is rejected
+      cancel-in-progress: false
     permissions:
       contents: write # only this job pushes to gh-pages
     steps:
