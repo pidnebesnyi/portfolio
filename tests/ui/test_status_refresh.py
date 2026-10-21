@@ -72,6 +72,9 @@ def test_status_badge_renders_what_the_endpoint_answers(detail: PaymentDetailPag
 
 
 @pytest.mark.regression
+@pytest.mark.allow_http_errors(
+    url=STATUS_ENDPOINT, status=500, reason="the test stubs the status endpoint to answer 500"
+)
 @allure.title("A 500 answer shows an error and leaves the status as it was")
 def test_a_500_answer_shows_an_error_and_leaves_the_status_as_it_was(
     detail: PaymentDetailPage,
@@ -131,6 +134,9 @@ def test_a_slow_answer_shows_a_loading_state_then_the_new_status(
 
 
 @pytest.mark.regression
+@pytest.mark.allow_http_errors(
+    url=STATUS_ENDPOINT, status=503, reason="the test stubs the status endpoint to answer 503 once"
+)
 @allure.title("The error goes away after a retry that works")
 def test_the_error_goes_away_after_a_retry_that_works(
     detail: PaymentDetailPage, payment_factory: PaymentFactory

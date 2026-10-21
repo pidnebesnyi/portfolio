@@ -6,9 +6,9 @@ When the design changes on purpose, change the CSS and this file together; a tes
 of them alone is the point.
 """
 
-# body { font: 15px/1.4 system-ui, sans-serif; max-width: 56rem }
+# body { font: 15px/1.4 Inter, system-ui, sans-serif; max-width: 56rem }
 BODY = {
-    "font-family": "system-ui, sans-serif",
+    "font-family": "Inter, system-ui, sans-serif",
     "font-size": "15px",
     "line-height": "21px",  # 15px * 1.4
     "max-width": "896px",  # 56rem
@@ -42,3 +42,10 @@ LABEL = {"display": "block"}
 FLASH = {"padding-top": "8px", "border-top-width": "1px", "border-top-style": "solid"}
 FLASH_SUCCESS_BORDER = {**FLASH, "border-top-color": "rgb(34, 170, 119)"}  # #2a7
 FLASH_ERROR_BORDER = {**FLASH, "border-top-color": "rgb(204, 51, 51)"}  # #c33
+
+# @font-face "Inter" -> /static/fonts/inter-latin-400-normal.woff2. The tests image has no app/,
+# so the file's SHA-256 is a constant. Regenerate after replacing the file:
+#   shasum -a 256 app/static/fonts/inter-latin-400-normal.woff2
+WEB_FONT_PATH = "/static/fonts/inter-latin-400-normal.woff2"
+WEB_FONT_SHA256 = "dd05e326cf8eac3b55acecf29c842ed73e6e6dd06491cf47f7e8800680ab3e33"
+EXPECTED_FONTS = {WEB_FONT_PATH: WEB_FONT_SHA256}

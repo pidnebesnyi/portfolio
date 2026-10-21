@@ -48,6 +48,7 @@ markers = [
     "requirement(id): requirement the test covers, a GitHub issue listed in tests/requirements.py",
     "ui: browser test (Playwright)",
     "sensitive: test types credentials into the browser; its trace and video are never kept",
+    "allow_http_errors(url=, status=, reason=): this test expects the browser to get these HTTP errors (>= 400); reason is required",
     "db: test reads the database directly to verify state",
     "integration: needs the provider stub (WireMock) to behave in a specific way",
 ]
