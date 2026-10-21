@@ -1,0 +1,15 @@
+{
+  "status": 400,
+  "elapsed_ms": 7,
+  "headers": {
+    "date": "Wed, 21 Oct 2026 10:03:14 GMT",
+    "server": "uvicorn",
+    "content-length": "82",
+    "content-type": "application/json",
+    "x-request-id": "00b4cd8a643144afbbf13f74304c6ea7"
+  },
+  "body": {
+    "code": "idempotency_key_required",
+    "message": "Idempotency-Key header is required"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "method": "POST",
+  "url": "http://app:8000/payments",
+  "headers": {
+    "host": "app:8000",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "idempotency-key": "85149410-e2f9-43f1-ad1d-182188f4d598",
+    "authorization": "***",
+    "content-length": "117",
+    "content-type": "application/json"
+  },
+  "body": {
+    "amount": 100,
+    "currency": "UAH",
+    "description": "Оплата №42 — кава ☕ «Львів»",
+    "card_token": "tok"
+  }
+}

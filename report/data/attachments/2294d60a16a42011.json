@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 5,
+  "headers": {
+    "date": "Wed, 21 Oct 2026 10:03:13 GMT",
+    "server": "uvicorn",
+    "content-length": "302",
+    "content-type": "application/json",
+    "x-request-id": "e41d3ecf6b2d4ba1af2c386f125c359d"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "string_too_long",
+        "loc": [
+          "body",
+          "name"
+        ],
+        "msg": "String should have at most 100 characters",
+        "input": "nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn",
+        "ctx": {
+          "max_length": 100
+        }
+      }
+    ]
+  }
+}
