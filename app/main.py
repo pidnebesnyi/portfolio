@@ -1,7 +1,9 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app import request_log
 from app.bootstrap import ensure_admin
@@ -28,3 +30,5 @@ install_error_handlers(app)
 app.add_middleware(request_log.RequestLogMiddleware)
 for module in (health, auth, merchants, payments, ui):
     app.include_router(module.router)
+# The pages' web font (and its licence). A mount is not part of the OpenAPI document.
+app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
