@@ -21,3 +21,5 @@ pika==1.4.4
 # pytest-playwright 0.7.2 is the first release that accepts pytest 9 and still works with 1.49.
 playwright==1.49.1
 pytest-playwright==0.7.2
+# Compares the API's payment list with the database rows in one call (tests/utils/payment_compare.py).
+deepdiff==9.1.0
