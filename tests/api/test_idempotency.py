@@ -5,6 +5,7 @@ import pytest
 
 from tests.clients.payments_api import PaymentsApi
 from tests.factories.merchant_factory import MerchantAccount
+from tests.utils.aaa import act, arrange, check
 from tests.utils.allure_links import area, requirement
 from tests.utils.db import Database
 
@@ -16,25 +17,33 @@ REPLAY_HEADER = "Idempotent-Replayed"
 @pytest.mark.smoke
 @allure.title("The same key and body return the same payment")
 def test_same_key_and_body_returns_the_same_payment(api: PaymentsApi) -> None:
-    key = str(uuid4())
+    with arrange("one idempotency key"):
+        key = str(uuid4())
 
-    first = api.create(amount=500, idempotency_key=key)
-    second = api.create(amount=500, idempotency_key=key)
+    with act("send the same create request twice with that key"):
+        first = api.create(amount=500, idempotency_key=key)
+        second = api.create(amount=500, idempotency_key=key)
 
-    created = first.expect(201)
-    replayed = second.expect(200)
-    assert replayed == created
-    assert REPLAY_HEADER not in first.headers
-    assert second.headers[REPLAY_HEADER] == "true"
+    with check("the first call creates, the second replays the same payment"):
+        created = first.expect(201)
+        replayed = second.expect(200)
+        assert replayed == created
+        assert REPLAY_HEADER not in first.headers
+        assert second.headers[REPLAY_HEADER] == "true"
 
 
 @pytest.mark.smoke
 @allure.title("The same key with a different body is a conflict")
 def test_same_key_with_different_body_is_a_conflict(api: PaymentsApi) -> None:
-    key = str(uuid4())
-    api.create(amount=500, idempotency_key=key).expect(201)
+    with arrange("a payment of 500 created with a key"):
+        key = str(uuid4())
+        api.create(amount=500, idempotency_key=key).expect(201)
 
-    api.create(amount=501, idempotency_key=key).expect_error(409, "idempotency_key_reused")
+    with act("reuse the key for a payment of 501"):
+        response = api.create(amount=501, idempotency_key=key)
+
+    with check("the request is refused as a reused key"):
+        response.expect_error(409, "idempotency_key_reused")
 
 
 @pytest.mark.smoke

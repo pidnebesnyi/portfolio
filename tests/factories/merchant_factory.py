@@ -6,6 +6,7 @@ from tests.clients.auth_api import AuthApi
 from tests.clients.http import LoggedHttpClient
 from tests.clients.merchants_api import MerchantsApi
 from tests.clients.payments_api import PaymentsApi
+from tests.utils.aaa import arrange
 
 
 @dataclass(frozen=True)
@@ -33,6 +34,10 @@ class MerchantFactory:
     _created: list[UUID] = field(default_factory=list)
 
     def create(self, label: str = "qa") -> MerchantAccount:
+        with arrange(f"create a merchant ({label})"):
+            return self._create(label)
+
+    def _create(self, label: str) -> MerchantAccount:
         suffix = uuid4().hex[:10]
         email = f"{label}-{suffix}@lab.test"
         password = secrets.token_urlsafe(16)  # random per merchant; never a literal in the repo

@@ -14,6 +14,7 @@ import allure
 import httpx
 
 from tests.utils import evidence
+from tests.utils.aaa import request_title
 from tests.utils.openapi import OpenApiContract
 
 MASK = "***"
@@ -100,7 +101,7 @@ class LoggedHttpClient:
         all_headers = dict(headers or {})
         if token is not None:
             all_headers["Authorization"] = f"Bearer {token}"
-        with allure.step(f"{method} {path}"):
+        with allure.step(request_title(method, path)):
             request = self._client.build_request(
                 method, path, json=json_body, params=params, headers=all_headers
             )

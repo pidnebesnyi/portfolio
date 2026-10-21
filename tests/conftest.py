@@ -26,6 +26,7 @@ from tests.factories.merchant_factory import MerchantAccount, MerchantFactory
 from tests.factories.payment_factory import PaymentFactory
 from tests.requirements import REQUIREMENTS
 from tests.utils import evidence
+from tests.utils.aaa import set_test_body_running
 from tests.utils.allure_evidence import (
     attach_failure_evidence,
     clear_browser_artifacts,
@@ -76,6 +77,17 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     if alluredir := config.getoption("allure_report_dir"):
         write_run_metadata(str(alluredir), Settings())
     clear_browser_artifacts(str(config.getoption("output")))
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_call(item: pytest.Item) -> Generator[None, object, None]:
+    """Mark the test body, so requests made in it are labelled `Act:` (tests/utils/aaa.py).
+    Gherkin scenarios already say Given / When / Then, so they keep their own structure."""
+    set_test_body_running(not item.nodeid.startswith("tests/bdd/"))
+    try:
+        yield
+    finally:
+        set_test_body_running(False)
 
 
 @pytest.hookimpl(hookwrapper=True)

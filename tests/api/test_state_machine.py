@@ -14,6 +14,7 @@ from tests.clients.responses import ApiResponse
 from tests.factories.payment_factory import PaymentFactory
 from tests.models.payments import Payment, Refund
 from tests.models.payments import PaymentStatus as S
+from tests.utils.aaa import act, arrange, check
 from tests.utils.allure_links import area, requirement
 
 pytestmark = [area("Payment state machine"), requirement("PAY-STATE")]
@@ -72,12 +73,16 @@ def _perform(
 def test_allowed_transition(
     api: PaymentsApi, payment_factory: PaymentFactory, start: S, action: str, expected: S
 ) -> None:
-    payment = payment_factory.create(start, amount=AMOUNT)
+    with arrange(f"a payment in the {start} state"):
+        payment = payment_factory.create(start, amount=AMOUNT)
 
-    assert _perform(api, payment.id, action).status_code == (201 if action == "refund" else 200)
+    with act(f"perform {action}"):
+        response = _perform(api, payment.id, action)
 
-    after = api.get(payment.id).expect(200)
-    assert after.status is expected
+    with check(f"the call succeeds and the payment is now {expected}"):
+        assert response.status_code == (201 if action == "refund" else 200)
+        after = api.get(payment.id).expect(200)
+        assert after.status is expected
 
 
 @pytest.mark.parametrize(
@@ -96,13 +101,18 @@ def test_allowed_transition(
 def test_forbidden_transition_is_rejected_and_changes_nothing(
     api: PaymentsApi, payment_factory: PaymentFactory, start: S, action: str
 ) -> None:
-    payment = payment_factory.create(start, amount=AMOUNT)
-    before = api.get(payment.id).expect(200)
+    with arrange(f"a payment in the {start} state"):
+        payment = payment_factory.create(start, amount=AMOUNT)
+        before = api.get(payment.id).expect(200)
 
-    error = _perform(api, payment.id, action).expect_error(409, "invalid_transition")
-    assert error.from_status == start.value
-    assert error.action == action
-    assert api.get(payment.id).expect(200) == before, "a rejected transition must not mutate"
+    with act(f"attempt {action}"):
+        response = _perform(api, payment.id, action)
+
+    with check("it is refused with invalid_transition and nothing changed"):
+        error = response.expect_error(409, "invalid_transition")
+        assert error.from_status == start.value
+        assert error.action == action
+        assert api.get(payment.id).expect(200) == before, "a rejected transition must not mutate"
 
 
 @pytest.mark.regression

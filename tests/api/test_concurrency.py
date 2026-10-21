@@ -14,6 +14,7 @@ import pytest
 from tests.clients.payments_api import PaymentsApi
 from tests.factories.payment_factory import PaymentFactory
 from tests.models.payments import PaymentStatus
+from tests.utils.aaa import act, arrange, check
 from tests.utils.allure_links import area, requirement
 from tests.utils.db import Database
 from tests.utils.parallel import run_together
@@ -27,16 +28,19 @@ pytestmark = area("Concurrency")
 def test_parallel_refunds_never_exceed_the_payment_amount(
     api: PaymentsApi, payment_factory: PaymentFactory
 ) -> None:
-    payment = payment_factory.create(PaymentStatus.CAPTURED, amount=1000)
+    with arrange("a captured payment of 1000"):
+        payment = payment_factory.create(PaymentStatus.CAPTURED, amount=1000)
 
-    answers = run_together([lambda: api.refund(payment.id, 300) for _ in range(6)])
+    with act("send six refunds of 300 at the same moment"):
+        answers = run_together([lambda: api.refund(payment.id, 300) for _ in range(6)])
 
-    assert Counter(a.status_code for a in answers) == {201: 3, 422: 3}
-    for rejected in (a for a in answers if a.status_code == 422):
-        assert rejected.error is not None
-        assert rejected.error.code == "refund_exceeds_amount"
-    final = api.get(payment.id).expect(200)
-    assert (final.status, final.refunded_amount) == (PaymentStatus.PARTIALLY_REFUNDED, 900)
+    with check("exactly three are accepted, three refused, and 900 is refunded"):
+        assert Counter(a.status_code for a in answers) == {201: 3, 422: 3}
+        for rejected in (a for a in answers if a.status_code == 422):
+            assert rejected.error is not None
+            assert rejected.error.code == "refund_exceeds_amount"
+        final = api.get(payment.id).expect(200)
+        assert (final.status, final.refunded_amount) == (PaymentStatus.PARTIALLY_REFUNDED, 900)
 
 
 @pytest.mark.regression

@@ -3,7 +3,7 @@
 Playwright's `expect(locator).to_have_text(...)` is plain code to Allure, so a UI test showed only
 the API calls that built its data. `install()` wraps every `to_*` / `not_to_*` method of
 Playwright's assertion classes so each check becomes a step named after the locator and the
-expectation, e.g. `Expect get_by_test_id("payment-status") to have text "refunded"`. The wrapper
+expectation, e.g. `Assert: get_by_test_id("payment-status") to have text "refunded"`. The wrapper
 adds nothing else: the assertion, its auto-waiting and its error message are Playwright's own.
 
 Page-object actions are steps too (`@allure.step` on the methods), with titles written to leave
@@ -56,10 +56,10 @@ def _short(value: Any) -> str:
 
 
 def step_title(subject: str, method: str, args: tuple[Any, ...]) -> str:
-    """`Expect <subject> to have text "x"` from the method name and its first argument."""
+    """`Assert: <subject> to have text "x"` from the method name and its first argument."""
     words = method.replace("not_to_", "not to ").replace("to_", "to ").replace("_", " ")
     expected = f" {_short(args[0])}" if args else ""
-    return f"Expect {subject} {words}{expected}"
+    return f"Assert: {subject} {words}{expected}"
 
 
 def _subject(assertions: object, method: str) -> str:
