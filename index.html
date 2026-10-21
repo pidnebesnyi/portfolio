@@ -35,10 +35,10 @@ its example domain. Everything on this page is produced by the pipeline, not wri
 
 <h2>Latest nightly run</h2>
 <ul class="stats">
-  <li><span class="value">188</span><span class="label">tests</span></li>
+  <li><span class="value">198</span><span class="label">tests</span></li>
   <li><span class="value ok">100.0 %</span><span class="label">passed</span></li>
-  <li><span class="value">18 s</span><span class="label">duration</span></li>
-  <li><span class="value">2026-10-20</span><span class="label">last run</span><span class="note"><a href="https://github.com/pidnebesnyi/portfolio/actions/runs/39487066847">19:53 UTC, workflow run</a></span></li>
+  <li><span class="value">12 s</span><span class="label">duration</span></li>
+  <li><span class="value">2026-10-21</span><span class="label">last run</span><span class="note"><a href="https://github.com/pidnebesnyi/portfolio/actions/runs/39565432931">07:56 UTC, workflow run</a></span></li>
 </ul>
 
 <h2>Look at the evidence</h2>
@@ -62,6 +62,8 @@ its example domain. Everything on this page is produced by the pipeline, not wri
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/api"><code>tests/api</code></a> with typed clients in <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/clients"><code>tests/clients</code></a> and Pydantic response models; <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/ui"><code>tests/ui</code></a> for the browser.</td></tr>
 <tr><td data-label="Claim">API contract with OpenAPI (Swagger)</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/blob/main/tests/utils/openapi.py"><code>tests/utils/openapi.py</code></a>: every response checked against the service's own OpenAPI document; <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/contract"><code>tests/contract</code></a> fails on any API change not committed to the pinned document.</td></tr>
+<tr><td data-label="Claim">BDD scenarios readable by non-engineers (Gherkin)</td>
+<td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/bdd"><code>tests/bdd</code></a>: five business scenarios in <a href="https://github.com/pidnebesnyi/portfolio/tree/main/tests/bdd/features">Gherkin</a> (refunds, safe retries, a declined card, access between merchants, a refund in the browser) run with pytest-bdd on the same clients, factories and page objects as the other layers.</td></tr>
 <tr><td data-label="Claim">Postman collections run by Newman</td>
 <td data-label="Proof"><a href="https://github.com/pidnebesnyi/portfolio/tree/main/postman"><code>postman/</code></a>: the API smoke as a collection for manual QA and developers, admin one-time code computed in a pre-request script; Newman runs it on every pull request.</td></tr>
 <tr><td data-label="Claim">UI validated down to fonts and colours</td>
