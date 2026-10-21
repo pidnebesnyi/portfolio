@@ -79,17 +79,17 @@ needs zero secrets.
 
 | Folder | What | Count | Gate |
 |---|---|---:|---|
-| `tests/api` | REST behaviour: payments, refunds, idempotency, transitions, access; input limits, token edge cases and requests sent in parallel (row locks, idempotency races) | 160 | PR (`api` job); nightly |
-| `tests/contract` | The published OpenAPI document compared with the pinned one in `tests/contract/openapi.json` | 1 | PR (`api` job); nightly |
-| `tests/integration` | Payment flow against the WireMock provider stub: decline, error, timeout, two parallel authorizations | 9 | PR (`api` job); nightly |
-| `tests/db` | SQL invariants (JOIN, GROUP BY / HAVING, window, CTE) on data created through the API | 6 | PR (`api` job); nightly |
-| `tests/ui` | Playwright through page objects; data comes from the API; includes network interception (`page.route`) and computed-style checks; navigation, redirects and who may open which page, list and form edge cases | 69 (6 smoke) | PR (`ui-smoke` job, smoke only); nightly |
+| `tests/api` | REST behaviour: payments, refunds, idempotency, transitions, access; input limits, token edge cases and requests sent in parallel (row locks, idempotency races) | 160 (13 smoke) | PR (`api` job); nightly |
+| `tests/contract` | The published OpenAPI document compared with the pinned one in `tests/contract/openapi.json` | 1 (smoke) | PR (`api` job); nightly |
+| `tests/integration` | Payment flow against the WireMock provider stub: decline, error, timeout, two parallel authorizations | 9 (2 smoke) | PR (`api` job); nightly |
+| `tests/db` | SQL invariants (JOIN, GROUP BY / HAVING, window, CTE) on data created through the API; the API's payment list compared with the SQL rows in one DeepDiff call | 7 | PR (`api` job); nightly |
+| `tests/ui` | Playwright through page objects; data comes from the API; includes network interception (`page.route`) and computed-style checks; navigation, redirects and who may open which page, list and form edge cases | 70 (6 smoke) | PR (`ui-smoke` job, smoke only); nightly |
 | `tests/logs` | The app's JSON request log: request ids, domain events, no secrets | 11 (2 smoke) | PR (`api` job); nightly |
 | `tests/events` | Domain events consumed from RabbitMQ: captured, refunded, failed, nothing for rejected requests | 5 (1 smoke) | PR (`api` job); nightly |
 | `tests/bdd` | Business scenarios in Gherkin (`features/*.feature`) that run on the same clients, factories and page objects; one is a browser scenario | 9 | PR (`api` job, all but the browser scenario); nightly |
-| `tests/unit` | Landing-page builder, Allure suite labels, the OpenAPI checker, the requirement trace | 49 | PR (`api` job); nightly |
+| `tests/unit` | Landing-page builder, Allure suite labels, the OpenAPI checker and coverage matrix, the requirement trace, and the helpers behind page health, font, soft style, polling, API ↔ DB and environment checks | 184 | PR (`api` job); nightly |
 
-About 319 tests in total, 22 of them tagged `smoke`. Outside pytest: the Postman collection in
+About 456 tests in total (184 of them unit tests), 25 tagged `smoke`. Outside pytest: the Postman collection in
 `postman/` (20 requests, 59 assertions; PR `api` job) and the Locust profile in `load/`.
 
 ## Pipeline

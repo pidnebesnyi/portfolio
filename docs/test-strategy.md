@@ -27,36 +27,39 @@ built from an API, a database, a UI, a message broker and an external dependency
 | 2 Wrong state | API: a table of every status and action pair, allowed or forbidden (28 cases, plus a check that the table covers them all) | A parametrised table is cheap and readable, and reads like the state machine |
 | 2 Provider failure modes | Integration (`tests/integration`) against a provider mock (WireMock) with stubs per card token | Decline, 5xx and timeout cannot be triggered on demand on a real provider. WireMock also records what it received, and the tests read that journal through its admin API, so they assert exactly one charge was attempted |
 | 3, 4 Access | API: basic access checks (no token, expired token, wrong signature, another merchant's id) | Cheapest level that sees the response code. Not a security assessment, see the last section |
-| 4 Login with 2FA | API for the rules, UI for the form (8 tests, 2 smoke) | The rules are decided by the service; the browser only needs to show the form works |
+| 4 Login with 2FA | API for the rules, UI for the form (24 tests, 3 smoke) | The rules are decided by the service; the browser only needs to show the form works |
 | 5 Contract | API: every response is parsed into a Pydantic model by the typed clients (`tests/clients`) and checked against the service's own OpenAPI document; the document is pinned in `tests/contract/openapi.json` | A response that no longer matches its model or its documentation fails the first test that sees it. Pinning catches the case where code and documentation change together: integrators break although every response matches, so the change must appear in the pull request diff. The same check records which declared statuses of which operations the suite ever received, so a response nobody provokes shows as a gap in `api-coverage.html` |
 | 2 Observability | Log lines of a request found by its request id (`tests/logs`), including a scan for secrets | The id ties a failure to its evidence; a log is also where passwords and tokens leak |
 | 2 Event publishing | Consumer on a private RabbitMQ queue (`tests/events`) | Other systems act on these messages; they must be published once, after the commit, with the right data, and never for a rejected request |
 | 6 Data consistency | SQL invariants after the API tests created data | Catches states the API never admits to, such as refunds above the amount or one idempotency key mapped to two payments. One test also compares the API's full payment list with the SQL rows field by field in a single DeepDiff call, after both sides are normalized to one shape (amounts, timestamps, ids, NULL versus empty) |
-| 7 UI | Playwright with page objects, 32 tests; only 6 on every PR | Browser tests are slow and the most fragile, so they check what only a browser can: forms, filters, a refund through the page, how the page behaves when its own fetch call fails, computed fonts and colours. Data is created by the API, never by clicking |
+| 7 UI | Playwright with page objects, 70 tests; only 6 on every PR | Browser tests are slow and the most fragile, so they check what only a browser can: forms, filters, a refund through the page, how the page behaves when its own fetch call fails, computed fonts and colours. Data is created by the API, never by clicking |
 | 8 Performance | Locust, weekly, with a pass/fail rule (p95 500 ms, errors 1 %) | Proves the flow works with 20 concurrent merchants and catches a slowdown. It does not predict production capacity |
 
 ## The pyramid as built
 
 | Level | Tests | Runs |
 |-------|------:|------|
-| Unit (site builder, Allure labels and UI step names, Arrange/Act/Assert labels, OpenAPI checker, requirement trace) | 49 | every run |
+| Unit (site builder, Allure labels and UI step names, Arrange/Act/Assert labels, OpenAPI checker and coverage matrix, requirement trace, page health, font, soft style, polling, API ↔ DB and environment helpers) | 184 | every run |
 | API, `tests/api` | 160 | every PR |
 | OpenAPI contract, `tests/contract` | 1 | every PR |
 | Integration with the WireMock provider stub | 9 | every PR |
-| Database invariants | 6 | every PR |
+| Database invariants and the API ↔ DB comparison | 7 | every PR |
 | Log checks, `tests/logs` | 11 | every PR |
 | Gherkin scenarios, `tests/bdd` | 9 (5 are rows of one outline), of which 1 in the browser | API scenarios every PR, browser scenario nightly |
 | Domain events, `tests/events` | 5 | every PR |
-| UI (Playwright) | 69, of which 6 smoke | smoke on every PR, all nightly |
+| UI (Playwright) | 70, of which 6 smoke | smoke on every PR, all nightly |
 | Postman collection (Newman), `postman/` | 20 requests, 59 assertions | every PR |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
-319 tests in the suite (numbers from the latest local run, the live number is on the landing page).
-The shape is a pyramid on purpose: about half of the tests are API checks, about a fifth need a browser.
+456 tests in the suite (numbers from the latest local run, the live number is on the landing page).
+The shape is a pyramid on purpose: leaving out the unit tests, which check the suite's own code,
+about 60 % of the tests are API checks and about a quarter need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
-The 49 unit tests cover the plain code around the suite: the landing-page builder, the Allure
-suite labels, the requirement trace and the OpenAPI checker, which is made to fail on purpose for each kind of violation.
-22 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
+The 184 unit tests cover the plain code around the suite: the landing-page builder, the Allure
+suite labels, the requirement trace, the OpenAPI checker (made to fail on purpose for each kind of
+violation) and its coverage matrix, and the helpers behind the page health, font, soft style,
+polling, API ↔ DB and environment checks.
+25 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
 
 The Gherkin scenarios in `tests/bdd` are a reading layer, not new coverage. They restate five
 behaviours already checked in `tests/api`, `tests/integration` and `tests/ui` (partial refunds that
