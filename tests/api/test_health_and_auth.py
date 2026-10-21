@@ -12,7 +12,7 @@ from tests.utils.tokens import decode_unverified, totp_code
 pytestmark = area("Authentication")
 
 
-@pytest.mark.regression
+@pytest.mark.smoke
 @requirement("OBS-HEALTH")
 @allure.title("Health reports ok when the database is up")
 def test_health_reports_ok_when_database_is_up(auth_api: AuthApi) -> None:
@@ -56,7 +56,7 @@ def test_login_with_unknown_email_is_rejected(auth_api: AuthApi) -> None:
     )
 
 
-@pytest.mark.regression
+@pytest.mark.smoke
 @requirement("AUTH-LOGIN")
 @allure.title("Admin login requires a second factor")
 def test_admin_login_requires_second_factor(auth_api: AuthApi, settings: Settings) -> None:

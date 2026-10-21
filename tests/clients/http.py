@@ -6,6 +6,9 @@ in the attachments (the real request is untouched).
 Given the service's OpenAPI document, the client also checks every response against it and fails
 the calling test on the first undocumented status, field or shape (tests/utils/openapi.py). The
 same pass tallies which documented responses were seen (tests/utils/api_coverage.py).
+
+On a read-only environment (TARGET_ENV=staging / production) the client refuses to send any
+request that could change data, before it leaves (tests/utils/environment.py).
 """
 
 import json
@@ -16,6 +19,7 @@ import httpx
 
 from tests.utils import api_coverage, evidence
 from tests.utils.aaa import request_title
+from tests.utils.environment import check_request
 from tests.utils.openapi import OpenApiContract
 
 MASK = "***"
@@ -83,11 +87,16 @@ def _check_contract(
 
 class LoggedHttpClient:
     def __init__(
-        self, base_url: str, timeout_s: float, contract: OpenApiContract | None = None
+        self,
+        base_url: str,
+        timeout_s: float,
+        target_env: str,
+        contract: OpenApiContract | None = None,
     ) -> None:
         # trust_env=False: ignore HTTP(S)_PROXY, a CI proxy must not sit between test and app.
         self._client = httpx.Client(base_url=base_url, timeout=timeout_s, trust_env=False)
         self._contract = contract
+        self._target_env = target_env
 
     def close(self) -> None:
         self._client.close()
@@ -109,6 +118,7 @@ class LoggedHttpClient:
             request = self._client.build_request(
                 method, path, json=json_body, params=params, headers=all_headers
             )
+            check_request(self._target_env, request.method, request.url.path)
             request_text = _pretty(
                 {
                     "method": request.method,

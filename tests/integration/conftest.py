@@ -9,6 +9,6 @@ from tests.config import Settings
 
 @pytest.fixture(scope="session")
 def provider_stub(settings: Settings) -> Iterator[ProviderStub]:
-    client = LoggedHttpClient(settings.provider_url, settings.http_timeout_s)
+    client = LoggedHttpClient(settings.provider_url, settings.http_timeout_s, settings.target_env)
     yield ProviderStub(client)
     client.close()

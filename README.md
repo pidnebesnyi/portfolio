@@ -49,6 +49,9 @@ docker compose run --rm tests
 
 Smoke tests only: `docker compose run --rm tests pytest -m smoke`
 
+Against an environment that must not be changed (see `TARGET_ENV` under Framework decisions):
+`TARGET_ENV=staging pytest -m "smoke and not destructive"`
+
 Postman collection through Newman (how to open it in Postman: [`postman/README.md`](postman/README.md)):
 
 ```bash
@@ -150,6 +153,14 @@ docker compose run --rm tests pytest -q tests/ui --video=off --tracing=off   # c
   `tests/contract` until the pinned file is regenerated (`scripts/export_openapi.py`) and committed,
   so the contract change is reviewed in the pull request diff.
 - Configuration is loaded with pydantic-settings.
+- `TARGET_ENV` (`local`, `ci`, `staging`, `production`; default `local`, anything else fails the run
+  at start) says which environment is under test. On `staging` and `production` the suite is
+  read-only. Every test that creates, changes or deletes data carries the `destructive` marker,
+  added automatically when its fixtures include `merchant_factory`, `payment_factory` or `admin_api`
+  (so also `merchant`, `api`, `merchant_page`, every Gherkin scenario), and is skipped with a stated
+  reason. The HTTP client and the database helper independently refuse any write, except the login
+  and 2FA POSTs, before it leaves the machine (`tests/utils/environment.py`), so an unmarked test
+  cannot change data either.
 - The API smoke also exists as a Postman collection (`postman/`), for manual QA and developers to
   click through. Newman runs it in the PR, so the collection cannot silently go stale; the admin's
   one-time code is computed in a pre-request script, and credentials come in as `--env-var`.
