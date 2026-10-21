@@ -165,6 +165,7 @@ docker compose run --rm tests pytest -q tests/ui --video=off --tracing=off   # c
   matrix is in [`docs/test-strategy.md`](docs/test-strategy.md#traceability).
 - Markers are enforced: every test has exactly one of `smoke` or `regression`, a known
   requirement, and `--strict-markers` fails on typos. Retries happen only through `@pytest.mark.flaky` with a reason.
+- One database test compares the API's whole payment list for a merchant (every page) with the same rows read by SQL. Both sides are normalized explicitly into one plain shape (ids, integer amounts, UTC timestamps, enums, NULL versus empty; one small function per rule in `tests/utils/payment_compare.py`, unit-tested without a database) and compared with a single DeepDiff call. A failure attaches DeepDiff's readable diff to Allure and uses it as the assertion message.
 - Browser tests read like the API ones in the report: every page-object action (open, log in, refund, filter) and every `expect(...)` check is an Allure step named after its locator and expectation (`tests/utils/ui_steps.py`), so a UI test no longer shows only the API calls that built its data. Step titles leave typed secrets out.
 - In the report a test reads as Arrange / Act / Assert: factories, the requests and page actions a test makes itself, and its checks are steps with those prefixes (`tests/utils/aaa.py`); ten reference tests mark the three phases explicitly.
 - Every browser test also watches the HTTP responses its page receives: a broken image, script or
