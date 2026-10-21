@@ -130,7 +130,7 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - >-
-        newman run /etc/newman/payments-qa-lab.postman_collection.json
+        newman run /etc/newman/test-automation-lab.postman_collection.json
         -e /etc/newman/local.postman_environment.json
         --env-var baseUrl=http://app:8000
         --env-var "adminEmail=$$ADMIN_EMAIL"

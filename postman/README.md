@@ -1,6 +1,6 @@
 # Postman collection
 
-`payments-qa-lab.postman_collection.json` is the API smoke in a form manual QA and developers can
+`test-automation-lab.postman_collection.json` is the API smoke in a form manual QA and developers can
 open and click through. It runs the main path in 20 requests: health, admin login with a one-time
 code, a new merchant, a payment created (and replayed with the same Idempotency-Key), authorized,
 captured and partly refunded, the payment list, two access checks, and the merchant deleted again.
@@ -16,7 +16,7 @@ a demo, a request to copy into a bug report, a starting point for exploratory te
 ## In Postman
 
 1. Start the stack (`docker compose up --build --wait db app provider-mock`).
-2. Import both JSON files from this folder and select the `payments-qa-lab local` environment.
+2. Import both JSON files from this folder and select the `test-automation-lab local` environment.
 3. Put `ADMIN_PASSWORD` and `ADMIN_TOTP_SECRET` from your `.env` into the **current value** of
    `adminPassword` and `adminTotpSecret`. Current values stay on your machine; do not export the
    environment with them filled in.
