@@ -25,9 +25,10 @@ from tests.config import Settings
 from tests.factories.merchant_factory import MerchantAccount, MerchantFactory
 from tests.factories.payment_factory import PaymentFactory
 from tests.requirements import REQUIREMENTS
-from tests.utils import evidence
+from tests.utils import api_coverage, evidence
 from tests.utils.aaa import set_test_body_running
 from tests.utils.allure_evidence import (
+    append_run_metadata,
     attach_failure_evidence,
     clear_browser_artifacts,
     write_run_metadata,
@@ -38,6 +39,7 @@ from tests.utils.db import Database
 from tests.utils.openapi import OpenApiContract
 from tests.utils.tokens import totp_code
 
+API_COVERAGE = pytest.StashKey[list[dict[str, Any]]]()
 TIER_MARKERS = {"smoke", "regression"}
 FAILED = pytest.StashKey[bool]()
 
@@ -79,6 +81,29 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     clear_browser_artifacts(str(config.getoption("output")))
 
 
+def pytest_sessionfinish(session: pytest.Session) -> None:
+    """API coverage (tests/utils/api_coverage.py). A worker hands its tally to the controller
+    through workeroutput; the controller (or the only process, without xdist) writes the files."""
+    config = session.config
+    if hasattr(config, "workerinput"):
+        config.workeroutput["api_coverage"] = api_coverage.snapshot()
+        return
+    merged = api_coverage.merge([api_coverage.snapshot(), *config.stash.get(API_COVERAGE, [])])
+    alluredir = config.getoption("allure_report_dir")
+    if alluredir and merged["declared"]:  # no declared operations: no API test loaded the spec
+        matrix = api_coverage.build_matrix(merged)
+        api_coverage.write(str(alluredir), matrix)
+        append_run_metadata(str(alluredir), api_coverage.summary_properties(matrix))
+
+
+@pytest.hookimpl(optionalhook=True)
+def pytest_testnodedown(node: Any, error: object) -> None:
+    """xdist controller: collect what each worker recorded, before the session finishes."""
+    output = getattr(node, "workeroutput", None) or {}
+    if "api_coverage" in output:
+        node.config.stash.setdefault(API_COVERAGE, []).append(output["api_coverage"])
+
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_call(item: pytest.Item) -> Generator[None, object, None]:
     """Mark the test body, so requests made in it are labelled `Act:` (tests/utils/aaa.py).
@@ -116,6 +141,7 @@ def openapi_spec(settings: Settings) -> dict[str, Any]:
         response = client.get("/openapi.json", timeout=settings.http_timeout_s)
     response.raise_for_status()
     spec: dict[str, Any] = response.json()
+    api_coverage.note_spec(spec)
     return spec
 
 
