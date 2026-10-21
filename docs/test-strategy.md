@@ -28,10 +28,10 @@ built from an API, a database, a UI, a message broker and an external dependency
 | 2 Provider failure modes | Integration (`tests/integration`) against a provider mock (WireMock) with stubs per card token | Decline, 5xx and timeout cannot be triggered on demand on a real provider. WireMock also records what it received, and the tests read that journal through its admin API, so they assert exactly one charge was attempted |
 | 3, 4 Access | API: basic access checks (no token, expired token, wrong signature, another merchant's id) | Cheapest level that sees the response code. Not a security assessment, see the last section |
 | 4 Login with 2FA | API for the rules, UI for the form (8 tests, 2 smoke) | The rules are decided by the service; the browser only needs to show the form works |
-| 5 Contract | API: every response is parsed into a Pydantic model by the typed clients (`tests/clients`) and checked against the service's own OpenAPI document; the document is pinned in `tests/contract/openapi.json` | A response that no longer matches its model or its documentation fails the first test that sees it. Pinning catches the case where code and documentation change together: integrators break although every response matches, so the change must appear in the pull request diff |
+| 5 Contract | API: every response is parsed into a Pydantic model by the typed clients (`tests/clients`) and checked against the service's own OpenAPI document; the document is pinned in `tests/contract/openapi.json` | A response that no longer matches its model or its documentation fails the first test that sees it. Pinning catches the case where code and documentation change together: integrators break although every response matches, so the change must appear in the pull request diff. The same check records which declared statuses of which operations the suite ever received, so a response nobody provokes shows as a gap in `api-coverage.html` |
 | 2 Observability | Log lines of a request found by its request id (`tests/logs`), including a scan for secrets | The id ties a failure to its evidence; a log is also where passwords and tokens leak |
 | 2 Event publishing | Consumer on a private RabbitMQ queue (`tests/events`) | Other systems act on these messages; they must be published once, after the commit, with the right data, and never for a rejected request |
-| 6 Data consistency | SQL invariants after the API tests created data | Catches states the API never admits to, such as refunds above the amount or one idempotency key mapped to two payments |
+| 6 Data consistency | SQL invariants after the API tests created data | Catches states the API never admits to, such as refunds above the amount or one idempotency key mapped to two payments. One test also compares the API's full payment list with the SQL rows field by field in a single DeepDiff call, after both sides are normalized to one shape (amounts, timestamps, ids, NULL versus empty) |
 | 7 UI | Playwright with page objects, 32 tests; only 6 on every PR | Browser tests are slow and the most fragile, so they check what only a browser can: forms, filters, a refund through the page, how the page behaves when its own fetch call fails, computed fonts and colours. Data is created by the API, never by clicking |
 | 8 Performance | Locust, weekly, with a pass/fail rule (p95 500 ms, errors 1 %) | Proves the flow works with 20 concurrent merchants and catches a slowdown. It does not predict production capacity |
 
@@ -79,6 +79,13 @@ Depth beyond the happy path, by design:
 - **Tokens.** Unsigned, expiry-less, wrongly typed and orphaned tokens are refused.
 - **Browser access and navigation.** Titles and headings, links, redirects, the back button with
   filters, an admin on merchant pages, another merchant's payment, forged or stale sessions.
+- **Page health.** Every browser test, including the browser Gherkin scenario, fails at teardown if
+  its page received an HTTP error (status 400 or more) the test did not allow with
+  `allow_http_errors(..., reason=...)`. A missing image, script or failed `fetch` is caught even
+  when the assertions on the page pass; the stubbed 500 and 503 in the refresh tests are the only
+  allowed errors.
+  The same hook checks the web font: the file the page downloads must be byte for byte the pinned
+  Inter woff2 (SHA-256), and no other font file may load; one UI test asserts it explicitly.
 
 How a test reads in the Allure report:
 
@@ -163,6 +170,9 @@ subject only because it has one small `fetch` call to exercise.
 - **Why.** The browser's final answer is what a user sees: a typo in a selector, an overridden
   rule or a changed colour fails a test although the CSS file looks fine. The comparison is on a
   whole dict, so one failure lists every property that differs.
+  The checks are soft (`tests/utils/soft_checks.py`): a test collects the mismatches of all its
+  elements, each with an Allure screenshot of the outlined element, and fails once at `verify()`
+  with one summary, so a restyled page shows everything that changed in a single run.
 - **Does not cover.** Layout, spacing between elements, and anything pictorial: there are no
   screenshot comparisons, which this small UI does not justify. The app has no custom button or badge styling, so there is nothing to compare for them.
 
@@ -181,6 +191,13 @@ subject only because it has one small `fetch` call to exercise.
   is stored in the repository.
 - Provider behaviour is chosen by the card token on each request, not by a global switch, so
   parallel tests cannot disturb each other.
+- Nearly every test writes data, so the suite is for `local` and `ci`. `TARGET_ENV=staging` or
+  `production` turns it read-only: tests using the data-creating fixtures are marked `destructive`
+  at collection and skipped, and the HTTP client and the database helper refuse any write (the
+  login and 2FA POSTs excepted) as a second line of defence. The safe subset is
+  `pytest -m "smoke and not destructive"`: health, the pinned OpenAPI contract, the admin login with
+  its second factor and the login page styles. It needs `ADMIN_*`, `JWT_SECRET` and `DB_DSN` set (the
+  latter is never used by these tests), and creates nothing.
 
 ## Flakiness policy
 
@@ -215,7 +232,8 @@ secrets stay out of the log is a risk no functional test sees.
 **Not covered.** Log shipping and retention, a search backend, log levels and the format of
 uvicorn's own access log (it is not written to the file). The secret scan proves the values this
 run used are absent; it cannot prove no secret is ever logged. The access line is written after
-the response, so tests poll with a deadline (`tests/utils/waiting.py`) rather than sleep.
+the response, so tests poll with a deadline (`tests/utils/waiting.py`) rather than sleep. Each
+attempt is listed under the wait's step in Allure, so a slow line is visible as a run of "not yet".
 
 ## Domain events on RabbitMQ
 

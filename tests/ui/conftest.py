@@ -5,6 +5,7 @@ The UI is only verified here, never used to build data: payments and merchants c
 fixtures in tests/conftest.py. The exception is the login suite, which exercises the login form.
 """
 
+from collections.abc import Iterator
 from typing import Any
 from urllib.parse import urlparse
 
@@ -14,6 +15,7 @@ from playwright.sync_api import BrowserContext, Page, expect
 from tests.config import Settings
 from tests.factories.merchant_factory import MerchantAccount
 from tests.utils import ui_steps
+from tests.utils.soft_checks import StyleCollector
 
 SESSION_COOKIE = "session"
 
@@ -87,3 +89,12 @@ def admin_page(page: Page, context: BrowserContext, admin_token: str, settings: 
     """A page already logged in as the admin (the session an admin gets after the second factor)."""
     start_session(context, settings, admin_token)
     return page
+
+
+@pytest.fixture
+def soft_styles() -> Iterator[StyleCollector]:
+    """Style checks that collect every mismatch; the test ends with `soft_styles.verify()`.
+    Recorded mismatches that were never raised fail the test at teardown."""
+    collector = StyleCollector(wait_visible=lambda locator: expect(locator).to_be_visible())
+    yield collector
+    collector.assert_none_pending()
