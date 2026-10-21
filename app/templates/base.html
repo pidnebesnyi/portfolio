@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Payments Lab{% endblock %}</title>
   <style>
-    body { font: 15px/1.4 system-ui, sans-serif; margin: 0 auto; max-width: 56rem; padding: 1rem; }
+    /* block: text waits for the font instead of flashing in a fallback first */
+    @font-face {
+      font-family: "Inter"; font-weight: 400; font-style: normal; font-display: block;
+      src: url("/static/fonts/inter-latin-400-normal.woff2") format("woff2");
+    }
+    body { font: 15px/1.4 Inter, system-ui, sans-serif; margin: 0 auto; max-width: 56rem; padding: 1rem; }
     header { display: flex; gap: 1rem; align-items: center; border-bottom: 1px solid #ccc; padding-bottom: .5rem; }
     header form { margin-left: auto; }
     label { display: block; margin: .5rem 0; }

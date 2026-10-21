@@ -28,6 +28,7 @@ from tests.config import Settings
 from tests.factories.merchant_factory import MerchantAccount, MerchantFactory
 from tests.factories.payment_factory import PaymentFactory
 from tests.requirements import REQUIREMENTS
+from tests.ui import design_tokens
 from tests.utils import api_coverage, evidence
 from tests.utils.aaa import set_test_body_running
 from tests.utils.allure_evidence import (
@@ -39,6 +40,7 @@ from tests.utils.allure_evidence import (
 from tests.utils.allure_links import annotate, label_suites
 from tests.utils.app_log import AppLog
 from tests.utils.db import Database
+from tests.utils.font_integrity import FontRecorder, font_problems, format_font_report
 from tests.utils.openapi import OpenApiContract
 from tests.utils.page_health import (
     ALLOW_HTTP_ERRORS,
@@ -51,6 +53,7 @@ from tests.utils.tokens import totp_code
 API_COVERAGE = pytest.StashKey[list[dict[str, Any]]]()
 TIER_MARKERS = {"smoke", "regression"}
 FAILED = pytest.StashKey[bool]()
+FONTS = pytest.StashKey[FontRecorder]()
 
 
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
@@ -214,11 +217,12 @@ def _allure_metadata(request: pytest.FixtureRequest, settings: Settings) -> None
 @pytest.fixture(autouse=True)
 def page_health(request: pytest.FixtureRequest) -> Iterator[PageHealthMonitor | None]:
     """Fails a browser test whose page got an HTTP error (>= 400) the test did not allow with
-    `@pytest.mark.allow_http_errors(...)`. Reaches every test that uses `page`, directly or
-    through merchant_page / admin_page, in tests/ui and in Gherkin scenarios alike; None otherwise.
+    `@pytest.mark.allow_http_errors(...)`, or downloaded a font file other than the expected one
+    (tests/utils/font_integrity.py). Reaches every test that uses `page`, directly or through
+    merchant_page / admin_page, in tests/ui and in Gherkin scenarios alike; None otherwise.
 
-    The failure is raised in teardown with the list attached to the Allure result. A test that
-    already failed keeps its own error: the list is attached, nothing more is raised."""
+    The failure is raised in teardown with the findings attached to the Allure result. A test
+    that already failed keeps its own error: the findings are attached, nothing more is raised."""
     if "page" not in request.fixturenames:
         yield None
         return
@@ -228,17 +232,34 @@ def page_health(request: pytest.FixtureRequest) -> Iterator[PageHealthMonitor | 
         for m in request.node.iter_markers(ALLOW_HTTP_ERRORS)
     ]
     monitor = PageHealthMonitor(allowances)
+    fonts = FontRecorder()
+    monitor.hooks.append(fonts.record)
+    request.node.stash[FONTS] = fonts
     monitor.attach(page)
     yield monitor
     with contextlib.suppress(PlaywrightError):  # page closed or crashed: judge what was seen
         page.evaluate("0")  # a round trip: events that already arrived are delivered before it
+    reports = []
     if unexpected := monitor.unexpected():
         report = format_report(unexpected)
         allure.attach(
             report, name="unexpected HTTP errors", attachment_type=allure.attachment_type.TEXT
         )
-        if not request.node.stash.get(FAILED, False):
-            pytest.fail(report, pytrace=False)
+        reports.append(report)
+    if problems := font_problems(fonts.fonts, design_tokens.EXPECTED_FONTS, fonts.unreadable):
+        report = format_font_report(problems)
+        allure.attach(report, name="font integrity", attachment_type=allure.attachment_type.TEXT)
+        reports.append(report)
+    if reports and not request.node.stash.get(FAILED, False):
+        pytest.fail("\n\n".join(reports), pytrace=False)
+
+
+@pytest.fixture
+def page_fonts(
+    page_health: PageHealthMonitor | None, request: pytest.FixtureRequest
+) -> FontRecorder:
+    """The font responses the page of this test has received so far."""
+    return request.node.stash[FONTS]
 
 
 # --- function layer ----------------------------------------------------------------------
