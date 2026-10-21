@@ -84,9 +84,9 @@ needs zero secrets.
 | `tests/logs` | The app's JSON request log: request ids, domain events, no secrets | 11 (2 smoke) | PR (`api` job); nightly |
 | `tests/events` | Domain events consumed from RabbitMQ: captured, refunded, failed, nothing for rejected requests | 5 (1 smoke) | PR (`api` job); nightly |
 | `tests/bdd` | Business scenarios in Gherkin (`features/*.feature`) that run on the same clients, factories and page objects; one is a browser scenario | 9 | PR (`api` job, all but the browser scenario); nightly |
-| `tests/unit` | Landing-page builder, Allure suite labels, the OpenAPI checker, the requirement trace | 36 | PR (`api` job); nightly |
+| `tests/unit` | Landing-page builder, Allure suite labels, the OpenAPI checker, the requirement trace | 46 | PR (`api` job); nightly |
 
-About 198 tests in total, 22 of them tagged `smoke`. Outside pytest: the Postman collection in
+About 208 tests in total, 22 of them tagged `smoke`. Outside pytest: the Postman collection in
 `postman/` (20 requests, 59 assertions; PR `api` job) and the Locust profile in `load/`.
 
 ## Pipeline
@@ -160,6 +160,7 @@ docker compose run --rm tests pytest -q tests/ui --video=off --tracing=off   # c
   matrix is in [`docs/test-strategy.md`](docs/test-strategy.md#traceability).
 - Markers are enforced: every test has exactly one of `smoke` or `regression`, a known
   requirement, and `--strict-markers` fails on typos. Retries happen only through `@pytest.mark.flaky` with a reason.
+- Browser tests read like the API ones in the report: every page-object action (open, log in, refund, filter) and every `expect(...)` check is an Allure step named after its locator and expectation (`tests/utils/ui_steps.py`), so a UI test no longer shows only the API calls that built its data. Step titles leave typed secrets out.
 - A failed test keeps evidence in Allure: last request and response, last SQL, and for UI tests a
   screenshot, trace and video. Credentials are masked.
 - UI tests get their data from the API and verify only what the UI shows.

@@ -13,6 +13,7 @@ from playwright.sync_api import BrowserContext, Page, expect
 
 from tests.config import Settings
 from tests.factories.merchant_factory import MerchantAccount
+from tests.utils import ui_steps
 
 SESSION_COOKIE = "session"
 
@@ -22,6 +23,12 @@ def _expect_timeout() -> None:
     # One global value instead of per-call timeouts: a loaded CI runner running chromium next to
     # the app and the database is slower than a laptop, and expect() returns as soon as it holds.
     expect.set_options(timeout=10_000)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _allure_ui_steps() -> None:
+    """Every expect(...) check of a browser test becomes a step in the Allure result."""
+    ui_steps.install()
 
 
 @pytest.fixture(scope="session", autouse=True)
