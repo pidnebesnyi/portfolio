@@ -9,6 +9,7 @@ from psycopg.rows import dict_row
 
 from tests.clients.http import mask_json
 from tests.utils import evidence
+from tests.utils.environment import check_write
 
 # A result longer than this is cut in the attachment only (the test still sees every row).
 MAX_ATTACHED_ROWS = 50
@@ -20,8 +21,9 @@ Params = tuple[Any, ...] | dict[str, Any]
 class Database:
     """One short-lived connection per call, so no transaction is ever left open between tests."""
 
-    def __init__(self, dsn: str) -> None:
+    def __init__(self, dsn: str, target_env: str) -> None:
         self._dsn = dsn
+        self._target_env = target_env
 
     def fetch_all(self, sql: str, params: Params = ()) -> list[dict[str, Any]]:
         with allure.step("SQL query"):
@@ -47,6 +49,7 @@ class Database:
         return next(iter(rows[0].values()))
 
     def execute(self, sql: str, params: Params = ()) -> None:
+        check_write(self._target_env, "SQL statement")
         with allure.step("SQL statement"):
             allure.attach(sql.strip(), name="sql", attachment_type=allure.attachment_type.TEXT)
             with psycopg.connect(self._dsn, autocommit=True) as conn:

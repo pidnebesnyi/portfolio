@@ -46,6 +46,7 @@ markers = [
     "flaky(reruns=N): the only way a test is retried; each use needs a written reason",
     "area(name): product area, shown as the Allure feature",
     "requirement(id): requirement the test covers, a GitHub issue listed in tests/requirements.py",
+    "destructive: test creates, changes or deletes data; added automatically to every test that uses merchant_factory or payment_factory (directly or through other fixtures), skipped when TARGET_ENV is read-only",
     "ui: browser test (Playwright)",
     "sensitive: test types credentials into the browser; its trace and video are never kept",
     "db: test reads the database directly to verify state",

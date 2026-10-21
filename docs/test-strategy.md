@@ -180,6 +180,13 @@ subject only because it has one small `fetch` call to exercise.
   is stored in the repository.
 - Provider behaviour is chosen by the card token on each request, not by a global switch, so
   parallel tests cannot disturb each other.
+- Nearly every test writes data, so the suite is for `local` and `ci`. `TARGET_ENV=staging` or
+  `production` turns it read-only: tests using the data-creating fixtures are marked `destructive`
+  at collection and skipped, and the HTTP client and the database helper refuse any write (the
+  login and 2FA POSTs excepted) as a second line of defence. The safe subset is
+  `pytest -m "smoke and not destructive"`: health, the pinned OpenAPI contract, the admin login with
+  its second factor and the login page styles. It needs `ADMIN_*`, `JWT_SECRET` and `DB_DSN` set (the
+  latter is never used by these tests), and creates nothing.
 
 ## Flakiness policy
 

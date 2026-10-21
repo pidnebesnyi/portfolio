@@ -19,7 +19,7 @@ from tests.utils.openapi import spec_diff
 
 PINNED = Path(__file__).with_name("openapi.json")
 
-pytestmark = [pytest.mark.regression, area("API contract"), requirement("API-CONTRACT")]
+pytestmark = [pytest.mark.smoke, area("API contract"), requirement("API-CONTRACT")]
 
 
 @allure.title("The published OpenAPI document matches the pinned contract")

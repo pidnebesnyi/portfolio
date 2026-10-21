@@ -1,12 +1,29 @@
 """Test configuration. Every value can be overridden by an environment variable of the same name
 (BASE_URL, DB_DSN, ...) or by a local .env file; defaults match `docker compose up` on localhost."""
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from tests.utils.environment import DEFAULT_ENV, validate_env
 
-class Settings(BaseSettings):
+
+class TargetSettings(BaseSettings):
+    """Only the environment under test, so collection can decide what to skip without needing
+    the credentials the full Settings require."""
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
+    # local | ci | staging | production (tests/utils/environment.py). Staging and production are
+    # read-only: destructive tests are skipped and the HTTP client refuses to change data.
+    target_env: str = DEFAULT_ENV
+
+    @field_validator("target_env")
+    @classmethod
+    def _known_env(cls, value: str) -> str:
+        return validate_env(value)
+
+
+class Settings(TargetSettings):
     base_url: str = "http://localhost:8000"
     # Everything credential-like is required and comes from .env / the environment
     # (scripts/make_env.sh generates them). Nothing secret has a default.

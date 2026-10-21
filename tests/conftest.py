@@ -16,12 +16,13 @@ from typing import Any
 
 import httpx
 import pytest
+from pydantic import ValidationError
 
 from tests.clients.auth_api import AuthApi
 from tests.clients.http import LoggedHttpClient
 from tests.clients.merchants_api import MerchantsApi
 from tests.clients.payments_api import PaymentsApi
-from tests.config import Settings
+from tests.config import Settings, TargetSettings
 from tests.factories.merchant_factory import MerchantAccount, MerchantFactory
 from tests.factories.payment_factory import PaymentFactory
 from tests.requirements import REQUIREMENTS
@@ -35,17 +36,36 @@ from tests.utils.allure_evidence import (
 from tests.utils.allure_links import annotate, label_suites
 from tests.utils.app_log import AppLog
 from tests.utils.db import Database
+from tests.utils.environment import is_destructive, is_read_only, skip_reason
 from tests.utils.openapi import OpenApiContract
 from tests.utils.tokens import totp_code
 
 TIER_MARKERS = {"smoke", "regression"}
 FAILED = pytest.StashKey[bool]()
+TARGET_ENV = pytest.StashKey[str]()
 
 
-def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
+def pytest_configure(config: pytest.Config) -> None:
+    """Fail the whole run, before anything is collected or sent, on an unknown TARGET_ENV."""
+    try:
+        config.stash[TARGET_ENV] = TargetSettings().target_env
+    except ValidationError as error:
+        raise pytest.UsageError(f"invalid TARGET_ENV: {error.errors()[0]['msg']}") from None
+
+
+# tryfirst: the `destructive` marker added below must exist before pytest applies -m expressions.
+@pytest.hookimpl(tryfirst=True)
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     """Every test belongs to exactly one tier, so -m expressions in CI select what we think,
-    has an Allure title, and (outside tests/unit) traces to a known requirement."""
+    has an Allure title, and (outside tests/unit) traces to a known requirement.
+    Tests that change data are marked `destructive`, and skipped on a read-only TARGET_ENV."""
+    target_env = config.stash[TARGET_ENV]
     for item in items:
+        names = (m.name for m in item.iter_markers())
+        if is_destructive(getattr(item, "fixturenames", ()), names, item.nodeid):
+            item.add_marker(pytest.mark.destructive)
+            if is_read_only(target_env):
+                item.add_marker(pytest.mark.skip(reason=skip_reason(target_env)))
         tiers = TIER_MARKERS & {m.name for m in item.iter_markers()}
         if len(tiers) != 1:
             raise pytest.UsageError(
@@ -123,7 +143,10 @@ def openapi_spec(settings: Settings) -> dict[str, Any]:
 def http(settings: Settings, openapi_spec: dict[str, Any]) -> Iterator[LoggedHttpClient]:
     """Every response through this client is checked against the service's OpenAPI document."""
     client = LoggedHttpClient(
-        settings.base_url, settings.http_timeout_s, contract=OpenApiContract(openapi_spec)
+        settings.base_url,
+        settings.http_timeout_s,
+        settings.target_env,
+        contract=OpenApiContract(openapi_spec),
     )
     yield client
     client.close()
@@ -151,7 +174,7 @@ def admin_api(http: LoggedHttpClient, admin_token: str) -> MerchantsApi:
 
 @pytest.fixture(scope="session")
 def db(settings: Settings) -> Database:
-    return Database(settings.db_dsn)
+    return Database(settings.db_dsn, settings.target_env)
 
 
 @pytest.fixture(scope="session")
