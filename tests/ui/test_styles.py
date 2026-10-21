@@ -89,6 +89,9 @@ def test_success_message_has_a_green_border(merchant_page: Page) -> None:
 
 
 @pytest.mark.regression
+@pytest.mark.allow_http_errors(
+    url="*/status", status=500, reason="the test stubs the status endpoint to answer 500"
+)
 @allure.title("The refresh error is styled as an error message")
 def test_refresh_error_is_styled_as_an_error_message(
     merchant_page: Page, payment_factory: PaymentFactory
