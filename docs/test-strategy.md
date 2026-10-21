@@ -28,7 +28,7 @@ built from an API, a database, a UI, a message broker and an external dependency
 | 2 Provider failure modes | Integration (`tests/integration`) against a provider mock (WireMock) with stubs per card token | Decline, 5xx and timeout cannot be triggered on demand on a real provider. WireMock also records what it received, and the tests read that journal through its admin API, so they assert exactly one charge was attempted |
 | 3, 4 Access | API: basic access checks (no token, expired token, wrong signature, another merchant's id) | Cheapest level that sees the response code. Not a security assessment, see the last section |
 | 4 Login with 2FA | API for the rules, UI for the form (8 tests, 2 smoke) | The rules are decided by the service; the browser only needs to show the form works |
-| 5 Contract | API: every response is parsed into a Pydantic model by the typed clients (`tests/clients`) and checked against the service's own OpenAPI document; the document is pinned in `tests/contract/openapi.json` | A response that no longer matches its model or its documentation fails the first test that sees it. Pinning catches the case where code and documentation change together: integrators break although every response matches, so the change must appear in the pull request diff |
+| 5 Contract | API: every response is parsed into a Pydantic model by the typed clients (`tests/clients`) and checked against the service's own OpenAPI document; the document is pinned in `tests/contract/openapi.json` | A response that no longer matches its model or its documentation fails the first test that sees it. Pinning catches the case where code and documentation change together: integrators break although every response matches, so the change must appear in the pull request diff. The same check records which declared statuses of which operations the suite ever received, so a response nobody provokes shows as a gap in `api-coverage.html` |
 | 2 Observability | Log lines of a request found by its request id (`tests/logs`), including a scan for secrets | The id ties a failure to its evidence; a log is also where passwords and tokens leak |
 | 2 Event publishing | Consumer on a private RabbitMQ queue (`tests/events`) | Other systems act on these messages; they must be published once, after the commit, with the right data, and never for a rejected request |
 | 6 Data consistency | SQL invariants after the API tests created data | Catches states the API never admits to, such as refunds above the amount or one idempotency key mapped to two payments. One test also compares the API's full payment list with the SQL rows field by field in a single DeepDiff call, after both sides are normalized to one shape (amounts, timestamps, ids, NULL versus empty) |
@@ -79,6 +79,13 @@ Depth beyond the happy path, by design:
 - **Tokens.** Unsigned, expiry-less, wrongly typed and orphaned tokens are refused.
 - **Browser access and navigation.** Titles and headings, links, redirects, the back button with
   filters, an admin on merchant pages, another merchant's payment, forged or stale sessions.
+- **Page health.** Every browser test, including the browser Gherkin scenario, fails at teardown if
+  its page received an HTTP error (status 400 or more) the test did not allow with
+  `allow_http_errors(..., reason=...)`. A missing image, script or failed `fetch` is caught even
+  when the assertions on the page pass; the stubbed 500 and 503 in the refresh tests are the only
+  allowed errors.
+  The same hook checks the web font: the file the page downloads must be byte for byte the pinned
+  Inter woff2 (SHA-256), and no other font file may load; one UI test asserts it explicitly.
 
 How a test reads in the Allure report:
 

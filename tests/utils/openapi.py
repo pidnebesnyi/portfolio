@@ -14,6 +14,7 @@ documentation tells the truth.
 import copy
 import json
 import re
+from collections.abc import Mapping
 from typing import Any
 
 from jsonschema import Draft202012Validator, FormatChecker
@@ -40,6 +41,15 @@ def _template_regex(template: str) -> re.Pattern[str]:
     )
 
 
+def declared_key(declared: Mapping[str, Any], status: int) -> str | None:
+    """The key of `declared` (an operation's `responses`) that covers a status: the exact code,
+    then a range such as "4XX", then "default". None when the operation does not declare it."""
+    for key in (str(status), f"{str(status)[0]}XX", "default"):
+        if key in declared:
+            return key
+    return None
+
+
 class OpenApiContract:
     def __init__(self, spec: dict[str, Any]) -> None:
         self._components = copy.deepcopy(spec.get("components", {}))
@@ -51,10 +61,18 @@ class OpenApiContract:
     def operation(self, method: str, path: str) -> tuple[str, dict[str, Any]] | None:
         """The documented operation for a request, or None when the document has no such
         method and path (an unknown route or a wrong method has no contract to break)."""
+        found = self.template(method, path)
+        if found is None:
+            return None
+        template, op = found
+        return f"{method.upper()} {template}", op
+
+    def template(self, method: str, path: str) -> tuple[str, dict[str, Any]] | None:
+        """Like `operation`, but with the bare path template (`/payments/{payment_id}`)."""
         for template, regex, ops in self._paths:
             if regex.match(path):
                 op = ops.get(method.lower())
-                return (f"{method.upper()} {template}", op) if op else None
+                return (template, op) if op else None
         return None
 
     def check(
@@ -65,8 +83,8 @@ class OpenApiContract:
             return []
         name, op = found
         declared = op.get("responses", {})
-        response = declared.get(str(status)) or declared.get(f"{str(status)[0]}XX")
-        response = response or declared.get("default")
+        key = declared_key(declared, status)
+        response = declared[key] if key else None
         if response is None:
             return [f"{name}: status {status} is not documented (documented: {sorted(declared)})"]
         content = response.get("content")
