@@ -169,6 +169,9 @@ subject only because it has one small `fetch` call to exercise.
 - **Why.** The browser's final answer is what a user sees: a typo in a selector, an overridden
   rule or a changed colour fails a test although the CSS file looks fine. The comparison is on a
   whole dict, so one failure lists every property that differs.
+  The checks are soft (`tests/utils/soft_checks.py`): a test collects the mismatches of all its
+  elements, each with an Allure screenshot of the outlined element, and fails once at `verify()`
+  with one summary, so a restyled page shows everything that changed in a single run.
 - **Does not cover.** Layout, spacing between elements, and anything pictorial: there are no
   screenshot comparisons, which this small UI does not justify. The app has no custom button or badge styling, so there is nothing to compare for them.
 

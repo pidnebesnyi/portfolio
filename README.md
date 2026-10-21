@@ -176,6 +176,7 @@ docker compose run --rm tests pytest -q tests/ui --video=off --tracing=off   # c
   The same listener fingerprints the web font the app serves (Inter, one woff2 under
   `/static/fonts`): a swapped, truncated or wrongly cached font file, or any other font file, fails
   the test unless its SHA-256 equals the pinned one (`tests/utils/font_integrity.py`).
+- Computed-style checks are soft (`tests/utils/soft_checks.py`): a mismatch is recorded with its element, property, expected and actual value and a screenshot of the outlined element, the test goes on, and `verify()` fails it once with every mismatch listed. A test that records mismatches and never verifies fails at teardown.
 - A failed test keeps evidence in Allure: last request and response, last SQL, and for UI tests a
   screenshot, trace and video. Credentials are masked.
 - UI tests get their data from the API and verify only what the UI shows.
