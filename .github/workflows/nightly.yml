@@ -1,11 +1,14 @@
-# Nightly regression + published Allure report. Triggers: 02:30 UTC every day and manual runs.
-# Order: `tests` runs the whole suite (api, db, ui, bdd) on one compose stack,
-# in parallel with pytest-xdist; then `report` restores the trend history from the gh-pages
-# branch, adds it to the run's allure-results, builds the Allure report and publishes
-# gh-pages:/report/. It then runs scripts/build_site.py, which writes the report's numbers into
-# the landing page, and publishes ONLY site-build/ (index.html, style.css, cv.pdf if present) to
-# the gh-pages ROOT. Every publish here uses keep_files: true, so it adds or overwrites just the
-# files it ships and cannot remove /report/ or /load/ (the load workflow owns the latter).
+# Nightly regression + published Allure report. Triggers: 02:30 UTC every day, and manual runs
+# (workflow_dispatch) that narrow the run with the path, markers and workers inputs.
+# Order: `tests` runs the selected tests (by default the whole suite: api, db, ui, bdd) on one
+# compose stack, in parallel with pytest-xdist; then `report` restores the trend history from the
+# gh-pages branch, adds it to the run's allure-results and builds the Allure report, which is
+# always uploaded as an artifact. Only scheduled runs and manual runs with `publish` set go on:
+# they publish gh-pages:/report/, run scripts/build_site.py, which writes the report's numbers
+# into the landing page, and publish ONLY site-build/ (index.html, style.css, api-coverage.html,
+# cv.pdf if present) to the gh-pages ROOT. A manual run without `publish` leaves gh-pages
+# untouched. Every publish here uses keep_files: true, so it adds or overwrites just the files it
+# ships and cannot remove /report/ or /load/ (the load workflow owns the latter).
 # Nothing here needs repository secrets: the tests job generates throwaway credentials. Not a
 # merge gate; a red night shows in the report.
 name: Nightly
@@ -14,6 +17,23 @@ on:
   schedule:
     - cron: "30 2 * * *"
   workflow_dispatch:
+    inputs:
+      path:
+        description: "Test path(s) or node ids, space-separated (letters, digits, / _ . - :)"
+        type: string
+        default: "tests"
+      markers:
+        description: "pytest -m expression, e.g. smoke or 'api and not slow' (empty = no filter)"
+        type: string
+        default: ""
+      workers:
+        description: "pytest-xdist workers: auto or a positive integer"
+        type: string
+        default: "auto"
+      publish:
+        description: "Publish the report and landing page to gh-pages (scheduled runs always do)"
+        type: boolean
+        default: false
 
 # Two report publishers must not race on gh-pages; a queued run waits instead of cancelling.
 concurrency:
@@ -41,9 +61,31 @@ jobs:
       - name: Run the suite
         # GITHUB_SHA / GITHUB_RUN_ID / REPO_URL reach the container through docker-compose.yml;
         # REPO_URL turns requirement ids into links to their GitHub issues in the report.
+        # Scheduled runs have no inputs, so the fallbacks give the full suite on auto workers.
         env:
           REPO_URL: ${{ github.server_url }}/${{ github.repository }}
-        run: docker compose run --rm tests pytest -n auto
+          TEST_PATH: ${{ inputs.path || 'tests' }}
+          MARKERS: ${{ inputs.markers || '' }}
+          WORKERS: ${{ inputs.workers || 'auto' }}
+        run: |
+          set -euo pipefail
+          workers_re='^(auto|[1-9][0-9]*)$'
+          if [[ ! "$WORKERS" =~ $workers_re ]]; then
+            echo "::error::workers must be 'auto' or a positive integer, got '$WORKERS'"
+            exit 1
+          fi
+          # Paths or node ids separated by single spaces; no leading dash, so no pytest options.
+          path_re='^[A-Za-z0-9_./:][A-Za-z0-9_./:-]*( [A-Za-z0-9_./:][A-Za-z0-9_./:-]*)*$'
+          if [[ ! "$TEST_PATH" =~ $path_re ]]; then
+            echo "::error::path may only hold letters, digits, / _ . - : and spaces between paths"
+            exit 1
+          fi
+          read -r -a paths <<< "$TEST_PATH"
+          args=(pytest -n "$WORKERS" "${paths[@]}")
+          if [ -n "$MARKERS" ]; then
+            args+=(-m "$MARKERS")
+          fi
+          docker compose run --rm tests "${args[@]}"
       - name: App logs (on failure)
         if: failure()
         run: docker compose logs --no-color app provider-mock db
@@ -119,8 +161,9 @@ jobs:
           npm install --global allure-commandline@2.32.0
           allure generate allure-results --clean --output allure-report
       - name: Build the landing page from the report's summary
-        # Standard library only. A missing summary.json shows "-" instead of failing the job.
-        run: python3 scripts/build_site.py --summary allure-report/widgets/summary.json --out-dir site-build
+        # Standard library only. A missing summary.json or api-coverage.json shows "-" instead of
+        # failing the job.
+        run: python3 scripts/build_site.py --summary allure-report/widgets/summary.json --coverage allure-results/api-coverage.json --out-dir site-build
       - name: Upload the report as an artifact (also when publishing fails)
         uses: actions/upload-artifact@v7
         with:
@@ -128,6 +171,7 @@ jobs:
           path: allure-report/
           retention-days: 7
       - name: Publish to gh-pages /report/
+        if: github.event_name == 'schedule' || inputs.publish
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }} # the built-in per-run token, not a stored secret
@@ -138,6 +182,7 @@ jobs:
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
           commit_message: "docs(report): nightly #${{ github.run_number }}"
       - name: Publish the landing page to the gh-pages root
+        if: github.event_name == 'schedule' || inputs.publish
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
