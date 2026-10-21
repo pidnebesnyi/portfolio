@@ -94,7 +94,7 @@ About 319 tests in total, 22 of them tagged `smoke`. Outside pytest: the Postman
 | Workflow | Trigger | What | Publishes |
 |---|---|---|---|
 | `pr.yml` | every pull request | lint (ruff); `api` job (unit, API, contract, integration, DB, log, event and Gherkin API scenarios on compose, then the Postman collection through Newman); `ui-smoke` job (browser smoke tests). Each job has a 10-minute timeout | Allure results and UI traces as workflow artifacts |
-| `nightly.yml` | 02:30 UTC daily, manual | full suite in one job (pytest-xdist); Allure report with history | `/report/` and the landing-page numbers at the site root |
+| `nightly.yml` | 02:30 UTC daily; manual runs take `path`, `markers` and `workers` inputs (publish only with `publish` set) | full suite in one job (pytest-xdist); Allure report with history | `/report/` and the landing-page numbers at the site root (scheduled runs, or manual runs with `publish`) |
 | `load.yml` | Mondays 04:00 UTC, manual | Locust, 20 users for 3 minutes; fails on p95 > 500 ms or errors > 1 % | `/load/` |
 
 ## Suite timing
@@ -141,6 +141,11 @@ docker compose run --rm tests pytest -q tests/ui --video=off --tracing=off   # c
   (`tests/utils/openapi.py`, jsonschema): an undocumented status code, a missing or undocumented
   field, or a wrong type fails the test that saw it. The Pydantic models say what the tests need;
   this check says whether the API documentation tells the truth.
+- The same check tallies which declared responses the suite ever received. At the end of the run
+  (also under `pytest-xdist`: workers report, the controller merges) `api-coverage.json` and a
+  readable `api-coverage.html` land in the Allure results: every operation of the OpenAPI
+  document by every status it declares, hit or not, with the two totals in the report's
+  Environment widget and on the landing page (`tests/utils/api_coverage.py`).
 - The document itself is pinned in `tests/contract/openapi.json`. Any API change fails
   `tests/contract` until the pinned file is regenerated (`scripts/export_openapi.py`) and committed,
   so the contract change is reviewed in the pull request diff.
