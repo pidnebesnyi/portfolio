@@ -3,6 +3,7 @@ from uuid import UUID
 
 from tests.clients.payments_api import PaymentsApi
 from tests.models.payments import Payment, PaymentStatus
+from tests.utils.aaa import arrange
 from tests.utils.db import Database
 
 # Each target status is reached by driving the real API, never by writing to the database,
@@ -33,6 +34,12 @@ class PaymentFactory:
         amount: int = 1000,
         currency: str = "UAH",
         card_token: str = "tok_success",
+    ) -> Payment:
+        with arrange(f"create a payment ({status.value}, {amount} {currency})"):
+            return self._create(status, amount, currency, card_token)
+
+    def _create(
+        self, status: PaymentStatus, amount: int, currency: str, card_token: str
     ) -> Payment:
         if status is PaymentStatus.FAILED:
             card_token = "tok_decline"  # the only way into `failed` is a provider that says no

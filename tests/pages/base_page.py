@@ -7,8 +7,9 @@ Locators use get_by_role / get_by_label / get_by_test_id only.
 
 import re
 
-import allure
 from playwright.sync_api import Locator, Page, expect
+
+from tests.utils.aaa import page_action, page_step
 
 
 class BasePage:
@@ -25,7 +26,7 @@ class BasePage:
         self.flash_error = page.get_by_test_id("flash-error")
 
     def open(self) -> None:
-        with allure.step(f"Open {self.path}"):
+        with page_step(f"open {self.path}"):
             self.page.goto(self.path)
             self.expect_loaded()
 
@@ -37,6 +38,6 @@ class BasePage:
     def flash(self, level: str) -> Locator:
         return self.page.get_by_test_id(f"flash-{level}")
 
-    @allure.step("Log out")
+    @page_action("log out")
     def log_out(self) -> None:
         self.logout_button.click()

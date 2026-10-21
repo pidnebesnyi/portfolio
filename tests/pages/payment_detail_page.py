@@ -1,10 +1,10 @@
 import re
 from uuid import UUID
 
-import allure
 from playwright.sync_api import Page, expect
 
 from tests.pages.base_page import BasePage
+from tests.utils.aaa import page_action, page_step
 
 
 class PaymentDetailPage(BasePage):
@@ -29,12 +29,12 @@ class PaymentDetailPage(BasePage):
         expect(self.page).to_have_url(re.compile(r"/ui/payments/[0-9a-f-]{36}$"))
         expect(self.id).to_be_visible()
 
-    @allure.step("Click the status refresh button")
+    @page_action("click the status refresh button")
     def refresh_status(self) -> None:
         """Ask the server for the current status (a fetch call; the page does not reload)."""
         self.refresh_button.click()
 
     def refund(self, amount: int) -> None:
-        with allure.step(f"Refund {amount / 100:.2f} on the payment page"):
+        with page_step(f"refund {amount / 100:.2f} on the payment page"):
             self.refund_amount.fill(str(amount))
             self.refund_submit.click()

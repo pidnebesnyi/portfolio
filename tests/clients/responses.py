@@ -5,6 +5,7 @@ import httpx
 from pydantic import BaseModel, ValidationError
 
 from tests.models.errors import ErrorBody
+from tests.utils.aaa import api_assert
 
 
 @dataclass
@@ -29,24 +30,29 @@ class ApiResponse[T: BaseModel]:
 
     def expect(self, status: int = 200) -> T:
         """Assert the status and return the validated body."""
-        assert self.status_code == status, (
-            f"expected HTTP {status}, got {self.status_code}: {self.raw.text}"
-        )
-        assert self.data is not None, f"HTTP {status} response has no body model: {self.raw.text}"
+        with api_assert(f"status is {status}"):
+            assert self.status_code == status, (
+                f"expected HTTP {status}, got {self.status_code}: {self.raw.text}"
+            )
+            assert self.data is not None, (
+                f"HTTP {status} response has no body model: {self.raw.text}"
+            )
         return self.data
 
     def expect_no_content(self, status: int = 204) -> None:
-        assert self.status_code == status, (
-            f"expected HTTP {status}, got {self.status_code}: {self.raw.text}"
-        )
+        with api_assert(f"status is {status}"):
+            assert self.status_code == status, (
+                f"expected HTTP {status}, got {self.status_code}: {self.raw.text}"
+            )
 
     def expect_error(self, status: int, code: str) -> ErrorBody:
         """Assert status and machine-readable error code, return the error body."""
-        assert self.status_code == status, (
-            f"expected HTTP {status}, got {self.status_code}: {self.raw.text}"
-        )
-        assert self.error is not None, f"no error body: {self.raw.text}"
-        assert self.error.code == code, f"expected error code {code!r}, got {self.error.code!r}"
+        with api_assert(f"status is {status} with error code {code}"):
+            assert self.status_code == status, (
+                f"expected HTTP {status}, got {self.status_code}: {self.raw.text}"
+            )
+            assert self.error is not None, f"no error body: {self.raw.text}"
+            assert self.error.code == code, f"expected error code {code!r}, got {self.error.code!r}"
         return self.error
 
 

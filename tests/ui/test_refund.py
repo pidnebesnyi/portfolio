@@ -6,6 +6,7 @@ from tests.clients.payments_api import PaymentsApi
 from tests.factories.payment_factory import PaymentFactory
 from tests.models.payments import PaymentStatus
 from tests.pages.payment_detail_page import PaymentDetailPage
+from tests.utils.aaa import act, arrange, check
 from tests.utils.allure_links import area, requirement
 
 pytestmark = [pytest.mark.ui, area("UI refunds"), requirement("PAY-REFUND")]
@@ -18,25 +19,29 @@ AMOUNT = 2000  # 20.00
 def test_merchant_refunds_a_captured_payment_in_two_steps(
     merchant_page: Page, api: PaymentsApi, payment_factory: PaymentFactory
 ) -> None:
-    payment = payment_factory.create(PaymentStatus.CAPTURED, amount=AMOUNT)
-    detail = PaymentDetailPage(merchant_page, payment.id)
-    detail.open()
-    expect(detail.status).to_have_text("captured")
+    with arrange("a captured payment of 20.00 open in the browser"):
+        payment = payment_factory.create(PaymentStatus.CAPTURED, amount=AMOUNT)
+        detail = PaymentDetailPage(merchant_page, payment.id)
+        detail.open()
 
-    detail.refund(500)
+    with act("refund 5.00"):
+        detail.refund(500)
 
-    expect(detail.flash_success).to_have_text("Refund created")
-    expect(detail.status).to_have_text("partially_refunded")
-    expect(detail.refunded).to_have_text("5.00 UAH")
+    with check("the page shows a partial refund of 5.00"):
+        expect(detail.flash_success).to_have_text("Refund created")
+        expect(detail.status).to_have_text("partially_refunded")
+        expect(detail.refunded).to_have_text("5.00 UAH")
 
-    detail.refund(1500)
+    with act("refund the remaining 15.00"):
+        detail.refund(1500)
 
-    expect(detail.status).to_have_text("refunded")
-    expect(detail.refunded).to_have_text("20.00 UAH")
-    expect(detail.refund_form).to_have_count(0)
-    expect(detail.refund_unavailable).to_be_visible()
-    stored = api.get(payment.id).expect(200)
-    assert (stored.status, stored.refunded_amount) == (PaymentStatus.REFUNDED, AMOUNT)
+    with check("the page shows a full refund, offers no form, and the API agrees"):
+        expect(detail.status).to_have_text("refunded")
+        expect(detail.refunded).to_have_text("20.00 UAH")
+        expect(detail.refund_form).to_have_count(0)
+        expect(detail.refund_unavailable).to_be_visible()
+        stored = api.get(payment.id).expect(200)
+        assert (stored.status, stored.refunded_amount) == (PaymentStatus.REFUNDED, AMOUNT)
 
 
 @pytest.mark.regression
@@ -44,16 +49,19 @@ def test_merchant_refunds_a_captured_payment_in_two_steps(
 def test_refund_over_the_remaining_amount_is_refused_and_changes_nothing(
     merchant_page: Page, api: PaymentsApi, payment_factory: PaymentFactory
 ) -> None:
-    payment = payment_factory.create(PaymentStatus.CAPTURED, amount=AMOUNT)
-    detail = PaymentDetailPage(merchant_page, payment.id)
-    detail.open()
+    with arrange("a captured payment of 20.00 open in the browser"):
+        payment = payment_factory.create(PaymentStatus.CAPTURED, amount=AMOUNT)
+        detail = PaymentDetailPage(merchant_page, payment.id)
+        detail.open()
 
-    detail.refund(AMOUNT + 1)
+    with act("refund 20.01, one cent over the payment"):
+        detail.refund(AMOUNT + 1)
 
-    expect(detail.flash_error).to_contain_text("exceeds")
-    expect(detail.status).to_have_text("captured")
-    stored = api.get(payment.id).expect(200)
-    assert (stored.status, stored.refunded_amount) == (PaymentStatus.CAPTURED, 0)
+    with check("the page shows the error and the payment is unchanged"):
+        expect(detail.flash_error).to_contain_text("exceeds")
+        expect(detail.status).to_have_text("captured")
+        stored = api.get(payment.id).expect(200)
+        assert (stored.status, stored.refunded_amount) == (PaymentStatus.CAPTURED, 0)
 
 
 @pytest.mark.regression
