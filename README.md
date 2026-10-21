@@ -141,6 +141,11 @@ docker compose run --rm tests pytest -q tests/ui --video=off --tracing=off   # c
   (`tests/utils/openapi.py`, jsonschema): an undocumented status code, a missing or undocumented
   field, or a wrong type fails the test that saw it. The Pydantic models say what the tests need;
   this check says whether the API documentation tells the truth.
+- The same check tallies which declared responses the suite ever received. At the end of the run
+  (also under `pytest-xdist`: workers report, the controller merges) `api-coverage.json` and a
+  readable `api-coverage.html` land in the Allure results: every operation of the OpenAPI
+  document by every status it declares, hit or not, with the two totals in the report's
+  Environment widget and on the landing page (`tests/utils/api_coverage.py`).
 - The document itself is pinned in `tests/contract/openapi.json`. Any API change fails
   `tests/contract` until the pinned file is regenerated (`scripts/export_openapi.py`) and committed,
   so the contract change is reviewed in the pull request diff.
