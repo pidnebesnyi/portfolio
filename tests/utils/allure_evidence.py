@@ -50,6 +50,13 @@ def write_run_metadata(alluredir: str, settings: Settings) -> None:
     shutil.copyfile(CATEGORIES, out / "categories.json")
 
 
+def append_run_metadata(alluredir: str, extra: dict[str, str]) -> None:
+    """Add entries to environment.properties at the end of the run, for facts only known then.
+    Allure reads the file when the report is generated, so the Environment widget shows them."""
+    with (Path(alluredir) / "environment.properties").open("a", encoding="utf-8") as handle:
+        handle.write("".join(f"{key}={value}\n" for key, value in extra.items()))
+
+
 def clear_browser_artifacts(output_dir: str) -> None:
     """Start a run with an empty Playwright output directory (the plugin's own per-worker wipe is
     disabled in tests/ui/conftest.py: under xdist a late worker would delete earlier failures)."""

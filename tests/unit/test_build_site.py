@@ -39,7 +39,9 @@ def make_site(tmp_path: Path, *, with_cv: bool = False) -> Path:
         "<p>{{BUILD_TESTS}} tests, {{BUILD_PASS_RATE}}, "
         "{{BUILD_DURATION}}, {{BUILD_LAST_RUN}}</p>\n"
         "<p>{{PROFILE_HEADLINE}}</p><ul>{{BUILD_CV_LINK}}</ul>{{BUILD_RUN_LINK}}\n"
-        '<i class="{{BUILD_PASS_CLASS}}"></i>',
+        '<i class="{{BUILD_PASS_CLASS}}"></i>\n'
+        "<p>{{BUILD_API_OPERATIONS}} ops, {{BUILD_API_STATUSES}} statuses</p>"
+        "{{BUILD_COVERAGE_LINK}}",
         encoding="utf-8",
     )
     (site / "style.css").write_text("body{}", encoding="utf-8")
@@ -71,6 +73,8 @@ def test_missing_summary_shows_dashes_and_still_builds(tmp_path: Path) -> None:
 
     page = (out / "index.html").read_text(encoding="utf-8")
     assert "— tests, —, —, —" in page
+    assert "— ops, — statuses" in page
+    assert not (out / "api-coverage.html").exists()
     assert "{{BUILD_" not in page
 
 
@@ -161,3 +165,62 @@ def test_real_template_only_uses_known_placeholders() -> None:
     assert "{{BUILD_" not in page
     assert build_site.open_placeholders(page) == []  # the profile is filled in
     assert build_site.drop_unfilled_profile(template)[1] == []  # so the build keeps it
+
+
+def write_coverage(directory: Path, *, with_page: bool = True) -> Path:
+    directory.mkdir(exist_ok=True)
+    summary = {
+        "operations_hit": 12,
+        "operations_total": 13,
+        "statuses_hit": 20,
+        "statuses_total": 61,
+    }
+    (directory / "api-coverage.json").write_text(json.dumps({"summary": summary}), encoding="utf-8")
+    if with_page:
+        (directory / "api-coverage.html").write_text("<table></table>", encoding="utf-8")
+    return directory / "api-coverage.json"
+
+
+@allure.title("--coverage fills the two API numbers and publishes the matrix page")
+def test_coverage_numbers_and_matrix_page_land_in_the_site(tmp_path: Path) -> None:
+    out = tmp_path / "out"
+    coverage = write_coverage(tmp_path / "results")
+
+    build_site.build(tmp_path / "nope.json", make_site(tmp_path), out, None, coverage)
+
+    page = (out / "index.html").read_text(encoding="utf-8")
+    assert "12 / 13 ops, 20 / 61 statuses" in page
+    assert '<a href="api-coverage.html">' in page
+    assert (out / "api-coverage.html").read_text(encoding="utf-8") == "<table></table>"
+
+
+@allure.title("Coverage numbers show without a link when the matrix page is missing")
+def test_coverage_without_a_page_has_no_link(tmp_path: Path) -> None:
+    out = tmp_path / "out"
+    coverage = write_coverage(tmp_path / "results", with_page=False)
+
+    build_site.build(tmp_path / "nope.json", make_site(tmp_path), out, None, coverage)
+
+    page = (out / "index.html").read_text(encoding="utf-8")
+    assert "12 / 13 ops" in page
+    assert "api-coverage.html" not in page
+    assert not (out / "api-coverage.html").exists()
+
+
+@pytest.mark.parametrize(
+    "content",
+    ["not json", "[]", "{}", '{"summary": 3}', '{"summary": {"operations_hit": "1"}}'],
+)
+@allure.title("Unreadable coverage is treated as missing: '{content}'")
+def test_unreadable_coverage_is_treated_as_missing(tmp_path: Path, content: str) -> None:
+    path = tmp_path / "api-coverage.json"
+    path.write_text(content, encoding="utf-8")
+    (tmp_path / "api-coverage.html").write_text("x", encoding="utf-8")
+    out = tmp_path / "out"
+
+    build_site.build(tmp_path / "nope.json", make_site(tmp_path), out, None, path)
+
+    assert build_site.load_coverage(path) is None
+    assert "— ops, — statuses" in (out / "index.html").read_text(encoding="utf-8")
+    assert not (out / "api-coverage.html").exists()
+    assert build_site.load_coverage(tmp_path / "absent.json") is None

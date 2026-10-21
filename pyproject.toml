@@ -49,6 +49,7 @@ markers = [
     "destructive: test creates, changes or deletes data; added automatically to every test that uses merchant_factory or payment_factory (directly or through other fixtures), skipped when TARGET_ENV is read-only",
     "ui: browser test (Playwright)",
     "sensitive: test types credentials into the browser; its trace and video are never kept",
+    "allow_http_errors(url=, status=, reason=): this test expects the browser to get these HTTP errors (>= 400); reason is required",
     "db: test reads the database directly to verify state",
     "integration: needs the provider stub (WireMock) to behave in a specific way",
 ]

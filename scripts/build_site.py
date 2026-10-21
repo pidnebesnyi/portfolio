@@ -3,15 +3,19 @@
 
 Input:  Allure's generated report, `widgets/summary.json` (statistic + time), and the template
         in site/ (index.html, style.css, optional cv.pdf).
+        Optional --coverage: the suite's `api-coverage.json` (tests/utils/api_coverage.py); its
+        summary fills the two API coverage numbers and the HTML matrix next to it is copied over.
 Output: the same files in --out-dir, with every `{{BUILD_*}}` value replaced. That directory is
         what the nightly workflow publishes to the root of the gh-pages branch.
 
 Only `{{BUILD_*}}` values are touched. The profile values (`{{PROFILE_*}}`, `{{LINKEDIN_URL}}`,
 `{{CONTACT_EMAIL}}`) belong to the site owner. While any of them is unset, the marked profile block
 is left out of the page (a public page must never show template braces) and a warning lists them.
-A missing or unreadable summary is not an error: the numbers show "—" and the page still builds.
+A missing or unreadable summary or coverage file is not an error: the numbers show "—" and the
+page still builds.
 
     python scripts/build_site.py --summary allure-report/widgets/summary.json --out-dir site-build
+    python scripts/build_site.py --coverage allure-results/api-coverage.json
 """
 
 import argparse
@@ -32,6 +36,8 @@ HTML_COMMENT = re.compile(r"<!--.*?-->", re.DOTALL)
 PROFILE_BLOCK = re.compile(r"<!-- profile:start.*?<!-- profile:end -->\n?", re.DOTALL)
 # Files copied as they are next to the rendered index.html. cv.pdf is optional.
 STATIC_FILES = ("style.css", "cv.pdf")
+COVERAGE_PAGE = "api-coverage.html"
+COVERAGE_KEYS = ("operations_hit", "operations_total", "statuses_hit", "statuses_total")
 
 
 def load_summary(path: Path) -> dict[str, Any] | None:
@@ -45,6 +51,22 @@ def load_summary(path: Path) -> dict[str, Any] | None:
     return data
 
 
+def load_coverage(path: Path | None) -> dict[str, int] | None:
+    """The four summary numbers of api-coverage.json, or None when missing or not what we write."""
+    if path is None:
+        return None
+    try:
+        summary = json.loads(path.read_text(encoding="utf-8"))["summary"]
+        numbers = {key: summary[key] for key in COVERAGE_KEYS}
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    if not all(
+        isinstance(value, int) and not isinstance(value, bool) for value in numbers.values()
+    ):
+        return None
+    return numbers
+
+
 def format_duration(milliseconds: int) -> str:
     seconds = round(milliseconds / 1000)
     minutes, seconds = divmod(seconds, 60)
@@ -54,7 +76,11 @@ def format_duration(milliseconds: int) -> str:
 
 
 def build_values(
-    summary: dict[str, Any] | None, run_url: str | None, has_cv: bool
+    summary: dict[str, Any] | None,
+    run_url: str | None,
+    has_cv: bool,
+    coverage: dict[str, int] | None = None,
+    has_coverage_page: bool = False,
 ) -> dict[str, str]:
     """Template placeholder -> HTML-safe replacement text."""
     values = {
@@ -65,7 +91,19 @@ def build_values(
         "BUILD_LAST_RUN": MISSING,
         "BUILD_RUN_LINK": "",
         "BUILD_CV_LINK": '<li><a href="cv.pdf">CV (PDF)</a></li>' if has_cv else "",
+        "BUILD_API_OPERATIONS": MISSING,
+        "BUILD_API_STATUSES": MISSING,
+        "BUILD_COVERAGE_LINK": "",
     }
+    if coverage is not None:
+        values["BUILD_API_OPERATIONS"] = (
+            f"{coverage['operations_hit']} / {coverage['operations_total']}"
+        )
+        values["BUILD_API_STATUSES"] = f"{coverage['statuses_hit']} / {coverage['statuses_total']}"
+    if has_coverage_page:
+        values["BUILD_COVERAGE_LINK"] = (
+            f'<span class="note"><a href="{COVERAGE_PAGE}">matrix</a></span>'
+        )
     if summary is not None:
         stat = summary["statistic"]
         total = int(stat.get("total", 0))
@@ -130,12 +168,32 @@ def default_run_url() -> str | None:
     return f"{server}/{repo}/actions/runs/{run_id}" if server and repo and run_id else None
 
 
-def build(summary_path: Path, site_dir: Path, out_dir: Path, run_url: str | None) -> list[str]:
+def build(
+    summary_path: Path,
+    site_dir: Path,
+    out_dir: Path,
+    run_url: str | None,
+    coverage_path: Path | None = None,
+) -> list[str]:
     """Write the finished landing files to out_dir; return the placeholders still unset."""
     summary = load_summary(summary_path)
     if summary is None:
         sys.stderr.write(f"warning: no usable summary at {summary_path}; numbers show {MISSING}\n")
-    values = build_values(summary, run_url, has_cv=(site_dir / "cv.pdf").is_file())
+    coverage = load_coverage(coverage_path)
+    if coverage_path is not None and coverage is None:
+        sys.stderr.write(
+            f"warning: no usable coverage at {coverage_path}; numbers show {MISSING}\n"
+        )
+    # The matrix page sits next to the JSON; it is linked only when it can be published.
+    matrix_page = coverage_path.with_suffix(".html") if coverage_path and coverage else None
+    has_matrix = matrix_page is not None and matrix_page.is_file()
+    values = build_values(
+        summary,
+        run_url,
+        has_cv=(site_dir / "cv.pdf").is_file(),
+        coverage=coverage,
+        has_coverage_page=has_matrix,
+    )
     template, hidden = drop_unfilled_profile((site_dir / "index.html").read_text(encoding="utf-8"))
     rendered = render(template, values)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -143,6 +201,8 @@ def build(summary_path: Path, site_dir: Path, out_dir: Path, run_url: str | None
     for name in STATIC_FILES:
         if (site_dir / name).is_file():
             shutil.copyfile(site_dir / name, out_dir / name)
+    if has_matrix:
+        shutil.copyfile(matrix_page, out_dir / COVERAGE_PAGE)
     return hidden + [name for name in open_placeholders(rendered) if name not in hidden]
 
 
@@ -152,9 +212,10 @@ def main() -> int:
     parser.add_argument("--site-dir", type=Path, default=Path("site"))
     parser.add_argument("--out-dir", type=Path, default=Path("site-build"))
     parser.add_argument("--run-url", default=default_run_url(), help="link to the CI run")
+    parser.add_argument("--coverage", type=Path, help="api-coverage.json of the run (optional)")
     args = parser.parse_args()
 
-    unset = build(args.summary, args.site_dir, args.out_dir, args.run_url)
+    unset = build(args.summary, args.site_dir, args.out_dir, args.run_url, args.coverage)
     sys.stdout.write(f"wrote {args.out_dir / 'index.html'}\n")
     if unset:
         # A GitHub annotation in CI, a plain line elsewhere. Not an error: the page still works.

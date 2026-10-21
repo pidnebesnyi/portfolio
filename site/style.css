@@ -43,6 +43,7 @@ code { font: .85rem ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wra
 .stats .value { display: block; font-size: 1.5rem; font-weight: 600; line-height: 1.2; }
 .stats .label { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em;
   color: var(--muted); }
+.stats.pair { grid-template-columns: repeat(2, 1fr); margin-top: .75rem; }
 .stats .note { display: block; font-size: .8rem; color: var(--muted); }
 
 /* Where to look. */

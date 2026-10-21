@@ -4,7 +4,8 @@ Secrets never reach the report: the Authorization header and sensitive JSON fiel
 in the attachments (the real request is untouched).
 
 Given the service's OpenAPI document, the client also checks every response against it and fails
-the calling test on the first undocumented status, field or shape (tests/utils/openapi.py).
+the calling test on the first undocumented status, field or shape (tests/utils/openapi.py). The
+same pass tallies which documented responses were seen (tests/utils/api_coverage.py).
 
 On a read-only environment (TARGET_ENV=staging / production) the client refuses to send any
 request that could change data, before it leaves (tests/utils/environment.py).
@@ -16,7 +17,7 @@ from typing import Any
 import allure
 import httpx
 
-from tests.utils import evidence
+from tests.utils import api_coverage, evidence
 from tests.utils.aaa import request_title
 from tests.utils.environment import check_request
 from tests.utils.openapi import OpenApiContract
@@ -68,6 +69,9 @@ def _body(content: bytes, keys: frozenset[str] = SENSITIVE_JSON_KEYS) -> Any:
 def _check_contract(
     contract: OpenApiContract, request: httpx.Request, response: httpx.Response
 ) -> None:
+    found = contract.template(request.method, request.url.path)
+    if found is not None:  # before the check: a response it rejects was still received
+        api_coverage.record(request.method, found[0], response.status_code)
     violations = contract.check(
         request.method,
         request.url.path,
