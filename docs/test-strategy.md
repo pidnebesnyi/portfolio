@@ -84,6 +84,8 @@ Depth beyond the happy path, by design:
   `allow_http_errors(..., reason=...)`. A missing image, script or failed `fetch` is caught even
   when the assertions on the page pass; the stubbed 500 and 503 in the refresh tests are the only
   allowed errors.
+  The same hook checks the web font: the file the page downloads must be byte for byte the pinned
+  Inter woff2 (SHA-256), and no other font file may load; one UI test asserts it explicitly.
 
 How a test reads in the Allure report:
 

@@ -16,6 +16,7 @@ from tests.pages.payment_detail_page import PaymentDetailPage
 from tests.pages.payments_page import PaymentsPage
 from tests.ui import design_tokens as tokens
 from tests.utils.allure_links import area, requirement
+from tests.utils.font_integrity import FontRecorder
 
 pytestmark = [pytest.mark.ui, area("UI look"), requirement("UI-STYLE")]
 
@@ -104,3 +105,17 @@ def test_refresh_error_is_styled_as_an_error_message(
     detail.refresh_status()
 
     expect_style(detail.refresh_error, tokens.FLASH_ERROR_BORDER)
+
+
+@pytest.mark.regression
+@allure.title("The page loads the expected web font, byte for byte")
+def test_page_loads_the_expected_web_font(page: Page, page_fonts: FontRecorder) -> None:
+    LoginPage(page).open()
+
+    page.evaluate("document.fonts.ready")  # font-display: block, so text waits for the font
+
+    assert page.evaluate("document.fonts.check('15px Inter')"), "Inter is not loaded"
+    assert [(font.path, font.sha256) for font in page_fonts.fonts] == [
+        (tokens.WEB_FONT_PATH, tokens.WEB_FONT_SHA256)
+    ]
+    assert page_fonts.unreadable == []
