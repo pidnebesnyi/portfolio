@@ -162,6 +162,7 @@ docker compose run --rm tests pytest -q tests/ui --video=off --tracing=off   # c
   requirement, and `--strict-markers` fails on typos. Retries happen only through `@pytest.mark.flaky` with a reason.
 - Browser tests read like the API ones in the report: every page-object action (open, log in, refund, filter) and every `expect(...)` check is an Allure step named after its locator and expectation (`tests/utils/ui_steps.py`), so a UI test no longer shows only the API calls that built its data. Step titles leave typed secrets out.
 - In the report a test reads as Arrange / Act / Assert: factories, the requests and page actions a test makes itself, and its checks are steps with those prefixes (`tests/utils/aaa.py`); ten reference tests mark the three phases explicitly.
+- Each wait for a log line or event is one Allure step, `Wait until ...`, with every polling attempt listed in a "Polling attempts" attachment, so a timeout shows what was seen at each try (`tests/utils/waiting.py`).
 - A failed test keeps evidence in Allure: last request and response, last SQL, and for UI tests a
   screenshot, trace and video. Credentials are masked.
 - UI tests get their data from the API and verify only what the UI shows.

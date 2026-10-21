@@ -214,7 +214,8 @@ secrets stay out of the log is a risk no functional test sees.
 **Not covered.** Log shipping and retention, a search backend, log levels and the format of
 uvicorn's own access log (it is not written to the file). The secret scan proves the values this
 run used are absent; it cannot prove no secret is ever logged. The access line is written after
-the response, so tests poll with a deadline (`tests/utils/waiting.py`) rather than sleep.
+the response, so tests poll with a deadline (`tests/utils/waiting.py`) rather than sleep. Each
+attempt is listed under the wait's step in Allure, so a slow line is visible as a run of "not yet".
 
 ## Domain events on RabbitMQ
 
