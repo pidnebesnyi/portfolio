@@ -44,14 +44,14 @@ def test_locators_are_described_as_the_page_object_wrote_them(
 @pytest.mark.parametrize(
     ("method", "args", "title"),
     [
-        ("to_have_text", ("refunded",), 'Assert: x to have text "refunded"'),
-        ("not_to_be_visible", (), "Assert: x not to be visible"),
-        ("to_have_url", (re.compile(r"/ui/2fa$"),), 'Assert: x to have url "/ui/2fa$"'),
-        ("to_have_count", (0,), "Assert: x to have count 0"),
-        ("to_have_text", ("a" * 100,), 'Assert: x to have text "' + "a" * 79 + '…"'),
+        ("to_have_text", ("refunded",), 'x to have text "refunded"'),
+        ("not_to_be_visible", (), "x not to be visible"),
+        ("to_have_url", (re.compile(r"/ui/2fa$"),), 'x to have url "/ui/2fa$"'),
+        ("to_have_count", (0,), "x to have count 0"),
+        ("to_have_text", ("a" * 100,), 'x to have text "' + "a" * 79 + '…"'),
     ],
 )
-@allure.title("An assertion becomes the step: {title}")
+@allure.title("An assertion is named by what it checks: {title}")
 def test_assertions_are_named_by_what_they_check(
     method: str, args: tuple[object, ...], title: str
 ) -> None:
