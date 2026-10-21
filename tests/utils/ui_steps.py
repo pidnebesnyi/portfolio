@@ -3,11 +3,13 @@
 Playwright's `expect(locator).to_have_text(...)` is plain code to Allure, so a UI test showed only
 the API calls that built its data. `install()` wraps every `to_*` / `not_to_*` method of
 Playwright's assertion classes so each check becomes a step named after the locator and the
-expectation, e.g. `Assert: get_by_test_id("payment-status") to have text "refunded"`. The wrapper
-adds nothing else: the assertion, its auto-waiting and its error message are Playwright's own.
+expectation, e.g. `Assert: get_by_test_id("payment-status") to have text "refunded"`
+(`Expect ...` in a Gherkin scenario, see tests/utils/aaa.py). The wrapper adds nothing else: the
+assertion, its auto-waiting and its error message are Playwright's own.
 
-Page-object actions are steps too (`@allure.step` on the methods), with titles written to leave
-typed secrets out; the values checked by assertions are page text, never credentials.
+Page-object actions are steps too (`page_action` / `page_step` from tests/utils/aaa.py), with
+titles written to leave typed secrets out; the values checked by assertions are page text, never
+credentials.
 """
 
 import functools
@@ -18,6 +20,8 @@ from typing import Any
 
 import allure
 from playwright.sync_api import LocatorAssertions, PageAssertions
+
+from tests.utils.aaa import assert_title
 
 _SELECTOR = re.compile(r"selector='(?P<selector>.*)'>$")
 _TESTID = re.compile(r'^internal:testid=\[data-testid="(?P<v>.*)"s\]$')
@@ -56,10 +60,10 @@ def _short(value: Any) -> str:
 
 
 def step_title(subject: str, method: str, args: tuple[Any, ...]) -> str:
-    """`Assert: <subject> to have text "x"` from the method name and its first argument."""
+    """`<subject> to have text "x"` from the method name and its first argument."""
     words = method.replace("not_to_", "not to ").replace("to_", "to ").replace("_", " ")
     expected = f" {_short(args[0])}" if args else ""
-    return f"Assert: {subject} {words}{expected}"
+    return f"{subject} {words}{expected}"
 
 
 def _subject(assertions: object, method: str) -> str:
@@ -84,7 +88,7 @@ def _wrap(cls: type, name: str) -> None:
             return original(self, *args, **kwargs)
         _STATE.inside = True
         try:
-            with allure.step(step_title(_subject(self, name), name, args)):
+            with allure.step(assert_title(step_title(_subject(self, name), name, args))):
                 return original(self, *args, **kwargs)
         finally:
             _STATE.inside = False

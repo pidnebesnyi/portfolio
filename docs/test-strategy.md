@@ -39,7 +39,7 @@ built from an API, a database, a UI, a message broker and an external dependency
 
 | Level | Tests | Runs |
 |-------|------:|------|
-| Unit (site builder, Allure labels and UI step names, Arrange/Act/Assert labels, OpenAPI checker, requirement trace) | 49 | every run |
+| Unit (site builder, Allure labels and UI step names, Arrange/Act/Assert labels, OpenAPI checker, requirement trace) | 52 | every run |
 | API, `tests/api` | 160 | every PR |
 | OpenAPI contract, `tests/contract` | 1 | every PR |
 | Integration with the WireMock provider stub | 9 | every PR |
@@ -51,10 +51,10 @@ built from an API, a database, a UI, a message broker and an external dependency
 | Postman collection (Newman), `postman/` | 20 requests, 59 assertions | every PR |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
-319 tests in the suite (numbers from the latest local run, the live number is on the landing page).
+322 tests in the suite (numbers from the latest local run, the live number is on the landing page).
 The shape is a pyramid on purpose: about half of the tests are API checks, about a fifth need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
-The 49 unit tests cover the plain code around the suite: the landing-page builder, the Allure
+The 52 unit tests cover the plain code around the suite: the landing-page builder, the Allure
 suite labels, the requirement trace and the OpenAPI checker, which is made to fail on purpose for each kind of violation.
 22 tests are tagged `smoke`: the critical path, intended to finish in under a minute on a pull request.
 
@@ -90,10 +90,11 @@ Depth beyond the happy path, by design:
 How a test reads in the Allure report:
 
 - **Arrange / Act / Assert, automatically** (`tests/utils/aaa.py`). The payment and merchant
-  factories are `Arrange: ...` steps with their requests inside; a request or page-object action
-  the test makes itself is `Act: ...`; `expect(...)`, `expect_error(...)` and every browser
-  `expect(...)` are `Assert: ...`. Fixture setup and teardown stay unlabelled, and the Gherkin
-  scenarios keep their own Given / When / Then.
+  factories are `Arrange: ...` steps with their requests inside, also when a fixture calls them;
+  a request or page-object action the test body makes itself is `Act: ...`; `expect(...)`,
+  `expect_error(...)` and every browser `expect(...)` are `Assert: ...`. Requests made by fixtures
+  carry no label, and the Gherkin scenarios carry none at all: they keep their own
+  Given / When / Then.
 - **Explicit phases where it helps.** A plain `assert` cannot be a step, so a test that should show
   its structure wraps its code in `arrange(...)`, `act(...)` and `check(...)`. Used in ten
   tests (refunds, idempotency, state machine, races, the browser refund) as the reference
