@@ -87,9 +87,9 @@ needs zero secrets.
 | `tests/logs` | The app's JSON request log: request ids, domain events, no secrets | 11 (2 smoke) | PR (`api` job); nightly |
 | `tests/events` | Domain events consumed from RabbitMQ: captured, refunded, failed, nothing for rejected requests | 5 (1 smoke) | PR (`api` job); nightly |
 | `tests/bdd` | Business scenarios in Gherkin (`features/*.feature`) that run on the same clients, factories and page objects; one is a browser scenario | 9 | PR (`api` job, all but the browser scenario); nightly |
-| `tests/unit` | Landing-page builder, Allure suite labels, the OpenAPI checker and coverage matrix, the requirement trace, and the helpers behind page health, font, soft style, polling, API ↔ DB and environment checks | 184 | PR (`api` job); nightly |
+| `tests/unit` | Landing-page builder, Allure suite labels, the OpenAPI checker and coverage matrix, the requirement trace, and the helpers behind page health, font, soft style, polling, API ↔ DB and environment checks | 187 | PR (`api` job); nightly |
 
-About 456 tests in total (184 of them unit tests), 25 tagged `smoke`. Outside pytest: the Postman collection in
+About 459 tests in total (187 of them unit tests), 25 tagged `smoke`. Outside pytest: the Postman collection in
 `postman/` (20 requests, 59 assertions; PR `api` job) and the Locust profile in `load/`.
 
 ## Pipeline

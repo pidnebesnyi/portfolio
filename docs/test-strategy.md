@@ -39,7 +39,7 @@ built from an API, a database, a UI, a message broker and an external dependency
 
 | Level | Tests | Runs |
 |-------|------:|------|
-| Unit (site builder, Allure labels and UI step names, Arrange/Act/Assert labels, OpenAPI checker and coverage matrix, requirement trace, page health, font, soft style, polling, API ↔ DB and environment helpers) | 184 | every run |
+| Unit (site builder, Allure labels and UI step names, Arrange/Act/Assert labels, OpenAPI checker and coverage matrix, requirement trace, page health, font, soft style, polling, API ↔ DB and environment helpers) | 187 | every run |
 | API, `tests/api` | 160 | every PR |
 | OpenAPI contract, `tests/contract` | 1 | every PR |
 | Integration with the WireMock provider stub | 9 | every PR |
@@ -51,11 +51,11 @@ built from an API, a database, a UI, a message broker and an external dependency
 | Postman collection (Newman), `postman/` | 20 requests, 59 assertions | every PR |
 | Load | 1 profile, 4 weighted tasks | weekly |
 
-456 tests in the suite (numbers from the latest local run, the live number is on the landing page).
+459 tests in the suite (numbers from the latest local run, the live number is on the landing page).
 The shape is a pyramid on purpose: leaving out the unit tests, which check the suite's own code,
 about 60 % of the tests are API checks and about a quarter need a browser.
 The application has almost no logic outside the API, so a real unit level does not exist there.
-The 184 unit tests cover the plain code around the suite: the landing-page builder, the Allure
+The 187 unit tests cover the plain code around the suite: the landing-page builder, the Allure
 suite labels, the requirement trace, the OpenAPI checker (made to fail on purpose for each kind of
 violation) and its coverage matrix, and the helpers behind the page health, font, soft style,
 polling, API ↔ DB and environment checks.
@@ -93,10 +93,11 @@ Depth beyond the happy path, by design:
 How a test reads in the Allure report:
 
 - **Arrange / Act / Assert, automatically** (`tests/utils/aaa.py`). The payment and merchant
-  factories are `Arrange: ...` steps with their requests inside; a request or page-object action
-  the test makes itself is `Act: ...`; `expect(...)`, `expect_error(...)` and every browser
-  `expect(...)` are `Assert: ...`. Fixture setup and teardown stay unlabelled, and the Gherkin
-  scenarios keep their own Given / When / Then.
+  factories are `Arrange: ...` steps with their requests inside, also when a fixture calls them;
+  a request or page-object action the test body makes itself is `Act: ...`; `expect(...)`,
+  `expect_error(...)` and every browser `expect(...)` are `Assert: ...`. Requests made by fixtures
+  carry no label, and the Gherkin scenarios carry none at all: they keep their own
+  Given / When / Then.
 - **Explicit phases where it helps.** A plain `assert` cannot be a step, so a test that should show
   its structure wraps its code in `arrange(...)`, `act(...)` and `check(...)`. Used in ten
   tests (refunds, idempotency, state machine, races, the browser refund) as the reference
