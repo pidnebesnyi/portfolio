@@ -1,7 +1,7 @@
 {
   "info": {
     "_postman_id": "8fe440bf-4385-5db6-a6be-a87a915ac5c4",
-    "name": "Payments QA Lab: API smoke",
+    "name": "Test Automation Lab: API smoke",
     "description": "The main path of the payments API in 20 requests: log in (admin with a one-time code), create a merchant, create, authorize, capture and partly refund a payment, check the list and the access rules, then delete the merchant again. Each folder is named after the requirement it checks (GitHub issues with the `requirement` label).\n\nImport this file and `local.postman_environment.json`, then fill `adminPassword` and `adminTotpSecret` in the environment's current values from your `.env`. CI runs the same collection with Newman: see postman/README.md.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
