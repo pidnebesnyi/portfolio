@@ -10,12 +10,15 @@ Anything a test mutates hangs off a function-scoped merchant, so pytest-xdist wo
 share data and every test can run alone, in any order.
 """
 
+import contextlib
 from collections.abc import Generator, Iterator
 from pathlib import Path
 from typing import Any
 
+import allure
 import httpx
 import pytest
+from playwright.sync_api import Error as PlaywrightError
 
 from tests.clients.auth_api import AuthApi
 from tests.clients.http import LoggedHttpClient
@@ -36,6 +39,12 @@ from tests.utils.allure_links import annotate, label_suites
 from tests.utils.app_log import AppLog
 from tests.utils.db import Database
 from tests.utils.openapi import OpenApiContract
+from tests.utils.page_health import (
+    ALLOW_HTTP_ERRORS,
+    PageHealthMonitor,
+    allowance_from_marker,
+    format_report,
+)
 from tests.utils.tokens import totp_code
 
 TIER_MARKERS = {"smoke", "regression"}
@@ -67,6 +76,12 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
         for flaky in item.iter_markers("flaky"):
             if not flaky.kwargs.get("reason"):
                 raise pytest.UsageError(f"{item.nodeid}: @pytest.mark.flaky needs reason=...")
+        # Allowed browser HTTP errors are declared with a reason (tests/utils/page_health.py).
+        for allow in item.iter_markers(ALLOW_HTTP_ERRORS):
+            try:
+                allowance_from_marker(*allow.args, **allow.kwargs)
+            except ValueError as exc:
+                raise pytest.UsageError(f"{item.nodeid}: {exc}") from exc
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:
@@ -97,7 +112,8 @@ def pytest_runtest_makereport(item: pytest.Item) -> Generator[None, object, None
     report = (yield).get_result()
     if report.when in ("setup", "call") and report.failed:
         item.stash[FAILED] = True
-    elif report.when == "teardown" and item.stash.get(FAILED, False):
+    elif report.when == "teardown" and (item.stash.get(FAILED, False) or report.failed):
+        # A failure in teardown (the page health check, a cleanup) deserves the same evidence.
         attach_failure_evidence(item)
 
 
@@ -167,6 +183,36 @@ def _allure_metadata(request: pytest.FixtureRequest, settings: Settings) -> None
     evidence.reset()
     annotate(request.node, settings.repo_url)
     label_suites(request.node.nodeid)
+
+
+@pytest.fixture(autouse=True)
+def page_health(request: pytest.FixtureRequest) -> Iterator[PageHealthMonitor | None]:
+    """Fails a browser test whose page got an HTTP error (>= 400) the test did not allow with
+    `@pytest.mark.allow_http_errors(...)`. Reaches every test that uses `page`, directly or
+    through merchant_page / admin_page, in tests/ui and in Gherkin scenarios alike; None otherwise.
+
+    The failure is raised in teardown with the list attached to the Allure result. A test that
+    already failed keeps its own error: the list is attached, nothing more is raised."""
+    if "page" not in request.fixturenames:
+        yield None
+        return
+    page = request.getfixturevalue("page")
+    allowances = [
+        allowance_from_marker(*m.args, **m.kwargs)
+        for m in request.node.iter_markers(ALLOW_HTTP_ERRORS)
+    ]
+    monitor = PageHealthMonitor(allowances)
+    monitor.attach(page)
+    yield monitor
+    with contextlib.suppress(PlaywrightError):  # page closed or crashed: judge what was seen
+        page.evaluate("0")  # a round trip: events that already arrived are delivered before it
+    if unexpected := monitor.unexpected():
+        report = format_report(unexpected)
+        allure.attach(
+            report, name="unexpected HTTP errors", attachment_type=allure.attachment_type.TEXT
+        )
+        if not request.node.stash.get(FAILED, False):
+            pytest.fail(report, pytrace=False)
 
 
 # --- function layer ----------------------------------------------------------------------

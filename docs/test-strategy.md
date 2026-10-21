@@ -79,6 +79,11 @@ Depth beyond the happy path, by design:
 - **Tokens.** Unsigned, expiry-less, wrongly typed and orphaned tokens are refused.
 - **Browser access and navigation.** Titles and headings, links, redirects, the back button with
   filters, an admin on merchant pages, another merchant's payment, forged or stale sessions.
+- **Page health.** Every browser test, including the browser Gherkin scenario, fails at teardown if
+  its page received an HTTP error (status 400 or more) the test did not allow with
+  `allow_http_errors(..., reason=...)`. A missing image, script or failed `fetch` is caught even
+  when the assertions on the page pass; the stubbed 500 and 503 in the refresh tests are the only
+  allowed errors.
 
 How a test reads in the Allure report:
 
