@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 6,
+  "headers": {
+    "date": "Thu, 22 Oct 2026 17:06:36 GMT",
+    "server": "uvicorn",
+    "content-length": "118",
+    "content-type": "application/json",
+    "x-request-id": "48701e5bfbf245ffa948138a71040833"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot capture a payment in status voided",
+    "from": "voided",
+    "action": "capture"
+  }
+}

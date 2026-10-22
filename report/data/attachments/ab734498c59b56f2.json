@@ -1,0 +1,31 @@
+{
+  "status": 200,
+  "elapsed_ms": 13,
+  "headers": {
+    "date": "Thu, 22 Oct 2026 17:06:34 GMT",
+    "server": "uvicorn",
+    "content-length": "372",
+    "content-type": "application/json",
+    "x-request-id": "54429547a5d040cdb400817855f139b4"
+  },
+  "body": {
+    "items": [
+      {
+        "id": "03bf122a-1ebb-4d2e-a680-ad809a122e04",
+        "merchant_id": "13d9fb6d-3c06-4ac7-a758-588bbf3eb328",
+        "amount": 1050,
+        "currency": "USD",
+        "description": "order 42",
+        "card_token": "tok_success",
+        "status": "created",
+        "failure_reason": null,
+        "refunded_amount": 0,
+        "created_at": "2026-10-22T17:06:34.800830Z",
+        "updated_at": "2026-10-22T17:06:34.800834Z"
+      }
+    ],
+    "total": 1,
+    "limit": 20,
+    "offset": 0
+  }
+}

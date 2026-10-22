@@ -1,0 +1,24 @@
+{
+  "status": 201,
+  "elapsed_ms": 25,
+  "headers": {
+    "date": "Thu, 22 Oct 2026 17:06:31 GMT",
+    "server": "uvicorn",
+    "content-length": "332",
+    "content-type": "application/json",
+    "x-request-id": "ff1691a7baa04b6f890a277473f22c0d"
+  },
+  "body": {
+    "id": "84296bf5-42a2-4bb9-9b18-bac3d129518f",
+    "merchant_id": "e8ee889f-4ed6-4482-a493-d351090c68bf",
+    "amount": 1000,
+    "currency": "UAH",
+    "description": "test payment",
+    "card_token": "tok_success",
+    "status": "created",
+    "failure_reason": null,
+    "refunded_amount": 0,
+    "created_at": "2026-10-22T17:06:32.830149Z",
+    "updated_at": "2026-10-22T17:06:32.830153Z"
+  }
+}

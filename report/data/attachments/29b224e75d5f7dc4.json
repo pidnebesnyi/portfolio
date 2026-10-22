@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 6,
+  "headers": {
+    "date": "Thu, 22 Oct 2026 17:06:28 GMT",
+    "server": "uvicorn",
+    "content-length": "204",
+    "content-type": "application/json",
+    "x-request-id": "3a648fb320c249ca9e56a4d32a4d140f"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "string_too_short",
+        "loc": [
+          "body",
+          "card_token"
+        ],
+        "msg": "String should have at least 1 character",
+        "input": "",
+        "ctx": {
+          "min_length": 1
+        }
+      }
+    ]
+  }
+}

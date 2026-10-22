@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 6,
+  "headers": {
+    "date": "Thu, 22 Oct 2026 17:06:33 GMT",
+    "server": "uvicorn",
+    "content-length": "124",
+    "content-type": "application/json",
+    "x-request-id": "a2f1677c29244d5fad5a5b0e15ca44c9"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot refund a payment in status authorized",
+    "from": "authorized",
+    "action": "refund"
+  }
+}

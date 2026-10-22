@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 9,
+  "headers": {
+    "date": "Thu, 22 Oct 2026 17:06:33 GMT",
+    "server": "uvicorn",
+    "content-length": "126",
+    "content-type": "application/json",
+    "x-request-id": "fe45397c7bad444786ff2c39aa1eba93"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot authorize a payment in status captured",
+    "from": "captured",
+    "action": "authorize"
+  }
+}

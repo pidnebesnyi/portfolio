@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 11,
+  "headers": {
+    "date": "Thu, 22 Oct 2026 17:06:31 GMT",
+    "server": "uvicorn",
+    "content-length": "214",
+    "content-type": "application/json",
+    "x-request-id": "e1257d85ab1f442ebc5a5ee1d269ae9e"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "less_than_equal",
+        "loc": [
+          "body",
+          "amount"
+        ],
+        "msg": "Input should be less than or equal to 100000000",
+        "input": 100000001,
+        "ctx": {
+          "le": 100000000
+        }
+      }
+    ]
+  }
+}
