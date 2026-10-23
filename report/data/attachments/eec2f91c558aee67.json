@@ -1,0 +1,17 @@
+{
+  "method": "POST",
+  "url": "http://app:8000/payments/c2b0e45f-58c5-4a29-a63f-07997adc3840/refunds",
+  "headers": {
+    "host": "app:8000",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "authorization": "***",
+    "content-length": "16",
+    "content-type": "application/json"
+  },
+  "body": {
+    "amount": "100"
+  }
+}
