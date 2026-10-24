@@ -1,0 +1,5 @@
+SELECT k.key, COUNT(DISTINCT k.payment_id) AS payments
+        FROM idempotency_keys k
+        WHERE k.merchant_id = %s
+        GROUP BY k.key
+        HAVING COUNT(DISTINCT k.payment_id) > 1
