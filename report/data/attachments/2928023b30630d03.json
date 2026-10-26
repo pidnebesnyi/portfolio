@@ -1,0 +1,19 @@
+{
+  "method": "POST",
+  "url": "http://app:8000/merchants",
+  "headers": {
+    "host": "app:8000",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "authorization": "***",
+    "content-length": "71",
+    "content-type": "application/json"
+  },
+  "body": {
+    "name": "n",
+    "email": "edge-1a70668eb390@lab.test",
+    "password": "***"
+  }
+}
