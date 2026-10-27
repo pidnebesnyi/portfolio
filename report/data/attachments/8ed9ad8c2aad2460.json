@@ -1,0 +1,93 @@
+[
+  {
+    "id": "b632143f-9f5c-4257-868f-479595b3b579",
+    "merchant_id": "2d682da6-9287-4995-9cbd-9337f4c56eb4",
+    "amount": 1050,
+    "currency": "UAH",
+    "description": "test payment",
+    "card_token": "tok_success",
+    "status": "created",
+    "failure_reason": null,
+    "refunded_amount": 0,
+    "created_at": "2026-10-27 08:17:52.415134+00:00",
+    "updated_at": "2026-10-27 08:17:52.415138+00:00"
+  },
+  {
+    "id": "10489a90-1cef-4b51-9b0e-6c5944803fd3",
+    "merchant_id": "2d682da6-9287-4995-9cbd-9337f4c56eb4",
+    "amount": 99999,
+    "currency": "EUR",
+    "description": "test payment",
+    "card_token": "tok_success",
+    "status": "captured",
+    "failure_reason": null,
+    "refunded_amount": 0,
+    "created_at": "2026-10-27 08:17:52.511224+00:00",
+    "updated_at": "2026-10-27 08:17:52.581685+00:00"
+  },
+  {
+    "id": "eec4c870-fc51-42bd-88d0-bb960b4eedc8",
+    "merchant_id": "2d682da6-9287-4995-9cbd-9337f4c56eb4",
+    "amount": 4000,
+    "currency": "UAH",
+    "description": "test payment",
+    "card_token": "tok_success",
+    "status": "partially_refunded",
+    "failure_reason": null,
+    "refunded_amount": 1000,
+    "created_at": "2026-10-27 08:17:52.612648+00:00",
+    "updated_at": "2026-10-27 08:17:52.697765+00:00"
+  },
+  {
+    "id": "f9b0e323-cff8-4fe5-afea-a986d4096555",
+    "merchant_id": "2d682da6-9287-4995-9cbd-9337f4c56eb4",
+    "amount": 1234,
+    "currency": "USD",
+    "description": "test payment",
+    "card_token": "tok_success",
+    "status": "refunded",
+    "failure_reason": null,
+    "refunded_amount": 1234,
+    "created_at": "2026-10-27 08:17:52.720370+00:00",
+    "updated_at": "2026-10-27 08:17:52.794835+00:00"
+  },
+  {
+    "id": "762502d3-625b-41b0-859f-af7d74e17792",
+    "merchant_id": "2d682da6-9287-4995-9cbd-9337f4c56eb4",
+    "amount": 777,
+    "currency": "EUR",
+    "description": "test payment",
+    "card_token": "tok_success",
+    "status": "voided",
+    "failure_reason": null,
+    "refunded_amount": 0,
+    "created_at": "2026-10-27 08:17:52.822117+00:00",
+    "updated_at": "2026-10-27 08:17:52.887452+00:00"
+  },
+  {
+    "id": "fac443d0-7380-4f35-a99b-69d86c9d8622",
+    "merchant_id": "2d682da6-9287-4995-9cbd-9337f4c56eb4",
+    "amount": 1,
+    "currency": "UAH",
+    "description": "test payment",
+    "card_token": "tok_decline",
+    "status": "failed",
+    "failure_reason": "declined",
+    "refunded_amount": 0,
+    "created_at": "2026-10-27 08:17:52.924531+00:00",
+    "updated_at": "2026-10-27 08:17:52.969085+00:00"
+  },
+  {
+    "id": "9b5b6726-e37e-4891-a8d8-9a8d95b2cbe2",
+    "merchant_id": "2d682da6-9287-4995-9cbd-9337f4c56eb4",
+    "amount": 2500,
+    "currency": "USD",
+    "description": "test payment",
+    "card_token": "tok_success",
+    "status": "authorized",
+    "failure_reason": null,
+    "refunded_amount": 0,
+    "created_at": "2026-10-27 08:17:52.445919+00:00",
+    "updated_at": "2026-10-27 08:17:52.474519+00:00"
+  }
+]
