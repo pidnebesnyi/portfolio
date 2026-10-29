@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 3,
+  "headers": {
+    "date": "Thu, 29 Oct 2026 08:49:38 GMT",
+    "server": "uvicorn",
+    "content-length": "314",
+    "content-type": "application/json",
+    "x-request-id": "45bc0807638f441db74c31f093bcd62b"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "datetime_from_date_parsing",
+        "loc": [
+          "query",
+          "created_to"
+        ],
+        "msg": "Input should be a valid datetime or date, month value is outside expected range of 1-12",
+        "input": "2026-13-45",
+        "ctx": {
+          "error": "month value is outside expected range of 1-12"
+        }
+      }
+    ]
+  }
+}

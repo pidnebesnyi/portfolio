@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 5,
+  "headers": {
+    "date": "Thu, 29 Oct 2026 08:49:36 GMT",
+    "server": "uvicorn",
+    "content-length": "208",
+    "content-type": "application/json",
+    "x-request-id": "eff5249ed67c4df2a7308d799e7254cf"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "enum",
+        "loc": [
+          "body",
+          "currency"
+        ],
+        "msg": "Input should be 'UAH', 'USD' or 'EUR'",
+        "input": "",
+        "ctx": {
+          "expected": "'UAH', 'USD' or 'EUR'"
+        }
+      }
+    ]
+  }
+}

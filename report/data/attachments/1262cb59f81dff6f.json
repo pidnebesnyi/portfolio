@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 4,
+  "headers": {
+    "date": "Thu, 29 Oct 2026 08:49:39 GMT",
+    "server": "uvicorn",
+    "content-length": "178",
+    "content-type": "application/json",
+    "x-request-id": "a1c2624161b24d8cabda31f6d0d18fc8"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "greater_than",
+        "loc": [
+          "body",
+          "amount"
+        ],
+        "msg": "Input should be greater than 0",
+        "input": 0,
+        "ctx": {
+          "gt": 0
+        }
+      }
+    ]
+  }
+}
