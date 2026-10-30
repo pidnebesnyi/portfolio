@@ -1,0 +1,9 @@
+SELECT status,
+               COUNT(*)::int AS payments,
+               SUM(amount)::int AS amount_sum,
+               SUM(refunded_amount)::int AS refunded_sum,
+               SUM(COUNT(*)) OVER ()::int AS all_payments
+        FROM payments
+        WHERE merchant_id = %s
+        GROUP BY status
+        ORDER BY status

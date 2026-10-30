@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 5,
+  "headers": {
+    "date": "Fri, 30 Oct 2026 08:54:01 GMT",
+    "server": "uvicorn",
+    "content-length": "464",
+    "content-type": "application/json",
+    "x-request-id": "53c288e9d4dd420787fdb4a4f7a19b7d"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "string_too_long",
+        "loc": [
+          "body",
+          "description"
+        ],
+        "msg": "String should have at most 255 characters",
+        "input": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "ctx": {
+          "max_length": 255
+        }
+      }
+    ]
+  }
+}

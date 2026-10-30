@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 11,
+  "headers": {
+    "date": "Fri, 30 Oct 2026 08:54:03 GMT",
+    "server": "uvicorn",
+    "content-length": "112",
+    "content-type": "application/json",
+    "x-request-id": "7edb702d43f24634a3ec56f4aa232421"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot void a payment in status failed",
+    "from": "failed",
+    "action": "void"
+  }
+}
