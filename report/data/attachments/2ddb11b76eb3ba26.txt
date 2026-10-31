@@ -1,0 +1,1 @@
+SELECT id, merchant_id, amount, currency, description, card_token, status, failure_reason, refunded_amount, created_at, updated_at FROM payments WHERE merchant_id = %s

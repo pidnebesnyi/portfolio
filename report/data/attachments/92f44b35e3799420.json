@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 4,
+  "headers": {
+    "date": "Sat, 31 Oct 2026 08:44:56 GMT",
+    "server": "uvicorn",
+    "content-length": "122",
+    "content-type": "application/json",
+    "x-request-id": "c7a0266329514e038dee5d94b5bd3545"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot authorize a payment in status voided",
+    "from": "voided",
+    "action": "authorize"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 6,
+  "headers": {
+    "date": "Sat, 31 Oct 2026 08:44:54 GMT",
+    "server": "uvicorn",
+    "content-length": "118",
+    "content-type": "application/json",
+    "x-request-id": "0f5af55ac3284c68899fa49124d9c7d0"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot refund a payment in status created",
+    "from": "created",
+    "action": "refund"
+  }
+}
