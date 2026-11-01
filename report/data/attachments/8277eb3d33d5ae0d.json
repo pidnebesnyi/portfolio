@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 6,
+  "headers": {
+    "date": "Sun, 01 Nov 2026 09:35:09 GMT",
+    "server": "uvicorn",
+    "content-length": "270",
+    "content-type": "application/json",
+    "x-request-id": "a72b9c4c6b614745b950986ccf755004"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "string_too_long",
+        "loc": [
+          "body",
+          "card_token"
+        ],
+        "msg": "String should have at most 64 characters",
+        "input": "ttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt",
+        "ctx": {
+          "max_length": 64
+        }
+      }
+    ]
+  }
+}

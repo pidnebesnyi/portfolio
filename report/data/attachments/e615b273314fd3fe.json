@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 1,
+  "headers": {
+    "date": "Sun, 01 Nov 2026 09:35:11 GMT",
+    "server": "uvicorn",
+    "content-length": "216",
+    "content-type": "application/json",
+    "x-request-id": "ddcb811e1198483baa1c46871f8a96e8"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "string_too_long",
+        "loc": [
+          "body",
+          "code"
+        ],
+        "msg": "String should have at most 16 characters",
+        "input": "11111111111111111",
+        "ctx": {
+          "max_length": 16
+        }
+      }
+    ]
+  }
+}
