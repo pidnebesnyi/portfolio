@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 8,
+  "headers": {
+    "date": "Tue, 03 Nov 2026 09:55:48 GMT",
+    "server": "uvicorn",
+    "content-length": "122",
+    "content-type": "application/json",
+    "x-request-id": "ed871fad12b84dfeb067708bb2386e7d"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot capture a payment in status refunded",
+    "from": "refunded",
+    "action": "capture"
+  }
+}

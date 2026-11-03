@@ -1,0 +1,41 @@
+{
+  "status": 200,
+  "elapsed_ms": 20,
+  "headers": {
+    "vary": "Origin",
+    "content-type": "application/json",
+    "transfer-encoding": "chunked"
+  },
+  "body": {
+    "requests": [
+      {
+        "url": "/charge",
+        "absoluteUrl": "http://provider-mock:8080/charge",
+        "method": "POST",
+        "clientIp": "172.18.0.5",
+        "headers": {
+          "Host": "provider-mock:8080",
+          "Accept": "*/*",
+          "Accept-Encoding": "gzip, deflate",
+          "Connection": "keep-alive",
+          "User-Agent": "python-httpx/0.28.1",
+          "Content-Length": "110",
+          "Content-Type": "application/json"
+        },
+        "cookies": {},
+        "browserProxyRequest": false,
+        "loggedDate": 1793699746497,
+        "bodyAsBase64": "eyJhbW91bnQiOjEyNTAsImN1cnJlbmN5IjoiVVNEIiwiY2FyZF90b2tlbiI6InRva19kZWNsaW5lIiwicmVmZXJlbmNlIjoiZmU1OWJiYTQtZGJjYi00NTQ2LTg5YjktMjEzMTVhMzQzNTNlIn0=",
+        "body": "{\"amount\":1250,\"currency\":\"USD\",\"card_token\":\"tok_decline\",\"reference\":\"fe59bba4-dbcb-4546-89b9-21315a34353e\"}",
+        "protocol": "HTTP/1.1",
+        "scheme": "http",
+        "host": "provider-mock",
+        "port": 8080,
+        "loggedDateString": "2026-11-03T09:55:46.497Z",
+        "queryParams": {},
+        "formParams": {}
+      }
+    ],
+    "requestJournalDisabled": false
+  }
+}
