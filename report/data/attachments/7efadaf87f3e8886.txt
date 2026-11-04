@@ -1,0 +1,15 @@
+WITH totals AS (
+    SELECT p.id, p.status, p.amount, p.refunded_amount,
+           COALESCE(SUM(r.amount), 0)::int AS refunds_sum,
+           COUNT(r.id)::int AS refunds_count
+    FROM payments p
+    LEFT JOIN refunds r ON r.payment_id = p.id
+    WHERE p.merchant_id = %s
+    GROUP BY p.id, p.status, p.amount, p.refunded_amount
+)
+        SELECT id, status, amount, refunded_amount, refunds_sum
+        FROM totals
+        WHERE (status = 'refunded' AND refunds_sum <> amount)
+           OR (status = 'partially_refunded' AND refunds_sum NOT BETWEEN 1 AND amount - 1)
+           OR (status NOT IN ('refunded', 'partially_refunded') AND refunds_sum <> 0)
+           OR refunded_amount <> refunds_sum

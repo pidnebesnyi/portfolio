@@ -1,0 +1,21 @@
+{
+  "method": "POST",
+  "url": "http://app:8000/payments",
+  "headers": {
+    "host": "app:8000",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "idempotency-key": "db6ae9c0-7abb-452f-a9a2-b6438ab98972",
+    "authorization": "***",
+    "content-length": "84",
+    "content-type": "application/json"
+  },
+  "body": {
+    "amount": 1050,
+    "currency": "EUR",
+    "description": "order 42",
+    "card_token": "tok_success"
+  }
+}
