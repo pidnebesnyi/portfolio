@@ -1,0 +1,31 @@
+{
+  "status": 200,
+  "elapsed_ms": 9,
+  "headers": {
+    "date": "Fri, 06 Nov 2026 09:44:00 GMT",
+    "server": "uvicorn",
+    "content-length": "618",
+    "content-type": "application/json",
+    "x-request-id": "2cf3f6a4009e430eae5a4e3df2efeeb8"
+  },
+  "body": {
+    "items": [
+      {
+        "id": "aa09d281-8676-401e-8507-7142ac0836b6",
+        "merchant_id": "bebb5ad3-ca43-4069-831e-39af22a8b337",
+        "amount": 500,
+        "currency": "UAH",
+        "description": "ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "card_token": "tok_success",
+        "status": "created",
+        "failure_reason": null,
+        "refunded_amount": 0,
+        "created_at": "2026-11-06T09:44:00.597188Z",
+        "updated_at": "2026-11-06T09:44:00.597190Z"
+      }
+    ],
+    "total": 1,
+    "limit": 20,
+    "offset": 0
+  }
+}

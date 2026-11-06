@@ -1,0 +1,7 @@
+SELECT p.id, SUM(r.amount)::int AS refunded,
+               ROUND(100.0 * SUM(r.amount) / SUM(SUM(r.amount)) OVER (), 1) AS share_pct
+        FROM payments p
+        JOIN refunds r ON r.payment_id = p.id
+        WHERE p.merchant_id = %s
+        GROUP BY p.id
+        ORDER BY refunded DESC
