@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 6,
+  "headers": {
+    "date": "Sun, 08 Nov 2026 09:24:26 GMT",
+    "server": "uvicorn",
+    "content-length": "122",
+    "content-type": "application/json",
+    "x-request-id": "7457e26ed41a4c5dbff9df0e86d47cd0"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot capture a payment in status captured",
+    "from": "captured",
+    "action": "capture"
+  }
+}

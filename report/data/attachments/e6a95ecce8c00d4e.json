@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 4,
+  "headers": {
+    "date": "Sun, 08 Nov 2026 09:24:23 GMT",
+    "server": "uvicorn",
+    "content-length": "261",
+    "content-type": "application/json",
+    "x-request-id": "acb3d663a2b049b9b204d8af3d98388b"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "datetime_from_date_parsing",
+        "loc": [
+          "query",
+          "created_from"
+        ],
+        "msg": "Input should be a valid datetime or date, input is too short",
+        "input": "yesterday",
+        "ctx": {
+          "error": "input is too short"
+        }
+      }
+    ]
+  }
+}

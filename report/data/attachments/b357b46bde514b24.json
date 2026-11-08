@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 4,
+  "headers": {
+    "date": "Sun, 08 Nov 2026 09:24:25 GMT",
+    "server": "uvicorn",
+    "content-length": "202",
+    "content-type": "application/json",
+    "x-request-id": "04b10d2fdd6746b286ebda999c22d620"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "string_too_short",
+        "loc": [
+          "body",
+          "password"
+        ],
+        "msg": "String should have at least 1 character",
+        "input": "",
+        "ctx": {
+          "min_length": 1
+        }
+      }
+    ]
+  }
+}

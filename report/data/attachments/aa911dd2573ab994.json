@@ -1,0 +1,16 @@
+{
+  "status": 422,
+  "elapsed_ms": 9,
+  "headers": {
+    "date": "Sun, 08 Nov 2026 09:24:25 GMT",
+    "server": "uvicorn",
+    "content-length": "102",
+    "content-type": "application/json",
+    "x-request-id": "8811079520594398b93d9a7ec325561e"
+  },
+  "body": {
+    "code": "refund_exceeds_amount",
+    "message": "Refund of 301 exceeds the refundable 300",
+    "refundable": 300
+  }
+}
