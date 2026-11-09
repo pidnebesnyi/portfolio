@@ -1,0 +1,26 @@
+{
+  "status": 422,
+  "elapsed_ms": 13,
+  "headers": {
+    "date": "Mon, 09 Nov 2026 10:09:56 GMT",
+    "server": "uvicorn",
+    "content-length": "143",
+    "content-type": "application/json",
+    "x-request-id": "f664c23b984b4b9e87b66c06abae635b"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "missing",
+        "loc": [
+          "body",
+          "amount"
+        ],
+        "msg": "Field required",
+        "input": {}
+      }
+    ]
+  }
+}

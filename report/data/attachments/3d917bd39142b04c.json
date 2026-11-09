@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 6,
+  "headers": {
+    "date": "Mon, 09 Nov 2026 10:09:53 GMT",
+    "server": "uvicorn",
+    "content-length": "174",
+    "content-type": "application/json",
+    "x-request-id": "7d27ae4762de41a3ab8301c875e93b27"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "missing",
+        "loc": [
+          "body",
+          "currency"
+        ],
+        "msg": "Field required",
+        "input": {
+          "amount": 100,
+          "card_token": "t"
+        }
+      }
+    ]
+  }
+}

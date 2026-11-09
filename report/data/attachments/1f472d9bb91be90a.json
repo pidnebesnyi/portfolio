@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 4,
+  "headers": {
+    "date": "Mon, 09 Nov 2026 10:09:54 GMT",
+    "server": "uvicorn",
+    "content-length": "276",
+    "content-type": "application/json",
+    "x-request-id": "ecf605bd49554fc1aa9bc36084f967d6"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "string_too_long",
+        "loc": [
+          "body",
+          "password"
+        ],
+        "msg": "String should have at most 72 characters",
+        "input": "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp",
+        "ctx": {
+          "max_length": 72
+        }
+      }
+    ]
+  }
+}

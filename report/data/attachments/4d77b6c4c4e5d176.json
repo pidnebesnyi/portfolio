@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 5,
+  "headers": {
+    "date": "Mon, 09 Nov 2026 10:09:54 GMT",
+    "server": "uvicorn",
+    "content-length": "263",
+    "content-type": "application/json",
+    "x-request-id": "000798ada6ba48c7bea93cf2ac65e203"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "uuid_parsing",
+        "loc": [
+          "path",
+          "payment_id"
+        ],
+        "msg": "Input should be a valid UUID, invalid character: found `n` at 0",
+        "input": "not-a-uuid",
+        "ctx": {
+          "error": "invalid character: found `n` at 0"
+        }
+      }
+    ]
+  }
+}
