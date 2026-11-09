@@ -1,10 +1,10 @@
 """Polling attempts in the Allure report (tests/utils/waiting.py).
 
 Pure unit tests: no app, no database, no browser. `eventually` runs against a scripted probe and a
-short timeout; its Allure step and attachment are no-ops when nothing is reporting.
+fake clock, so every elapsed time is exact and nothing really sleeps; its Allure step and attachment
+are no-ops when nothing is reporting.
 """
 
-import re
 from collections.abc import Callable, Iterator
 
 import allure
@@ -21,6 +21,30 @@ pytestmark = [pytest.mark.regression, area("Reporting")]
 def body_flag() -> Iterator[None]:
     yield
     aaa.set_test_body_running(False)
+
+
+class FakeClock:
+    """Stands in for the `time` module inside waiting.py: only `sleep` moves it forward.
+
+    Whole milliseconds keep the arithmetic exact, so 4 sleeps of 50 ms reach a 0.2 s deadline.
+    """
+
+    def __init__(self) -> None:
+        self.now_ms = 0
+
+    def monotonic(self) -> float:
+        return self.now_ms / 1000
+
+    def sleep(self, seconds: float) -> None:
+        self.now_ms += round(seconds * 1000)
+
+
+@pytest.fixture
+def clock(monkeypatch: pytest.MonkeyPatch) -> FakeClock:
+    """A real clock made these tests flaky: the first attempt sometimes landed at 1 ms, not 0."""
+    fake = FakeClock()
+    monkeypatch.setattr(waiting, "time", fake)
+    return fake
 
 
 @pytest.fixture
@@ -110,31 +134,32 @@ def test_step_title_is_labelled_as_a_check_only_in_the_test_body() -> None:
 
 
 @allure.title("eventually returns the first real result and records every attempt")
+@pytest.mark.usefixtures("clock")
 def test_returns_the_first_real_result_and_records_every_attempt(attached: list[str]) -> None:
     probe = _scripted("not yet", None, "found")
 
     assert eventually(probe, describe="the log", timeout_s=5) == "found"
 
-    lines = attached[0].splitlines()
-    assert len(lines) == 3
-    assert lines[0] == "#1  0 ms  not yet: no line yet"
-    assert lines[1].startswith("#2  ")
-    assert lines[1].endswith(" ms  None")
-    assert lines[2].startswith("#3  ")
-    assert lines[2].endswith(" ms  ok")
+    assert attached[0].splitlines() == [
+        "#1  0 ms  not yet: no line yet",
+        "#2  50 ms  None",
+        "#3  100 ms  ok",
+    ]
 
 
 @allure.title("eventually raises AssertionError on timeout and still attaches the attempts")
+@pytest.mark.usefixtures("clock")
 def test_timeout_raises_assertion_error_and_still_attaches_the_attempts(
     attached: list[str],
 ) -> None:
     def never() -> None:
         raise AssertionError("no line yet")
 
-    with pytest.raises(AssertionError, match=r"^gave up after 0\.2 s waiting for the log: ") as err:
+    with pytest.raises(AssertionError) as err:
         eventually(never, describe="the log", timeout_s=0.2)
 
-    assert re.search(r"no line yet \(\d+ attempts, \d+ ms\)$", str(err.value))
-    run = re.match(r"#1-#\d+ \((\d+)x\)  0-\d+ ms  not yet: no line yet$", attached[0])
-    assert run is not None
-    assert int(run.group(1)) >= 2  # 0.2 s at 50 ms: several identical attempts, one line
+    assert str(err.value) == (
+        "gave up after 0.2 s waiting for the log: no line yet (5 attempts, 200 ms)"
+    )
+    # 0.2 s at 50 ms: attempts at 0, 50, 100, 150 and 200 ms, identical, so one line
+    assert attached == ["#1-#5 (5x)  0-200 ms  not yet: no line yet"]
