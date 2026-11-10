@@ -1,0 +1,16 @@
+{
+  "status": 422,
+  "elapsed_ms": 25,
+  "headers": {
+    "date": "Tue, 10 Nov 2026 10:17:00 GMT",
+    "server": "uvicorn",
+    "content-length": "105",
+    "content-type": "application/json",
+    "x-request-id": "aa2d1c9dcfe44e16a3fedbd33e4a80c0"
+  },
+  "body": {
+    "code": "refund_exceeds_amount",
+    "message": "Refund of 1001 exceeds the refundable 1000",
+    "refundable": 1000
+  }
+}
