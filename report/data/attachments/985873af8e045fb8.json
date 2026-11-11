@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 8,
+  "headers": {
+    "date": "Wed, 11 Nov 2026 09:46:36 GMT",
+    "server": "uvicorn",
+    "content-length": "114",
+    "content-type": "application/json",
+    "x-request-id": "99f4c1add2df4d4fb666c5d5e83b9414"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot void a payment in status created",
+    "from": "created",
+    "action": "void"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 9,
+  "headers": {
+    "date": "Wed, 11 Nov 2026 09:46:36 GMT",
+    "server": "uvicorn",
+    "content-length": "120",
+    "content-type": "application/json",
+    "x-request-id": "52e09afb93eb40c3a7c834d88a788e10"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot capture a payment in status created",
+    "from": "created",
+    "action": "capture"
+  }
+}
