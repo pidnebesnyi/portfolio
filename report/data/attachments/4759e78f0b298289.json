@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 74,
+  "headers": {
+    "date": "Fri, 13 Nov 2026 09:54:32 GMT",
+    "server": "uvicorn",
+    "content-length": "130",
+    "content-type": "application/json",
+    "x-request-id": "c56e8b14340f4469a994233793b0aa76"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot authorize a payment in status authorized",
+    "from": "authorized",
+    "action": "authorize"
+  }
+}
