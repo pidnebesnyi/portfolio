@@ -1,0 +1,4 @@
+SELECT p.id, p.created_at
+        FROM payments p
+        LEFT JOIN idempotency_keys k ON k.payment_id = p.id
+        WHERE p.merchant_id = %s AND k.id IS NULL
