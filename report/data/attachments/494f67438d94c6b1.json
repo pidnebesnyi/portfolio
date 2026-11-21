@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 5,
+  "headers": {
+    "date": "Sat, 21 Nov 2026 10:06:17 GMT",
+    "server": "uvicorn",
+    "content-length": "136",
+    "content-type": "application/json",
+    "x-request-id": "bae3e0eb9f694231874170a658798cca"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot void a payment in status partially_refunded",
+    "from": "partially_refunded",
+    "action": "void"
+  }
+}

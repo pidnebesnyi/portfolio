@@ -1,0 +1,19 @@
+{
+  "status": 201,
+  "elapsed_ms": 14,
+  "headers": {
+    "date": "Sat, 21 Nov 2026 10:06:19 GMT",
+    "server": "uvicorn",
+    "content-length": "213",
+    "content-type": "application/json",
+    "x-request-id": "86ade3e2a75d44228ae917b9145f1b12"
+  },
+  "body": {
+    "id": "3cf22af7-e1df-4d70-a862-1f606d202e10",
+    "payment_id": "6d13ec8b-961c-47c3-b5b6-85807194f1be",
+    "amount": 300,
+    "payment_status": "partially_refunded",
+    "refunded_amount": 500,
+    "created_at": "2026-11-21T10:06:19.916844Z"
+  }
+}

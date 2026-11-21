@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 5,
+  "headers": {
+    "date": "Sat, 21 Nov 2026 10:06:14 GMT",
+    "server": "uvicorn",
+    "content-length": "352",
+    "content-type": "application/json",
+    "x-request-id": "d31e4eaf376b41e5a2f1a328edd17049"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "enum",
+        "loc": [
+          "query",
+          "status"
+        ],
+        "msg": "Input should be 'created', 'authorized', 'captured', 'partially_refunded', 'refunded', 'voided' or 'failed'",
+        "input": "bogus",
+        "ctx": {
+          "expected": "'created', 'authorized', 'captured', 'partially_refunded', 'refunded', 'voided' or 'failed'"
+        }
+      }
+    ]
+  }
+}
