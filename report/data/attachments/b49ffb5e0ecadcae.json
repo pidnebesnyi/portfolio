@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 12,
+  "headers": {
+    "date": "Sun, 22 Nov 2026 10:09:04 GMT",
+    "server": "uvicorn",
+    "content-length": "241",
+    "content-type": "application/json",
+    "x-request-id": "ef7732f0a9bf4df8a22afaa1d64f022b"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "value_error",
+        "loc": [
+          "body",
+          "description"
+        ],
+        "msg": "Value error, NUL character is not allowed",
+        "input": "nul\u0000inside",
+        "ctx": {
+          "error": "NUL character is not allowed"
+        }
+      }
+    ]
+  }
+}

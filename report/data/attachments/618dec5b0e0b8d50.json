@@ -1,0 +1,26 @@
+{
+  "status": 422,
+  "elapsed_ms": 6,
+  "headers": {
+    "date": "Sun, 22 Nov 2026 10:09:05 GMT",
+    "server": "uvicorn",
+    "content-length": "206",
+    "content-type": "application/json",
+    "x-request-id": "6fe5a3f6a5c649b28b4d78de2b0c6410"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "int_parsing",
+        "loc": [
+          "query",
+          "limit"
+        ],
+        "msg": "Input should be a valid integer, unable to parse string as an integer",
+        "input": "many"
+      }
+    ]
+  }
+}

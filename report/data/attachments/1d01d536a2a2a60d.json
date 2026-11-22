@@ -1,0 +1,21 @@
+{
+  "method": "POST",
+  "url": "http://app:8000/payments",
+  "headers": {
+    "host": "app:8000",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "idempotency-key": "2e8b8e5e-efaa-42db-b264-4f62bb0c4dce",
+    "authorization": "***",
+    "content-length": "129",
+    "content-type": "application/json"
+  },
+  "body": {
+    "amount": 100,
+    "currency": "UAH",
+    "description": "d",
+    "card_token": "tttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttttt"
+  }
+}
