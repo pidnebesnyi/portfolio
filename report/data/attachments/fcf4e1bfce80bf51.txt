@@ -1,0 +1,4 @@
+SELECT k.key, COUNT(*)::int AS key_rows, COUNT(DISTINCT k.payment_id)::int AS payments
+        FROM idempotency_keys k
+        WHERE k.merchant_id = %s
+        GROUP BY k.key
