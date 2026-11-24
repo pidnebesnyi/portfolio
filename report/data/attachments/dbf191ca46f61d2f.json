@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 15,
+  "headers": {
+    "date": "Tue, 24 Nov 2026 12:51:31 GMT",
+    "server": "uvicorn",
+    "content-length": "120",
+    "content-type": "application/json",
+    "x-request-id": "5332b49950594ff6bcb2b3fb92cf2b66"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot refund a payment in status refunded",
+    "from": "refunded",
+    "action": "refund"
+  }
+}

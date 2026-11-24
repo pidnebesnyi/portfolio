@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 5,
+  "headers": {
+    "date": "Tue, 24 Nov 2026 12:51:31 GMT",
+    "server": "uvicorn",
+    "content-length": "245",
+    "content-type": "application/json",
+    "x-request-id": "52f45596d58b4b38b333b1b9db5a6d49"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "string_pattern_mismatch",
+        "loc": [
+          "body",
+          "email"
+        ],
+        "msg": "String should match pattern '^[^@\\s]+@[^@\\s]+$'",
+        "input": "not-an-email",
+        "ctx": {
+          "pattern": "^[^@\\s]+@[^@\\s]+$"
+        }
+      }
+    ]
+  }
+}

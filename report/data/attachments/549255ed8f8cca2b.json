@@ -1,0 +1,25 @@
+{
+  "method": "POST",
+  "url": "http://provider-mock:8080/__admin/requests/find",
+  "headers": {
+    "host": "provider-mock:8080",
+    "accept": "*/*",
+    "accept-encoding": "gzip, deflate",
+    "connection": "keep-alive",
+    "user-agent": "python-httpx/0.28.1",
+    "content-length": "150",
+    "content-type": "application/json"
+  },
+  "body": {
+    "method": "POST",
+    "urlPath": "/charge",
+    "bodyPatterns": [
+      {
+        "equalToJson": {
+          "reference": "5be288e9-5aab-4449-afc4-3f9a61fd3696"
+        },
+        "ignoreExtraElements": true
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 8,
+  "headers": {
+    "date": "Tue, 24 Nov 2026 12:51:36 GMT",
+    "server": "uvicorn",
+    "content-length": "142",
+    "content-type": "application/json",
+    "x-request-id": "124adb1d0e2c4ce5a2aab297f53680d7"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot capture a payment in status partially_refunded",
+    "from": "partially_refunded",
+    "action": "capture"
+  }
+}
