@@ -1,0 +1,7 @@
+SELECT p.id, p.status, p.amount, p.refunded_amount,
+           COALESCE(SUM(r.amount), 0)::int AS refunds_sum,
+           COUNT(r.id)::int AS refunds_count
+    FROM payments p
+    LEFT JOIN refunds r ON r.payment_id = p.id
+    WHERE p.merchant_id = %s
+    GROUP BY p.id, p.status, p.amount, p.refunded_amount

@@ -1,0 +1,17 @@
+{
+  "status": 409,
+  "elapsed_ms": 9,
+  "headers": {
+    "date": "Wed, 25 Nov 2026 11:38:44 GMT",
+    "server": "uvicorn",
+    "content-length": "146",
+    "content-type": "application/json",
+    "x-request-id": "5d3a601ba4e24bf3974a231da5a1c1a7"
+  },
+  "body": {
+    "code": "invalid_transition",
+    "message": "Cannot authorize a payment in status partially_refunded",
+    "from": "partially_refunded",
+    "action": "authorize"
+  }
+}
