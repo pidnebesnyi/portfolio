@@ -1,0 +1,29 @@
+{
+  "status": 422,
+  "elapsed_ms": 7,
+  "headers": {
+    "date": "Sat, 28 Nov 2026 10:46:47 GMT",
+    "server": "uvicorn",
+    "content-length": "251",
+    "content-type": "application/json",
+    "x-request-id": "acef2907294d46a68f2184e9152a5e6f"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "string_pattern_mismatch",
+        "loc": [
+          "body",
+          "email"
+        ],
+        "msg": "String should match pattern '^[^@\\s]+@[^@\\s]+$'",
+        "input": "has space@lab.test",
+        "ctx": {
+          "pattern": "^[^@\\s]+@[^@\\s]+$"
+        }
+      }
+    ]
+  }
+}

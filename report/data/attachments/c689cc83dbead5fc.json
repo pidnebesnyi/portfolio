@@ -1,0 +1,15 @@
+{
+  "status": 409,
+  "elapsed_ms": 10,
+  "headers": {
+    "date": "Sat, 28 Nov 2026 10:46:46 GMT",
+    "server": "uvicorn",
+    "content-length": "92",
+    "content-type": "application/json",
+    "x-request-id": "930a2c60b93b4d05bf0eb1b3ba633a6b"
+  },
+  "body": {
+    "code": "idempotency_key_reused",
+    "message": "Idempotency-Key was used with a different body"
+  }
+}

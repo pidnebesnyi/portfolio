@@ -1,0 +1,26 @@
+{
+  "status": 422,
+  "elapsed_ms": 9,
+  "headers": {
+    "date": "Sat, 28 Nov 2026 10:46:48 GMT",
+    "server": "uvicorn",
+    "content-length": "162",
+    "content-type": "application/json",
+    "x-request-id": "1a8804a793e849ef86ae3953597502ae"
+  },
+  "body": {
+    "code": "validation_error",
+    "message": "Invalid request",
+    "errors": [
+      {
+        "type": "int_type",
+        "loc": [
+          "body",
+          "amount"
+        ],
+        "msg": "Input should be a valid integer",
+        "input": 1.5
+      }
+    ]
+  }
+}
